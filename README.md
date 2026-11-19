@@ -335,12 +335,28 @@ exactly, visible on `#/reports` for **Last 30 days** — verify any time with
 
 <img width="100%" src="https://raw.githubusercontent.com/faisukhan01/convert/output/github-snake-dark.svg" alt="Contribution snake animation" />
 
-<br />
+<br /><br />
 
-<a href="https://github.com/faisukhan01/convert">
-  <img height="165" src="https://github-readme-stats.vercel.app/api?username=faisukhan01&show_icons=true&hide_border=true&bg_color=00000000&title_color=f59e0b&icon_color=d97706&text_color=e7e5e4&include_all_commits=true&count_private=true" alt="GitHub stats" />
-  <img height="165" src="https://github-readme-stats.vercel.app/api/top-langs/?username=faisukhan01&layout=compact&hide_border=true&bg_color=00000000&title_color=f59e0b&text_color=e7e5e4" alt="Top languages" />
+<a href="https://github.com/faisukhan01/convert/commits/main">
+  <img alt="Total commits" src="https://img.shields.io/github/commit-activity/t/faisukhan01/convert?style=flat-square&label=Total%20commits&labelColor=18181b&color=f59e0b" />
 </a>
+<a href="https://github.com/faisukhan01/convert/commits/main">
+  <img alt="Last commit" src="https://img.shields.io/github/last-commit/faisukhan01/convert/main?style=flat-square&label=Last%20commit&labelColor=18181b&color=d97706" />
+</a>
+<a href="https://github.com/faisukhan01/convert/graphs/contributors">
+  <img alt="Contributors" src="https://img.shields.io/github/contributors/faisukhan01/convert?style=flat-square&label=Contributors&labelColor=18181b&color=fbbf24" />
+</a>
+<a href="https://github.com/faisukhan01/convert">
+  <img alt="Languages" src="https://img.shields.io/github/languages/count/faisukhan01/convert?style=flat-square&label=Languages&labelColor=18181b&color=f59e0b" />
+</a>
+<a href="https://github.com/faisukhan01/convert">
+  <img alt="Repo size" src="https://img.shields.io/github/repo-size/faisukhan01/convert?style=flat-square&label=Repo%20size&labelColor=18181b&color=d97706" />
+</a>
+<a href="https://github.com/faisukhan01/convert/stargazers">
+  <img alt="Stars" src="https://img.shields.io/github/stars/faisukhan01/convert?style=flat-square&label=Stars&labelColor=18181b&color=fbbf24" />
+</a>
+
+<br />
 
 <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&height=120&color=0:fbbf24,60:d97706,100:18181b&section=footer" alt="footer wave" />
 
