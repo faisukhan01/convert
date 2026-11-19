@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { api } from "@/hooks/use-api";
+import { api, setStoredToken } from "@/hooks/use-api";
 import type { SessionInfo } from "@/lib/client-types";
 
 type AppState = {
@@ -32,6 +32,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   signOut: async () => {
     await api.del("/api/session");
+    setStoredToken(null);
     set({ session: null });
   },
 }));

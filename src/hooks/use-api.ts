@@ -2,6 +2,31 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+/**
+ * Session-token persistence: the SPA keeps the signed session token in localStorage and
+ * echoes it as `Authorization: Bearer` on every API call. This keeps the user signed in even
+ * when the HttpOnly cookie is unavailable — e.g. the app running inside a cross-site preview
+ * iframe or a browser that blocks third-party cookies. The server validates both channels.
+ */
+const TOKEN_KEY = "ridge_session_token";
+
+export function getStoredToken(): string | null {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredToken(token: string | null): void {
+  try {
+    if (token) localStorage.setItem(TOKEN_KEY, token);
+    else localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* storage unavailable (private mode) — cookie path still works first-party */
+  }
+}
+
 export class ApiClientError extends Error {
   constructor(public status: number, message: string, public payload?: unknown) {
     super(message);
@@ -9,9 +34,14 @@ export class ApiClientError extends Error {
 }
 
 export async function apiFetch<T = unknown>(path: string, init?: RequestInit): Promise<T> {
+  const token = getStoredToken();
   const res = await fetch(path, {
     ...init,
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(init?.headers ?? {}),
+    },
   });
   let body: unknown = null;
   try {
@@ -20,9 +50,15 @@ export async function apiFetch<T = unknown>(path: string, init?: RequestInit): P
     /* empty body */
   }
   if (!res.ok) {
+    // A 401 means the stored token (if any) is no longer valid — drop it so the next
+    // request starts clean instead of retrying with dead credentials.
+    if (res.status === 401) setStoredToken(null);
     const msg = (body as { error?: string })?.error ?? `Request failed (${res.status})`;
     throw new ApiClientError(res.status, msg, body);
   }
+  // Sign-in / location-switch responses carry a fresh token — persist it immediately.
+  const maybeToken = (body as { token?: unknown } | null)?.token;
+  if (typeof maybeToken === "string" && maybeToken) setStoredToken(maybeToken);
   return body as T;
 }
 

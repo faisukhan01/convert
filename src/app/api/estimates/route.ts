@@ -12,7 +12,9 @@ export const GET = route(async (req) => {
   const { contractor, user, role } = await requireAccess(url.searchParams.get("contractorId"));
   const scope = estimatorScope(role, user.id);
   const estimates = await db.estimate.findMany({
-    where: { contractorId: contractor.id, ...(scope ?? {}) },
+    // estimatorScope is an Inquiry-level filter — nest it under `inquiry` (Estimate has no
+    // direct appointments relation; the estimator's visits live on the linked inquiry).
+    where: { contractorId: contractor.id, ...(scope ? { inquiry: scope } : {}) },
     include: { inquiry: { include: { contact: true } } },
     orderBy: { createdAt: "desc" },
     take: 200,

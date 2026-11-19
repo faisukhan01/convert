@@ -1,14 +1,17 @@
 import { db } from "@/lib/db";
 import { json, route, ApiError } from "@/lib/api";
-import { setSessionCookie, clearSessionCookie, readSession } from "@/lib/session";
+import { setSessionCookie, clearSessionCookie, readSession, newSessionToken } from "@/lib/session";
 import { ensureBootstrap } from "@/lib/bootstrap";
 import { DEMO_PASSWORD } from "@/lib/constants";
 
 /**
  * GET    /api/session → current user, memberships, contractors
- * POST   /api/session → local demo sign-in {email, password}
- * PATCH  /api/session → switch current location {contractorId}
+ * POST   /api/session → local demo sign-in {email, password} → {ok, token}
+ * PATCH  /api/session → switch current location {contractorId} → {ok, token}
  * DELETE /api/session → sign out
+ *
+ * `token` is the same signed payload as the cookie; the SPA persists it in localStorage and
+ * echoes it as `Authorization: Bearer` so sessions survive cookie-less embedded contexts.
  */
 export const GET = route(async () => {
   await ensureBootstrap();
@@ -47,8 +50,9 @@ export const POST = route(async (req: Request) => {
   const expected = user.password || DEMO_PASSWORD;
   if (password && password !== expected) throw new ApiError(401, "Incorrect password");
   const firstMembership = await db.membership.findFirst({ where: { userId: user.id } });
-  await setSessionCookie({ uid: user.id, role: user.role, cid: firstMembership?.contractorId ?? null });
-  return json({ ok: true });
+  const payload = { uid: user.id, role: user.role, cid: firstMembership?.contractorId ?? null };
+  await setSessionCookie(payload);
+  return json({ ok: true, token: newSessionToken(payload) });
 });
 
 export const PATCH = route(async (req: Request) => {
@@ -65,8 +69,9 @@ export const PATCH = route(async (req: Request) => {
     const m = await db.membership.findUnique({ where: { userId_contractorId: { userId: user.id, contractorId } } });
     if (!m) throw new ApiError(403, "Not a member of this location");
   }
-  await setSessionCookie({ uid: user.id, role: user.role, cid: contractorId });
-  return json({ ok: true });
+  const payload = { uid: user.id, role: user.role, cid: contractorId };
+  await setSessionCookie(payload);
+  return json({ ok: true, token: newSessionToken(payload) });
 });
 
 export const DELETE = route(async () => {
