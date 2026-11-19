@@ -87,39 +87,44 @@ flowchart LR
         API["API v2"]
     end
 
-    subgraph Engine["Go Engine — services/engine-go"]
+    subgraph Engine["Go Engine - services/engine-go"]
         ING["Ingest + HMAC Verify"]
         NRM["Normalize + Enrich"]
         SCR["Lead Scoring"]
         RUL["Rules Router"]
-        QUE["Priority Queue + Retries"]
+        QUE["Priority Queue"]
         EXE["GHL Executor"]
         AI["z.ai Brain"]
         JRN["Event Journal"]
     end
 
-    subgraph Store["PostgreSQL 16"]
+    subgraph Store["PostgreSQL"]
         EVT["engine_events"]
         CON["engine_contacts"]
         ACT["engine_actions"]
     end
 
-    subgraph App["Next.js 16 App"]
+    subgraph App["Next.js App"]
         UI["Operator Dashboard"]
         IN["Intake Forms"]
     end
 
     WH -->|"signed events"| ING
-    ING --> NRM --> SCR --> RUL --> QUE --> EXE
+    ING --> NRM
+    NRM --> SCR
+    SCR --> RUL
+    RUL --> QUE
+    QUE --> EXE
     AI -.->|"verdicts + drafts"| SCR
     AI -.->|"reply copy"| EXE
-    EXE -->|"tags, notes, SMS,<br/>tasks, workflows"| API
     ING --> JRN
     JRN -->|"mirror"| EVT
+    EXE -->|"tags notes SMS tasks"| API
     EXE -->|"audit"| ACT
     NRM -->|"projection"| CON
-    UI -->|"stats, events,<br/>replay, rules"| Engine
-    IN -->|"rest intake"| UI
+    UI -->|"stats events replay rules"| ING
+    IN --> UI
+    WH --> IN
 ```
 
 <br/>
