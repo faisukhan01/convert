@@ -1,0 +1,39 @@
+# RidgeLine local production-shape example.
+# For Neon: drop the `db` service and set DATABASE_URL to your Neon string.
+services:
+  app:
+    build: .
+    ports: ["3000:3000"]
+    environment:
+      - APP_BASE_URL=${APP_BASE_URL:-http://localhost:3000}
+      # For a real PostgreSQL (Neon or the service below):
+      # DATABASE_URL=postgresql://USER:PASSWORD@host/db?sslmode=require
+      - DATABASE_URL=file:/app/db/custom.db
+      - SESSION_SECRET=${SESSION_SECRET:-}
+      - TOKEN_ENCRYPTION_KEY=${TOKEN_ENCRYPTION_KEY:-}
+      - GHL_CLIENT_ID=${GHL_CLIENT_ID:-}
+      - GHL_CLIENT_SECRET=${GHL_CLIENT_SECRET:-}
+      - GHL_REDIRECT_URI=${GHL_REDIRECT_URI:-}
+      - GHL_WEBHOOK_SECRET=${GHL_WEBHOOK_SECRET:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    # Safe migration order: schema first, then boot (seeds only an empty DB).
+    command: sh -c "bunx prisma db push --skip-generate && bun .next/standalone/server.js"
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_USER=ridgeline
+      - POSTGRES_PASSWORD=ridgeline
+      - POSTGRES_DB=ridgeline
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ridgeline"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
