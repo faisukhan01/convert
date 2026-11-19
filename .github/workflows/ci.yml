@@ -40,3 +40,21 @@ jobs:
         run: bunx tsc --noEmit
       - name: Build
         run: bun run build
+
+  go-engine:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/engine-go
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache-dependency-path: services/engine-go/go.sum
+      - name: Build (stdlib only, no module downloads)
+        run: go build ./...
+      - name: Vet
+        run: go vet ./...
+      - name: Format check
+        run: test -z "$(gofmt -l .)"
