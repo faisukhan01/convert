@@ -1,11 +1,33 @@
 # RidgeLine local production-shape example.
 # For Neon: drop the `db` service and set DATABASE_URL to your Neon string.
 services:
+  engine:
+    build:
+      context: .
+      dockerfile: services/engine-go/Dockerfile
+      args:
+        GIT_SHA: ${GIT_SHA:-dev}
+    ports: ["8088:8088"]
+    environment:
+      - ENGINE_PORT=8088
+      - GHL_WEBHOOK_SECRET=${GHL_WEBHOOK_SECRET:-ridgeline-demo-webhook-secret}
+      - ENGINE_REQUIRE_SIGNATURE=true
+      - ENGINE_WORKERS=${ENGINE_WORKERS:-8}
+      - ENGINE_LOG_FORMAT=${ENGINE_LOG_FORMAT:-text}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8088/readyz"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    restart: unless-stopped
+
   app:
     build: .
     ports: ["3000:3000"]
     environment:
       - APP_BASE_URL=${APP_BASE_URL:-http://localhost:3000}
+      # Go engine (worker split) — set ENGINE_URL to route ingest through it:
+      # ENGINE_URL=http://engine:8088
       # For a real PostgreSQL (Neon or the service below):
       # DATABASE_URL=postgresql://USER:PASSWORD@host/db?sslmode=require
       - DATABASE_URL=file:/app/db/custom.db
