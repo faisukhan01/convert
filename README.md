@@ -87,23 +87,23 @@ silently dropped, everything is replayable.
 
 ```mermaid
 flowchart LR
-    H([Homeowner<br>public views]) --> P(/api/public/*)
-    S([Staff<br>role-scoped]) --> A(/api/*<br>tenancy-checked)
-    G([GoHighLevel<br>webhooks]) --> E
+    H(["Homeowner — public views"]) --> P["/api/public/*"]
+    S(["Staff — role-scoped"]) --> A["/api/* — tenancy-checked"]
+    G(["GoHighLevel webhooks"]) --> E
 
     subgraph ENGINE["Go engine — services/engine-go"]
-        E[Ingest<br>HMAC + rate limit] --> J[(Audit journal<br>explicit states)]
-        J --> N[Normalize to<br>canonical events]
-        N --> Q[[Priority queue<br>workers + backoff]]
+        E["Ingest — HMAC + rate limit"] --> J[("Audit journal — explicit states")]
+        J --> N["Normalize — canonical events"]
+        N --> Q[["Priority queue — workers + backoff"]]
     end
 
-    P --> D[(PostgreSQL<br>Neon-ready)]
+    P --> D[("PostgreSQL — Neon-ready")]
     A --> D
     subgraph APP["Next.js app"]
-        T[Automation tick<br>stop rules] --> O[Outbox +<br>dedupe keys]
+        T["Automation tick — stop rules"] --> O["Outbox + dedupe keys"]
     end
-    Q -.action intents.-> T
-    T --> V[Provider adapters<br>demo | GHL | Jobber]
+    Q -. "action intents" .-> T
+    T --> V["Provider adapters — demo · GHL · Jobber"]
     O --> D
 ```
 
