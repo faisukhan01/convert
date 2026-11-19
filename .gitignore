@@ -65,3 +65,5 @@ agent-ctx/
 !db/.gitkeep
 # sandbox scaffolding scripts
 tests/
+# sandbox scratch
+download/
