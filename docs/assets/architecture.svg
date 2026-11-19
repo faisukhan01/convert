@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="560" viewBox="0 0 1080 560" role="img" aria-label="RidgeLine Convert architecture: GoHighLevel webhooks flow through the Go engine into PostgreSQL, the GHL API and the Next.js app">
+  <defs>
+    <linearGradient id="abg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="0.55" stop-color="#111a30"/>
+      <stop offset="1" stop-color="#0b1220"/>
+    </linearGradient>
+    <linearGradient id="gTitle" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#fde68a"/>
+    </linearGradient>
+    <linearGradient id="cyanB" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#00add8" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#00add8" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="greenB" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#16a34a" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#16a34a" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="blueB" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4169e1" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#4169e1" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="slateB" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#64748b" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#64748b" stop-opacity="0.06"/>
+    </linearGradient>
+    <linearGradient id="purpleB" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#a855f7" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#a855f7" stop-opacity="0.06"/>
+    </linearGradient>
+    <marker id="arrCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#67e8f9"/>
+    </marker>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#93c5fd"/>
+    </marker>
+    <marker id="arrGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#86efac"/>
+    </marker>
+    <marker id="arrSlate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
+    </marker>
+    <pattern id="agrid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#1c2947" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1080" height="560" rx="20" fill="url(#abg)"/>
+  <rect width="1080" height="560" rx="20" fill="url(#agrid)" opacity="0.4"/>
+
+  <text x="540" y="40" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="21" font-weight="700" fill="url(#gTitle)" letter-spacing="3">RIDGELINE CONVERT · DATA FLOW</text>
+
+  <!-- ═══════════ GoHighLevel box ═══════════ -->
+  <rect x="24" y="150" width="176" height="240" rx="14" fill="url(#greenB)" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="112" y="184" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#86efac" letter-spacing="1">GoHighLevel</text>
+  <rect x="44" y="204" width="136" height="46" rx="10" fill="#0d1526" stroke="#22c55e" stroke-width="1"/>
+  <text x="112" y="232" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" fill="#d1fae5">Webhooks</text>
+  <rect x="44" y="300" width="136" height="46" rx="10" fill="#0d1526" stroke="#22c55e" stroke-width="1"/>
+  <text x="112" y="328" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" fill="#d1fae5">API v2</text>
+
+  <!-- ═══════════ Go Engine box ═══════════ -->
+  <rect x="250" y="72" width="540" height="420" rx="14" fill="url(#cyanB)" stroke="#00add8" stroke-width="1.5"/>
+  <text x="520" y="104" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#67e8f9" letter-spacing="1">GO ENGINE · services/engine-go</text>
+
+  <!-- row 1 -->
+  <rect x="278" y="128" width="150" height="46" rx="10" fill="#0d1526" stroke="#00add8" stroke-width="1"/>
+  <text x="353" y="156" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12.5" fill="#e0f2fe">Ingest + HMAC</text>
+  <rect x="446" y="128" width="150" height="46" rx="10" fill="#0d1526" stroke="#00add8" stroke-width="1"/>
+  <text x="521" y="156" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12.5" fill="#e0f2fe">Normalize + Enrich</text>
+  <rect x="614" y="128" width="150" height="46" rx="10" fill="#0d1526" stroke="#00add8" stroke-width="1"/>
+  <text x="689" y="156" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12.5" fill="#e0f2fe">Lead Scoring</text>
+
+  <!-- row 2 -->
+  <rect x="278" y="230" width="150" height="46" rx="10" fill="#0d1526" stroke="#00add8" stroke-width="1"/>
+  <text x="353" y="258" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12.5" fill="#e0f2fe">Rules Router</text>
+  <rect x="446" y="230" width="150" height="46" rx="10" fill="#0d1526" stroke="#00add8" stroke-width="1"/>
+  <text x="521" y="258" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12.5" fill="#e0f2fe">Priority Queue</text>
+  <rect x="614" y="230" width="150" height="46" rx="10" fill="#0d1526" stroke="#00add8" stroke-width="1"/>
+  <text x="689" y="258" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12.5" fill="#e0f2fe">GHL Executor</text>
+
+  <!-- row 3 -->
+  <rect x="278" y="330" width="150" height="46" rx="10" fill="#0d1526" stroke="#38bdf8" stroke-width="1"/>
+  <text x="353" y="358" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12.5" fill="#e0f2fe">Event Journal</text>
+  <rect x="446" y="330" width="150" height="46" rx="10" fill="url(#purpleB)" stroke="#a855f7" stroke-width="1"/>
+  <text x="521" y="358" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12.5" fill="#f3e8ff">z.ai Brain</text>
+  <rect x="614" y="330" width="150" height="46" rx="10" fill="#0d1526" stroke="#38bdf8" stroke-width="1"/>
+  <text x="689" y="358" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12.5" fill="#e0f2fe">GHL SDK Client</text>
+
+  <!-- worker pool note -->
+  <rect x="278" y="416" width="486" height="40" rx="10" fill="#0d1526" fill-opacity="0.7" stroke="#1c2947" stroke-width="1"/>
+  <text x="521" y="441" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#94a3b8">worker pool · retries with jitter · idempotency · opt-out hard stop</text>
+
+  <!-- ═══════════ PostgreSQL box ═══════════ -->
+  <rect x="838" y="72" width="218" height="216" rx="14" fill="url(#blueB)" stroke="#4169e1" stroke-width="1.5"/>
+  <text x="947" y="104" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#93c5fd" letter-spacing="1">PostgreSQL</text>
+  <rect x="858" y="122" width="178" height="40" rx="9" fill="#0d1526" stroke="#4169e1" stroke-width="1"/>
+  <text x="947" y="147" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="12" fill="#dbeafe">engine_events</text>
+  <rect x="858" y="172" width="178" height="40" rx="9" fill="#0d1526" stroke="#4169e1" stroke-width="1"/>
+  <text x="947" y="197" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="12" fill="#dbeafe">engine_contacts</text>
+  <rect x="858" y="222" width="178" height="40" rx="9" fill="#0d1526" stroke="#4169e1" stroke-width="1"/>
+  <text x="947" y="247" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="12" fill="#dbeafe">engine_actions</text>
+
+  <!-- ═══════════ Next.js box ═══════════ -->
+  <rect x="838" y="330" width="218" height="162" rx="14" fill="url(#slateB)" stroke="#64748b" stroke-width="1.5"/>
+  <text x="947" y="362" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#e2e8f0" letter-spacing="1">Next.js 16 App</text>
+  <rect x="858" y="380" width="178" height="40" rx="9" fill="#0d1526" stroke="#64748b" stroke-width="1"/>
+  <text x="947" y="405" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12.5" fill="#f1f5f9">Operator Dashboard</text>
+  <rect x="858" y="430" width="178" height="40" rx="9" fill="#0d1526" stroke="#64748b" stroke-width="1"/>
+  <text x="947" y="455" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12.5" fill="#f1f5f9">Intake Forms</text>
+
+  <!-- ═══════════ edges ═══════════ -->
+  <!-- webhooks -> ingest -->
+  <path d="M 200 227 H 250 V 151 H 278" fill="none" stroke="#22c55e" stroke-width="2" marker-end="url(#arrGreen)"/>
+  <text x="238" y="196" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#86efac">signed events</text>
+
+  <!-- row1 flow -->
+  <path d="M 428 151 H 446" fill="none" stroke="#67e8f9" stroke-width="2" marker-end="url(#arrCyan)"/>
+  <path d="M 596 151 H 614" fill="none" stroke="#67e8f9" stroke-width="2" marker-end="url(#arrCyan)"/>
+
+  <!-- score down to route (elbow) -->
+  <path d="M 689 174 V 202 H 466 V 230" fill="none" stroke="#67e8f9" stroke-width="2" marker-end="url(#arrCyan)"/>
+  <text x="562" y="196" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#7dd3fc">score gates routing</text>
+
+  <!-- row2 flow -->
+  <path d="M 428 253 H 446" fill="none" stroke="#67e8f9" stroke-width="2" marker-end="url(#arrCyan)"/>
+  <path d="M 596 253 H 614" fill="none" stroke="#67e8f9" stroke-width="2" marker-end="url(#arrCyan)"/>
+
+  <!-- executor -> API v2 (routed through the mid-gap lane) -->
+  <path d="M 689 276 V 302 H 196" fill="none" stroke="#22c55e" stroke-width="2" marker-end="url(#arrGreen)">
+    <animate attributeName="stroke-dashoffset" values="240;0" dur="3.2s" repeatCount="indefinite"/>
+  </path>
+  <text x="430" y="296" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#86efac">tags, notes, SMS, tasks, workflows</text>
+
+  <!-- ingest -> journal -->
+  <path d="M 353 174 V 330" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="5 5" marker-end="url(#arrSlate)"/>
+  <text x="360" y="314" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#7dd3fc">journaled</text>
+
+  <!-- journal -> events (bottom lane, right of everything) -->
+  <path d="M 353 376 V 492 H 800 V 142 H 858" fill="none" stroke="#4169e1" stroke-width="2" marker-end="url(#arrBlue)">
+    <animate attributeName="stroke-dashoffset" values="320;0" dur="4s" repeatCount="indefinite"/>
+  </path>
+  <text x="770" y="130" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#93c5fd">mirror</text>
+
+  <!-- executor -> actions (audit) -->
+  <path d="M 764 242 H 858" fill="none" stroke="#4169e1" stroke-width="2" marker-end="url(#arrBlue)"/>
+  <text x="812" y="234" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#93c5fd">audit</text>
+
+  <!-- normalize -> contacts (top lane) -->
+  <path d="M 521 128 V 58 H 800 V 192 H 858" fill="none" stroke="#4169e1" stroke-width="1.8" stroke-dasharray="5 5" marker-end="url(#arrBlue)"/>
+  <text x="770" y="56" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#93c5fd">projection</text>
+
+  <!-- brain dotted to normalize (intent hints) and to SDK (reply copy) -->
+  <path d="M 521 330 V 174" fill="none" stroke="#c084fc" stroke-width="1.6" stroke-dasharray="4 6" marker-end="url(#arrSlate)"/>
+  <path d="M 596 353 H 614" fill="none" stroke="#c084fc" stroke-width="1.6" stroke-dasharray="4 6" marker-end="url(#arrSlate)"/>
+
+  <!-- app <-> engine -->
+  <path d="M 838 400 H 784 V 151 H 764" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="5 5" marker-end="url(#arrSlate)"/>
+  <text x="800" y="386" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#cbd5e1">stats, events,</text>
+  <text x="800" y="400" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#cbd5e1">replay, rules</text>
+
+  <!-- webhooks -> intake (outer right lane) -->
+  <path d="M 112 204 V 62 H 1044 V 450 H 1036" fill="none" stroke="#22c55e" stroke-width="1.4" stroke-dasharray="4 6" opacity="0.5" marker-end="url(#arrSlate)"/>
+
+  <!-- caption -->
+  <text x="540" y="534" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" fill="#8fa3c4" letter-spacing="1.5">GHL NATIVE · GO STACK · AI BRAIN · POSTGRES DURABILITY</text>
+</svg>

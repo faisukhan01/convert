@@ -80,52 +80,27 @@ GoHighLevel (GHL) webhooks stream in at the edge. The Go engine verifies, dedupl
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    subgraph GHL["GoHighLevel"]
-        WH["Webhooks"]
-        API["API v2"]
-    end
+<img src="docs/assets/architecture.svg" alt="RidgeLine Convert data flow: GoHighLevel webhooks are signed, verified and normalized by the Go engine, scored and routed through the rules engine and priority queue, executed against the GoHighLevel API, and mirrored durably into PostgreSQL alongside the Next.js operator app" width="100%"/>
 
-    subgraph Engine["Go Engine - services/engine-go"]
-        ING["Ingest + HMAC Verify"]
-        NRM["Normalize + Enrich"]
-        SCR["Lead Scoring"]
-        RUL["Rules Router"]
-        QUE["Priority Queue"]
-        EXE["GHL Executor"]
-        AI["z.ai Brain"]
-        JRN["Event Journal"]
-    end
+<details>
+<summary><strong>Text version of the diagram</strong></summary>
 
-    subgraph Store["PostgreSQL"]
-        EVT["engine_events"]
-        CON["engine_contacts"]
-        ACT["engine_actions"]
-    end
-
-    subgraph App["Next.js App"]
-        UI["Operator Dashboard"]
-        IN["Intake Forms"]
-    end
-
-    WH -->|"signed events"| ING
-    ING --> NRM
-    NRM --> SCR
-    SCR --> RUL
-    RUL --> QUE
-    QUE --> EXE
-    AI -.->|"verdicts + drafts"| SCR
-    AI -.->|"reply copy"| EXE
-    ING --> JRN
-    JRN -->|"mirror"| EVT
-    EXE -->|"tags notes SMS tasks"| API
-    EXE -->|"audit"| ACT
-    NRM -->|"projection"| CON
-    UI -->|"stats events replay rules"| ING
-    IN --> UI
-    WH --> IN
+```text
+GoHighLevel ──signed events──▶ Ingest + HMAC Verify
+                                   │ (every delivery journaled)
+                                   ▼
+                              Normalize + Enrich ──projection──▶ engine_contacts
+                                   ▼
+                              Lead Scoring ◀──verdicts── z.ai Brain
+                                   ▼ (score gates routing)
+                              Rules Router ──▶ Priority Queue ──▶ GHL Executor ──▶ GoHighLevel API v2
+                                   │                                              (tags, notes, SMS,
+                                   ▼                                               tasks, workflows)
+                              Event Journal ──mirror──▶ engine_events     └──audit──▶ engine_actions
+                                   │
+Next.js 16 App ◀──stats, events, replay, rules──▶ Go Engine (worker pool, retries, hard stops)
 ```
+</details>
 
 <br/>
 
