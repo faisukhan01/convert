@@ -25,6 +25,13 @@ const (
 	CounterReplays       = "engine_replays_total"
 	CounterActionsTotal  = "engine_actions_total"
 	CounterHTTPRequests  = "engine_http_requests_total"
+
+	CounterGHLCallsTotal  = "engine_ghl_api_calls_total"
+	CounterGHLErrorsTotal = "engine_ghl_api_errors_total"
+	CounterDBWritesTotal  = "engine_db_writes_total"
+	CounterAICallsTotal   = "engine_ai_calls_total"
+	CounterRulesMatched   = "engine_rules_matched_total"
+	CounterScoredTotal    = "engine_leads_scored_total"
 )
 
 // Registry stores counters and their help strings.
@@ -55,6 +62,13 @@ func NewRegistry() *Registry {
 		CounterReplays:       "Events recovered through the replay path.",
 		CounterActionsTotal:  "Automation actions executed by workers.",
 		CounterHTTPRequests:  "HTTP requests served, labeled by route and status.",
+
+		CounterGHLCallsTotal:  "Outbound GoHighLevel API calls attempted by the executor.",
+		CounterGHLErrorsTotal: "GoHighLevel API calls that ended in a provider error.",
+		CounterDBWritesTotal:  "Rows mirrored into the durable Postgres store.",
+		CounterAICallsTotal:   "z.ai brain calls (qualification + reply drafting).",
+		CounterRulesMatched:   "Rule matches produced by the routing ruleset.",
+		CounterScoredTotal:    "Lead scoring computations performed.",
 	}
 	for name, help := range seed {
 		r.counters[name] = &counter{help: help, byLabel: make(map[string]uint64)}

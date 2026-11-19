@@ -4,10 +4,11 @@
 GO      ?= go
 BINARY  ?= bin/engine
 CTL     ?= bin/convertctl
+GHLCTL  ?= bin/ghlctl
 PORT    ?= 8088
 SHA     ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo dev)
 
-.PHONY: help build buildctl test vet fmt run docker docker-up metrics demo clean
+.PHONY: help build buildctl buildghlctl test vet fmt run docker docker-up metrics demo clean
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -18,6 +19,9 @@ build: ## Build the engine binary with stamped git SHA
 buildctl: ## Build the convertctl CLI
 	$(GO) build -o $(CTL) ./cmd/convertctl
 
+buildghlctl: ## Build the GoHighLevel operator CLI
+	$(GO) build -o $(GHLCTL) ./cmd/ghlctl
+
 vet: ## Static analysis
 	$(GO) vet ./...
 
@@ -25,6 +29,10 @@ fmt: ## Format all sources
 	$(GO) fmt ./...
 
 run: build ## Run the engine locally with dev conveniences
+	ENGINE_DEV=true ENGINE_REQUIRE_SIGNATURE=false ENGINE_PORT=$(PORT) ./$(BINARY)
+
+run-pg: build ## Run the engine wired to the local Postgres store
+	DATABASE_URL="postgres://postgres@127.0.0.1:5432/convert?sslmode=disable" \
 	ENGINE_DEV=true ENGINE_REQUIRE_SIGNATURE=false ENGINE_PORT=$(PORT) ./$(BINARY)
 
 docker: ## Build the engine image (multi-stage, distroless-style runtime)

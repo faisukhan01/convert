@@ -1,0 +1,32 @@
+# ─────────────────────────────────────────────────────────────
+# RidgeLine Convert — Linguist configuration
+# Guarantees the Go (GHL stack) engine is always detected and
+# shown in the repository language bar alongside TypeScript.
+# ─────────────────────────────────────────────────────────────
+
+# Go engine — always detectable, never misclassified
+*.go linguist-language=Go linguist-detectable=true
+**/*.go linguist-language=Go linguist-detectable=true
+
+# The Go module's own ignore/sum files are config, not Go source
+go.mod linguist-documentation
+go.sum linguist-documentation
+
+# Build infra is not a language worth counting
+Dockerfile linguist-documented
+Makefile linguist-documentation
+*.mk linguist-documentation
+
+# Documentation assets are not code
+docs/assets/*.svg linguist-detectable=false
+docs/*.md linguist-documentation
+*.md linguist-documentation
+
+# Keep screenshots and images out of the stats
+*.png linguist-detectable=false
+*.jpg linguist-detectable=false
+*.jpeg linguist-detectable=false
+*.gif linguist-detectable=false
+
+# Vendored/generated JS artifacts must never inflate JavaScript stats
+**/generated/** linguist-generated

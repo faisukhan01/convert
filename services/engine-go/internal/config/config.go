@@ -54,6 +54,25 @@ type Config struct {
 	LogLevel string
 	// DevMode enables verbose diagnostics; must be false in production.
 	DevMode bool
+
+	// AdminToken guards /v1/rules writes and GHL write proxies. Empty
+	// disables admin routes outside dev mode (fail-closed).
+	AdminToken string
+
+	// GHL integration (GoHighLevel API v2).
+	GHLAccessToken string // Private Integration Token or OAuth token
+	GHLBaseURL     string // default https://services.leadconnectorhq.com
+	GHLLocationID  string // sub-account the executor writes into
+	GHLDryRun      bool   // simulate sends when true or when no token
+
+	// Postgres durable store (mirrors journal/projection/actions).
+	DatabaseURL string
+	DBMaxConns  int32
+
+	// AI brain (z.ai chat completions, OpenAI-compatible).
+	ZAIKey   string
+	ZAIBase  string
+	ZAIModel string
 }
 
 // FromEnv builds a Config from the process environment.
@@ -77,6 +96,20 @@ func FromEnv() (*Config, error) {
 		LogFormat:             strings.ToLower(envStr("ENGINE_LOG_FORMAT", "text")),
 		LogLevel:              strings.ToLower(envStr("ENGINE_LOG_LEVEL", "info")),
 		DevMode:               envBool("ENGINE_DEV", false),
+
+		AdminToken: envStr("ENGINE_ADMIN_TOKEN", ""),
+
+		GHLAccessToken: envStr("GHL_ACCESS_TOKEN", ""),
+		GHLBaseURL:     envStr("GHL_API_BASE", "https://services.leadconnectorhq.com"),
+		GHLLocationID:  envStr("GHL_LOCATION_ID", ""),
+		GHLDryRun:      envBool("GHL_DRY_RUN", envStr("GHL_ACCESS_TOKEN", "") == ""),
+
+		DatabaseURL: envStr("DATABASE_URL", ""),
+		DBMaxConns:  int32(envInt("DB_MAX_CONNS", 8)),
+
+		ZAIKey:   envStr("ZAI_API_KEY", ""),
+		ZAIBase:  envStr("ZAI_API_BASE", "https://api.z.ai/api/paas/v4"),
+		ZAIModel: envStr("ZAI_MODEL", "glm-4-flash"),
 	}
 	if c.WorkerCount <= 0 || c.WorkerCount > 256 {
 		return nil, fmt.Errorf("config: ENGINE_WORKERS must be in [1,256], got %d", c.WorkerCount)
@@ -92,6 +125,16 @@ func FromEnv() (*Config, error) {
 	}
 	return c, nil
 }
+
+// HasGHL reports whether the executor has provider credentials. Without a
+// token the executor runs in dry-run mode (plans + logs, never sends).
+func (c *Config) HasGHL() bool { return c.GHLAccessToken != "" }
+
+// HasDB reports whether the durable Postgres store is configured.
+func (c *Config) HasDB() bool { return c.DatabaseURL != "" }
+
+// HasAI reports whether the z.ai brain can make real calls.
+func (c *Config) HasAI() bool { return c.ZAIKey != "" }
 
 // GuardedSecret renders the secret for logs without leaking material.
 func (c *Config) GuardedSecret() string {

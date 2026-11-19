@@ -44,6 +44,7 @@ type Server struct {
 	proj      *store.MemStore
 	metrics   *metrics.Registry
 	queue     *queue.Queue
+	svc       *Services // optional integrations (GHL executor, Postgres, rules, AI)
 	ready     atomic.Bool
 	startedAt time.Time
 }
@@ -76,6 +77,27 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("GET /v1/stats", s.handleStats)
 	mux.HandleFunc("GET /v1/contacts", s.handleContacts)
 	mux.HandleFunc("POST /v1/demo/fire", s.handleDemoFire)
+
+	// v2 surface: rules, scoring, AI brain, GHL proxy, durable store.
+	admin := func(h http.HandlerFunc) http.Handler {
+		return withAdmin(s.cfg.AdminToken, s.cfg.DevMode, h)
+	}
+
+	mux.Handle("GET /v1/rules", admin(s.handleRulesGet))
+	mux.Handle("PUT /v1/rules", admin(s.handleRulesPut))
+	mux.Handle("POST /v1/rules/reset", admin(s.handleRulesReset))
+	mux.HandleFunc("GET /v1/score", s.handleScore)
+	mux.HandleFunc("POST /v1/ai/qualify", s.handleAIQualify)
+	mux.HandleFunc("POST /v1/ai/reply", s.handleAIReply)
+	mux.HandleFunc("GET /v1/ghl/status", s.handleGHLStatus)
+	mux.HandleFunc("GET /v1/ghl/pipelines", s.handleGHLPipelines)
+	mux.Handle("POST /v1/ghl/contacts", admin(s.handleGHLContactUpsert))
+	mux.HandleFunc("GET /v1/ghl/contacts/", s.handleGHLContactGet)
+	mux.Handle("POST /v1/ghl/contacts/{id}/tags", admin(http.HandlerFunc(s.handleGHLContactTags)))
+	mux.Handle("POST /v1/ghl/opportunities", admin(s.handleGHLOpportunityCreate))
+	mux.HandleFunc("GET /v1/store/stats", s.handleStoreStats)
+	mux.HandleFunc("GET /v1/store/events", s.handleStoreEvents)
+	mux.HandleFunc("GET /v1/store/actions", s.handleStoreActions)
 
 	h := withRecovery(withRequestID(withCORS(s.cfg.AllowedOrigins, withAccessLog(s.metrics, mux))))
 	return h

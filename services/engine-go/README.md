@@ -1,61 +1,75 @@
-# RidgeLine Engine — Go
+# RidgeLine Go Engine — the Go / GHL Stack
 
-The high-performance half of RidgeLine's automation stack (the "Go/worker split"
-previewed in `src/lib/engine.ts`): webhook ingest, normalization, an audit
-journal, a priority action queue and worker pool — all in dependency-free
-standard-library Go.
+The Go automation engine that powers RidgeLine Convert: webhook ingest,
+lead scoring, rules-based routing and **GoHighLevel (GHL) API execution**,
+backed by a durable PostgreSQL mirror and a z.ai brain.
 
-```
-GHL webhook ──▶ HMAC verify ──▶ rate limit ──▶ parse ──▶ journal
-                                                       │
-                     canonical event ◀── normalize ────┘
-                            │
-                     ordering + dedupe guards
-                            │
-                     plan actions (pure)
-                            │
-                     priority queue ──▶ worker pool ──▶ actions + projection
-```
+## Why Go here
 
-## Run
+The hot path of lead automation is I/O-bound, concurrency-heavy and
+latency-sensitive: sign → parse → score → route → execute, thousands of
+times per minute, with hard guarantees on opt-outs. Go gives the engine
+single-binary deploys, predictable memory, first-class HTTP and context
+cancellation — while the TypeScript app stays focused on the operator
+experience.
+
+## Components
+
+| Component | Path | Role |
+|---|---|---|
+| Engine daemon | `cmd/engine` | Ingest → normalize → score → route → queue → execute |
+| GHL SDK | `internal/ghlapi` | Typed GoHighLevel API v2 client + intent executor |
+| Pipeline | `internal/pipeline` | Normalize, enrich, dedupe, order, plan |
+| Scoring | `internal/scoring` | Deterministic lead temperature (hot/warm/cold) |
+| Rules | `internal/rules` | Declarative routing ruleset with stats |
+| AI brain | `internal/ai` | z.ai qualification + reply drafting (with fallbacks) |
+| Durable store | `internal/store/pg` | PostgreSQL mirror: events, contacts, actions |
+| Queue | `internal/queue` | Bounded priority queue with retries/backoff |
+| Server | `internal/server` | HTTP surface incl. admin + GHL proxy |
+| CLI | `cmd/ghlctl` | Operator CLI for the GHL surface |
+
+## Build & Run
 
 ```bash
-make run            # dev mode: ENGINE_DEV=true, unsigned webhooks allowed
-make demo           # fire one signed intake webhook through the pipeline
-curl localhost:8088/v1/stats   # operational snapshot
+go build -o bin/engine ./cmd/engine
+go build -o bin/ghlctl ./cmd/ghlctl
+
+# with the durable Postgres mirror
+DATABASE_URL="postgres://postgres@127.0.0.1:5432/convert?sslmode=disable" \
+ENGINE_DEV=true ENGINE_REQUIRE_SIGNATURE=false ./bin/engine
 ```
 
-## CLI
+## Key environment variables
 
-```bash
-make buildctl
-./bin/convertctl ping
-./bin/convertctl stats
-./bin/convertctl events --status FAILED --limit 20
-./bin/convertctl replay --limit 50
-```
+| Variable | Effect |
+|---|---|
+| `GHL_ACCESS_TOKEN` | Private Integration Token — without it the executor is dry-run |
+| `GHL_LOCATION_ID` | Sub-account the executor writes into |
+| `GHL_DRY_RUN` | Force dry-run even with a token (default: no token = dry-run) |
+| `DATABASE_URL` | Postgres DSN — enables the durable mirror |
+| `ZAI_API_KEY` | z.ai brain key — without it, deterministic fallbacks serve |
+| `ZAI_MODEL` | Model id (default `glm-4-flash`) |
+| `ENGINE_ADMIN_TOKEN` | Guards rules PUT + GHL write proxies |
+| `ENGINE_RULES_FILE` | JSON ruleset; omit for the built-in set |
 
-## Endpoints
+## API surface
 
-| Method | Path                 | Purpose                                    |
-| ------ | -------------------- | ------------------------------------------ |
-| POST   | `/v1/webhooks/ghl`   | provider ingest (HMAC-SHA256 verified)     |
-| GET    | `/v1/events`         | journal listing (`?status=&limit=`)        |
-| POST   | `/v1/replay`         | re-drive recoverable events                |
-| GET    | `/v1/stats`          | operational snapshot                       |
-| GET    | `/v1/contacts`       | projection listing                         |
-| POST   | `/v1/demo/fire`      | self-fire signed webhook (`ENGINE_DEV`)    |
-| GET    | `/healthz` `/readyz` | liveness / readiness                       |
-| GET    | `/metrics`           | Prometheus text format                     |
+`POST /v1/webhooks/ghl` · `GET /v1/score` · `GET|PUT /v1/rules` ·
+`POST /v1/ai/qualify` · `POST /v1/ai/reply` · `GET /v1/ghl/status` ·
+`GET /v1/ghl/pipelines` · `POST /v1/ghl/contacts` ·
+`POST /v1/ghl/opportunities` · `GET /v1/store/stats|events|actions` ·
+`GET /v1/events` · `POST /v1/replay` · `POST /v1/demo/fire` ·
+`GET /healthz|/readyz|/metrics`
 
-## Design invariants
+## Design guarantees
 
-- **Every delivery lands in the journal** — even invalid or rejected ones —
-  so nothing is silently dropped and everything is replayable.
-- **Planning is pure.** Workers re-validate eligibility before any real send;
-  a reply, opt-out or pause that arrives before the send wins the race.
-- **Bounded everything.** Token-bucket rate limits, bounded queue with
-  explicit backpressure states, capped retries with jittered exponential
-  backoff.
-- **Zero external dependencies.** The module builds with `go build ./...`
-  on any machine, no network required.
+1. **Stop rule wins the race** — opt-outs are evaluated first and suppress
+   every downstream send.
+2. **Nothing is silently dropped** — every delivery lands in the journal
+   with an explicit terminal state; stuck events replay via `POST /v1/replay`.
+3. **No double sends** — idempotency keys collapse redeliveries; the
+   executor keeps a per-process suppression cache.
+4. **Fail soft on AI** — the brain's absence degrades to keyword scoring,
+   never to a stalled pipeline.
+5. **Durable audit** — every executed intent is recorded in Postgres with
+   status and error detail.

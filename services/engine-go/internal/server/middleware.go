@@ -127,6 +127,7 @@ func routeLabel(path string) string {
 	known := []string{
 		"/v1/webhooks/ghl", "/v1/events", "/v1/replay", "/v1/stats",
 		"/v1/contacts", "/v1/version", "/v1/demo/fire",
+		"/v1/rules", "/v1/score", "/v1/ai/", "/v1/ghl/", "/v1/store/",
 		"/healthz", "/readyz", "/metrics",
 	}
 	for _, k := range known {

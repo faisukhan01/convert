@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="100" viewBox="0 0 1440 100" preserveAspectRatio="none" role="img" aria-label="wave divider">
+  <defs>
+    <linearGradient id="waveFront" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="55%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#00add8"/>
+    </linearGradient>
+  </defs>
+  <!-- back wave -->
+  <g opacity="0.30">
+    <animateTransform attributeName="transform" type="translate" values="0 0; -1440 0" dur="26s" repeatCount="indefinite"/>
+    <path d="M0,50 C240,90 480,10 720,50 C960,90 1200,10 1440,50 L1440,150 L0,150 Z" fill="#334155"/>
+    <path d="M1440,50 C1680,90 1920,10 2160,50 C2400,90 2640,10 2880,50 L2880,150 L1440,150 Z" fill="#334155"/>
+  </g>
+  <!-- front wave -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="-1440 0; 0 0" dur="18s" repeatCount="indefinite"/>
+    <path d="M0,55 C240,15 480,95 720,55 C960,15 1200,95 1440,55 L1440,150 L0,150 Z" fill="url(#waveFront)"/>
+    <path d="M1440,55 C1680,15 1920,95 2160,55 C2400,15 2640,95 2880,55 L2880,150 L1440,150 Z" fill="url(#waveFront)"/>
+  </g>
+</svg>

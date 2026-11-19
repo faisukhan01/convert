@@ -1,365 +1,324 @@
 <div align="center">
 
-<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&height=200&color=0:18181b,35:78350f,65:d97706,100:fbbf24&section=header&text=RidgeLine&fontSize=72&fontColor=fafafa&fontAlignY=34&stroke=fbbf24&strokeWidth=1.5&desc=The%20Estimate%20Desk%20for%20Roofing%20Teams&descSize=22&descColor=e7e5e4&descAlignY=58&animation=twinkling" alt="RidgeLine animated banner" />
+<img src="docs/assets/banner.svg" alt="RidgeLine Convert — AI-Powered Lead Conversion Engine" width="100%"/>
+
+<br/>
 
 <a href="https://github.com/faisukhan01/convert">
-  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono:wght@500;700&size=22&duration=2800&pause=1200&color=D97706&center=true&vCenter=true&multiline=false&repeat=true&width=760&height=44&lines=Capture+%E2%86%92+Book+%E2%86%92+Estimate+%E2%86%92+Collected+Revenue;A+multi-tenant+SaaS+built+on+Next.js+16+%2B+Go;GoHighLevel-native+%C2%B7+Neon-ready+%C2%B7+Runs+with+zero+credentials" alt="RidgeLine in one line" />
+  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono:wght@600&size=22&duration=3200&pause=900&color=F59E0B&center=true&vCenter=true&multiline=false&repeat=true&lines=Webhook+Ingest+%E2%86%92+Normalize+%E2%86%92+Score+%E2%86%92+Route+%E2%86%92+Execute;GoHighLevel-native+Go+engine+with+a+z.ai+brain;PostgreSQL-backed+durable+automation;From+lead+to+customer+on+autopilot" alt="RidgeLine Convert typing animation"/>
 </a>
 
-<br />
+<br/>
+<br/>
 
-<img alt="Go" src="https://img.shields.io/badge/Go-1.22-00ADD8?style=for-the-badge&logo=go&logoColor=white" />
-<img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
-<img alt="Next.js" src="https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=next.js&logoColor=white" />
-<img alt="Prisma" src="https://img.shields.io/badge/Prisma-6-2D3748?style=for-the-badge&logo=prisma&logoColor=white" />
-<img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-Neon--ready-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" />
-<img alt="Docker" src="https://img.shields.io/badge/Docker-compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
-<img alt="License" src="https://img.shields.io/badge/License-MIT-f59e0b?style=for-the-badge&logo=opensourceinitiative&logoColor=white" />
+<!-- Stack badges -->
+<a href="https://go.dev"><img src="https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go"/></a>
+<a href="https://highlevel.com"><img src="https://img.shields.io/badge/GoHighLevel_Stack-16A34A?style=for-the-badge&logoColor=white" alt="GoHighLevel Stack"/></a>
+<a href="https://www.postgresql.org"><img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/></a>
+<a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js 16"/></a>
+<a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/></a>
+<a href="https://z.ai"><img src="https://img.shields.io/badge/z.ai_Brain-A855F7?style=for-the-badge&logoColor=white" alt="z.ai"/></a>
 
-<br /><br />
+<br/>
 
-**Two runtimes, one automation brain.** A Next.js 16 product surface for the
-busy-Monday office — and a standard-library Go engine for the hot path:
-webhook ingest, normalization, audit journal, priority queue, workers.
+<!-- Meta badges -->
+<a href="https://github.com/faisukhan01/convert/actions"><img src="https://img.shields.io/github/actions/workflow/status/faisukhan01/convert/ci.yml?style=flat-square&label=CI&labelColor=18181b&color=22c55e" alt="CI status"/></a>
+<a href="LICENSE"><img src="https://img.shields.io/github/license/faisukhan01/convert?style=flat-square&labelColor=18181b&color=f59e0b" alt="License"/></a>
+<a href="https://github.com/faisukhan01/convert/pulse"><img src="https://img.shields.io/github/commit-activity/m/faisukhan01/convert?style=flat-square&label=commits%2Fmonth&labelColor=18181b&color=00add8" alt="Commit activity"/></a>
+<a href="https://github.com/faisukhan01/convert/commits"><img src="https://img.shields.io/github/last-commit/faisukhan01/convert?style=flat-square&label=last%20commit&labelColor=18181b&color=a855f7" alt="Last commit"/></a>
+<a href="https://github.com/faisukhan01/convert"><img src="https://img.shields.io/github/languages/count/faisukhan01/convert?style=flat-square&label=languages&labelColor=18181b&color=fbbf24" alt="Language count"/></a>
 
-</div>
-
----
+<br/>
+<br/>
 
 <table>
-<tr><td width="50%" valign="top">
-
-### What the office sees
-
-**Today** answers three questions before coffee:
-*who needs a response, which inspection is waiting on someone,
-and which website inquiries became paid work.*
-
-- Response queue with aging, callbacks, assignments
-- Inspection calendar with estimator phone view
-- Estimate chase ladder (+1/3/7d, editable)
-- Booking rate, attendance, acceptance, collected revenue
-- CSV export + drill-down from the same queries
-
-</td><td width="50%" valign="top">
-
-### What the engine guarantees
-
-Every inbound webhook ends in an **explicit state** — nothing is
-silently dropped, everything is replayable.
-
-`PROCESSED · DUPLICATE · RATE_LIMITED · BAD_SIGNATURE · INVALID · OUT_OF_ORDER · FAILED · REPLAYED`
-
-- HMAC-SHA256 verified over the **raw bytes**
-- Per-location token bucket + bounded queue
-- Ordering + idempotency guards (a late "sent" never re-opens an accepted estimate)
-- Stop-rule re-checked immediately before every send
-
-</td></tr>
+  <tr>
+    <td width="50%">
+      <img src="https://github-readme-stats.vercel.app/api/pin/?username=faisukhan01&repo=convert&theme=tokyonight&border_color=f59e0b&bg_color=0d1117&title_color=f59e0b&icon_color=00add8" alt="Repository pin card with live language bar"/>
+    </td>
+    <td width="50%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=faisukhan01/convert&type=Date&theme=dark&background=0d1117"/>
+        <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=faisukhan01/convert&type=Date"/>
+        <img src="https://api.star-history.com/svg?repos=faisukhan01/convert&type=Date" alt="Star history chart"/>
+      </picture>
+    </td>
+  </tr>
 </table>
 
-<div align="center">
-<img width="49%" alt="Today view — desktop" src="docs/screenshots/today-desktop.png" />
-<img width="49%" alt="Reports view — desktop" src="docs/screenshots/reports-desktop.png" />
-<p><sub>Left: the <b>Today</b> response queue. Right: the reporting contract rendered from deterministic fixtures.</sub></p>
 </div>
 
----
+<!-- ══════════════════════════ divider ══════════════════════════ -->
+<img src="docs/assets/wave-top.svg" alt="" width="100%" height="72"/>
 
-## The stack
+<br/>
 
-<div align="center">
-<img src="https://skillicons.dev/icons?i=typescript,nextjs,tailwind,prisma,bun,go,postgres,docker,githubactions&perline=9" alt="RidgeLine technology stack" />
-</div>
+## What is RidgeLine Convert?
 
-| Layer | Technology | Role |
+**RidgeLine Convert** is an end-to-end lead conversion platform for home-services businesses — a **dual-runtime automation system** where a **Go (Golang) engine** does the heavy lifting and a **Next.js 16 / TypeScript app** provides the operator experience.
+
+GoHighLevel (GHL) webhooks stream in at the edge. The Go engine verifies, deduplicates, normalizes, scores and routes every event; the **z.ai brain** qualifies leads and drafts human-grade replies; and the **GHL API stack** executes real CRM actions — tags, notes, tasks, SMS, workflow enrollment, opportunity moves — while every step is mirrored durably into **PostgreSQL**.
+
+| Runtime | Technology | Responsibility |
 |---|---|---|
-| Product surface | Next.js 16 (App Router) · React 19 · TS strict | SPA views + tenancy-checked REST |
-| Styling | Tailwind 4 · shadcn/ui (New York) | Design system |
-| Data | Prisma 6 · SQLite → **PostgreSQL / Neon** | Identical model semantics on both |
-| **Hot path** | **Go 1.22 (stdlib only)** | Ingest → journal → queue → workers |
-| Integration | GoHighLevel marketplace app · Jobber (optional) | OAuth per location, AES-256-GCM at rest |
-| Ops | Docker multi-stage · GitHub Actions | Non-root images, contribution art |
+| **Go engine** (`services/engine-go`) | Go 1.22 · pgx · stdlib HTTP | Webhook ingest, HMAC verification, lead scoring, rules routing, GHL API execution, queue with retries |
+| **Web app** (`src/`) | Next.js 16 · TypeScript · Prisma | Operator dashboard, intake, reports, provider connections, demo pipeline |
+| **Durable store** | PostgreSQL 16 | Shared journal, contact projection, action audit trail |
+| **AI brain** | z.ai chat completions | Lead qualification (score / intent / urgency) + compliance-aware reply drafting |
 
----
+### Highlights
+
+| | |
+|---|---|
+| **GHL-native** | A typed GoHighLevel API v2 SDK in Go — contacts, opportunities, pipelines, conversations, workflows, tasks, notes, tags, custom fields — with retry, backoff and provider-shaped rate limiting. |
+| **Hard-stop guarantee** | Opt-out intents win every race. Signature verification, idempotency, ordering guards and a "stop rule wins" contract keep outbound automation safe. |
+| **Durable by default** | Every delivery lands in an append-only journal with explicit terminal states; stuck events replay through a first-class operator path. |
+| **Observable** | Prometheus metrics, per-location rate limiting, queue depth/overflow stats and a live event explorer. |
+| **AI with a fallback** | The z.ai brain grades leads 0–100 with intent and urgency; if the model is unavailable, a deterministic keyword scorer keeps the pipeline flowing. |
+
+<br/>
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    H(["Homeowner — public views"]) --> P["/api/public/*"]
-    S(["Staff — role-scoped"]) --> A["/api/* — tenancy-checked"]
-    G(["GoHighLevel webhooks"]) --> E
-
-    subgraph ENGINE["Go engine — services/engine-go"]
-        E["Ingest — HMAC + rate limit"] --> J[("Audit journal — explicit states")]
-        J --> N["Normalize — canonical events"]
-        N --> Q[["Priority queue — workers + backoff"]]
+    subgraph GHL["GoHighLevel"]
+        WH["Webhooks"]
+        API["API v2"]
     end
 
-    P --> D[("PostgreSQL — Neon-ready")]
-    A --> D
-    subgraph APP["Next.js app"]
-        T["Automation tick — stop rules"] --> O["Outbox + dedupe keys"]
+    subgraph Engine["Go Engine — services/engine-go"]
+        ING["Ingest + HMAC Verify"]
+        NRM["Normalize + Enrich"]
+        SCR["Lead Scoring"]
+        RUL["Rules Router"]
+        QUE["Priority Queue + Retries"]
+        EXE["GHL Executor"]
+        AI["z.ai Brain"]
+        JRN["Event Journal"]
     end
-    Q -. "action intents" .-> T
-    T --> V["Provider adapters — demo · GHL · Jobber"]
-    O --> D
+
+    subgraph Store["PostgreSQL 16"]
+        EVT["engine_events"]
+        CON["engine_contacts"]
+        ACT["engine_actions"]
+    end
+
+    subgraph App["Next.js 16 App"]
+        UI["Operator Dashboard"]
+        IN["Intake Forms"]
+    end
+
+    WH -->|"signed events"| ING
+    ING --> NRM --> SCR --> RUL --> QUE --> EXE
+    AI -.->|"verdicts + drafts"| SCR
+    AI -.->|"reply copy"| EXE
+    EXE -->|"tags, notes, SMS,<br/>tasks, workflows"| API
+    ING --> JRN
+    JRN -->|"mirror"| EVT
+    EXE -->|"audit"| ACT
+    NRM -->|"projection"| CON
+    UI -->|"stats, events,<br/>replay, rules"| Engine
+    IN -->|"rest intake"| UI
 ```
 
-The engine **plans**, the app **decides**: planning is a pure function;
-every dispatch re-checks eligibility immediately before sending, so a reply,
-opt-out, pause or decision that arrives before the send wins the race.
+<br/>
 
-<details>
-<summary><b>Playbooks, connector architecture & trust boundaries</b></summary>
+## The GHL / Go Stack
 
-**Playbooks** (all stop-rule guarded, contact-window aware, dedupe-keyed):
-new-inquiry booking link · missed-call callback (consolidated, auto-reply
-suppressed without SMS permission) · inspection reminder (exactly one
-active, recalculated on reschedule) · no-show recovery · estimate chase
-ladder (+1/3/7d, editable) · morning digest (8:00 local).
+The engine lives in [`services/engine-go`](services/engine-go) — a dependency-light Go module (pgx is its only external dependency) organized into focused packages:
 
-**Connector architecture:** one adapter contract (`src/lib/providers.ts`)
-with a simulated demo implementation and a GHL implementation recorded
-against current marketplace endpoints. Inbound webhooks verify the signature
-over the raw bytes, durably record the event, process with idempotency +
-ordering guards, and expose failed events with safe replay. OAuth tokens are
-AES-256-GCM encrypted per location.
+| Package | Purpose |
+|---|---|
+| `internal/ghlapi` | **GoHighLevel API v2 SDK**: typed client, retry/backoff, 429-aware rate limiter, pagination, executor that maps every automation intent to real CRM calls |
+| `internal/pipeline` | Ingest orchestration: normalize, enrich, dedupe, ordering guard, action planning |
+| `internal/scoring` | Deterministic lead temperature: weights, recency decay, deal-value amplification, hot/warm/cold bands |
+| `internal/rules` | Declarative routing ruleset (JSON-driven) with live match statistics |
+| `internal/ai` | z.ai brain: lead qualification + reply drafting with deterministic fallbacks |
+| `internal/store/pg` | PostgreSQL mirror: events, contacts, action audit (embedded idempotent migrations) |
+| `internal/queue` | Bounded priority queue, worker pool, exponential backoff with jitter |
+| `internal/server` | HTTP surface: webhooks, admin API, GHL proxy, scoring, store explorer |
+| `internal/ratelimit` | Per-location token buckets with idle eviction |
+| `internal/eventlog` | Append-only journal with replayable terminal states |
+| `internal/metrics` | Prometheus exposition format, zero dependencies |
+| `cmd/ghlctl` | Operator CLI for the whole GHL surface |
 
-**Trust boundaries:** every API route resolves the caller's tenancy
-server-side (`requireAccess`), estimators are scoped to assigned work, agency
-admins must explicitly switch locations, exports are scoped to the
-requester's filters, and settings changes are audit-logged.
+### Engine API surface
 
-</details>
+| Endpoint | Method | Description |
+|---|---|---|
+| `/v1/webhooks/ghl` | `POST` | Signed webhook ingest (HMAC-SHA256, rate-limited, idempotent) |
+| `/v1/score?locationId&contactId` | `GET` | Lead temperature with audit reasons |
+| `/v1/rules` | `GET/PUT` | Inspect / hot-swap the routing ruleset (admin) |
+| `/v1/ai/qualify` | `POST` | z.ai lead qualification with heuristic fallback |
+| `/v1/ai/reply` | `POST` | Compliance-aware reply drafting (SMS/email) |
+| `/v1/ghl/status` | `GET` | Executor wiring (masked token, dry-run state) |
+| `/v1/ghl/pipelines` | `GET` | Pipelines + stages (read-only proxy) |
+| `/v1/ghl/contacts` | `POST` | Contact upsert (admin) |
+| `/v1/ghl/opportunities` | `POST` | Pipeline card creation (admin) |
+| `/v1/store/stats` | `GET` | Postgres pool + table aggregates |
+| `/v1/store/events` `/actions` | `GET` | Durable event / action explorer |
+| `/v1/events`, `/v1/replay` | `GET/POST` | Journal listing + stuck-event recovery |
+| `/v1/demo/fire` | `POST` | Self-fired signed demo webhook (dev only) |
+| `/healthz` `/readyz` `/metrics` | `GET` | Liveness, readiness, Prometheus |
 
-<details>
-<summary><b>Repository layout</b></summary>
+### Automation intents the engine executes
+
+| Intent | GHL side effect |
+|---|---|
+| `schedule_confirmation` / `schedule_reminder` | Personalized SMS via conversation API |
+| `schedule_missed_you` / `schedule_reschedule` / `schedule_no_show_followup` | Win-back SMS sequences |
+| `flag_service_repair` / `flag_service_replacement` | Service classification tags |
+| `update_estimate_intent` | Stage tags + opportunity note |
+| `book_appointment_intent` | High-priority operator task |
+| `note_inquiry` | Timeline note |
+| `archive_contact_intent` | Hard stop: suppression tags + note |
+| `enqueue_office_digest` | Pipeline value digest |
+
+<br/>
+
+## Repository Layout
 
 ```
-├── src/                        # Next.js 16 product surface
-│   ├── app/api/                #   REST (tenancy-checked route handlers)
-│   ├── app/page.tsx            #   single-route SPA shell
-│   ├── components/app/         #   office, demo and homeowner experiences
-│   └── lib/                    #   engine, templates, providers, crypto, time
-├── services/engine-go/         # Go engine (stdlib only, no external modules)
-│   ├── cmd/engine/             #   daemon entrypoint
-│   ├── cmd/convertctl/         #   operator CLI
-│   └── internal/               #   pipeline · queue · journal · ghl · metrics
-├── prisma/                     # schema (SQLite ⇄ PostgreSQL parity)
-├── docs/                       # installation guide · config inventory · acceptance
-├── docker-compose.yml          # app + engine + postgres
-└── .github/workflows/          # contribution art (snake + 3D graph)
+convert/
+├── services/
+│   └── engine-go/                 # the Go / GHL engine
+│       ├── cmd/
+│       │   ├── engine/            # daemon: ingest → score → route → execute
+│       │   ├── convertctl/        # engine control CLI
+│       │   └── ghlctl/            # GoHighLevel operator CLI
+│       └── internal/
+│           ├── ghlapi/            # GoHighLevel API v2 SDK + executor
+│           ├── pipeline/          # normalize · enrich · plan
+│           ├── scoring/           # lead temperature model
+│           ├── rules/             # declarative routing ruleset
+│           ├── ai/                # z.ai brain (qualify + reply)
+│           ├── store/pg/          # PostgreSQL durable mirror
+│           ├── queue/             # priority queue + workers
+│           ├── server/            # HTTP surface + admin
+│           ├── eventlog/          # replayable journal
+│           ├── ratelimit/         # per-location token buckets
+│           └── metrics/           # Prometheus exporter
+├── src/                           # Next.js 16 operator app (TypeScript)
+├── prisma/                        # app-side schema (SQLite local → Neon Postgres)
+├── docs/                          # operator + architecture documentation
+└── .github/workflows/             # CI: TypeScript typecheck + Go build/vet
 ```
 
-</details>
+<br/>
 
----
+## Quickstart
 
-## Run it
+> Prereqs: **Go 1.22+**, **Bun** (or Node 20+), **PostgreSQL 16** (optional — the engine runs without it).
+
+**1. Next.js app**
 
 ```bash
 bun install
-cp .env.example .env          # defaults already work for the local demo
-bun run db:push               # create the schema
-bun run dev                   # http://localhost:3000  (auto-seeds an empty DB)
+cp .env.example .env
+bun run db:push
+bun run dev          # http://localhost:3000
 ```
 
-No GHL / Jobber / billing credentials needed — a simulated provider replaces
-GoHighLevel until keys exist, and every unmet prerequisite is visible on
-Settings → Connection status. Repeated restarts preserve your edits.
-
-| Sign in as | Email | Password | You get |
-|---|---|---|---|
-| Owner / office manager | `owner@ridgeline.demo` | `demo` | Queue, booking, quotes, reports |
-| Office | `office@ridgeline.demo` | `demo` | Callbacks, assignment, payment matching |
-| Estimator (phone) | `estimator@ridgeline.demo` | `demo` | Assigned visits + outcomes only |
-| Agency admin | `agency@ridgeline.demo` | `demo` | Two locations, provisioning, switching |
-
-Homeowner flow (no sign-in): header → **Homeowner view** → submit intake →
-pick a slot → book → manage/reschedule.
-
-<details>
-<summary><b>Demo controls — mature a week of follow-up in seconds</b></summary>
-
-Visible only in demo mode: **Outbox & demo** lets you advance the demo clock
-(+1h / +1d / +7d) to mature multi-day follow-up instantly, run the engine
-tick, inspect every scheduled/stopped message with its exact stop rule, fire
-connector recovery drills (duplicate webhook, out-of-order status, rate
-limit, revocation, unknown location, ambiguous timeout), and **reset demo
-data** to the deterministic fixtures with `bun run demo:reset`.
-
-</details>
-
-### Switch to your Neon PostgreSQL
-
-```bash
-bun run db:use-postgres       # flips prisma/schema.prisma provider
-# set DATABASE_URL in .env to your Neon string (…?sslmode=require)
-bun run db:push && bun run dev
-```
-
-Model semantics are identical on both engines — this is a provider flip,
-not a migration rewrite.
-
-### Run the Go engine
+**2. Go engine (with PostgreSQL mirror)**
 
 ```bash
 cd services/engine-go
-make run          # dev mode on :8088
-make demo         # fire one signed intake webhook through the pipeline
-make buildctl     # operator CLI
-./bin/convertctl stats
+go build -o bin/engine ./cmd/engine
+
+DATABASE_URL="postgres://postgres@127.0.0.1:5432/convert?sslmode=disable" \
+ENGINE_DEV=true ENGINE_REQUIRE_SIGNATURE=false ENGINE_PORT=8088 \
+./bin/engine
 ```
 
-Docker: `docker compose up --build` starts **app + engine + postgres** together.
+**3. Wire GoHighLevel (or stay in dry-run)**
+
+```bash
+export GHL_ACCESS_TOKEN="pit-xxxxxxxx"
+export GHL_LOCATION_ID="your-subaccount-id"
+export GHL_DRY_RUN=false              # executor sends for real
+```
+
+**4. Operate with ghlctl**
+
+```bash
+go build -o bin/ghlctl ./cmd/ghlctl
+./bin/ghlctl whoami                       # credentials + API reachability
+./bin/ghlctl pipeline list                # pipelines + stages
+./bin/ghlctl tag add <contactId> hot-lead
+./bin/ghlctl sms send <contactId> "Your estimate is ready"
+```
+
+**5. Watch the pipeline work**
+
+```bash
+curl -s -X POST http://localhost:8088/v1/demo/fire \
+  -H 'Content-Type: application/json' \
+  -d '{"type":"form.submitted","locationId":"demo-location","contactId":"c-1","name":"Jane Buyer","formName":"Roof Repair"}'
+```
+
+<br/>
+
+## Lead Scoring Model
+
+| Band | Score | Meaning |
+|---|---|---|
+| **HOT** | 80–100 | Fast-track workflow, priority boost, speed-to-lead |
+| **WARM** | 45–79 | Standard nurture cadence |
+| **COLD** | 0–44 | Passive monitoring, no interruption |
+
+Points come from event types (appointment booked > form submitted > inbound message > opportunity move), decay linearly over 30 days, and get amplified by deal value. Every score ships with human-readable reasons — the AI layer can refine, but never silently overwrite, the audit trail.
 
 <details>
-<summary><b>convertctl — every command</b></summary>
+<summary><strong>AI brain: qualification verdict schema</strong></summary>
 
-```
-convertctl ping                # transport check
-convertctl health              # /healthz payload
-convertctl stats               # operational snapshot (journal, queue, limiter, metrics)
-convertctl events --status FAILED --limit 20
-convertctl contacts            # projection listing
-convertctl replay --limit 50   # re-drive recoverable events
-convertctl demo-fire --body appointment.created   # ENGINE_DEV only
+```json
+{
+  "score": 87,
+  "intent": "repair",
+  "urgency": "high",
+  "summary": "Active leak reported with same-day expectations.",
+  "reasoning": "Explicit service request + urgency words + complete contact info.",
+  "suggestedActions": ["send_booking_link", "assign_emergency_slot"],
+  "source": "ai"
+}
 ```
 
+Opt-outs are always scored `0` with intent `optout` and blocked from every send path — the model cannot override the hard stop.
 </details>
 
----
-
-## The Go engine
-
-Standard-library-only Go — `go build ./...` with **zero module downloads**.
-
-```
-raw bytes → HMAC verify → rate limit → parse → journal → dedupe
-          → normalize (canonical) → ordering guard
-          → plan (pure) → priority queue → workers → projection
-```
-
-| Guard | Behavior |
-|---|---|
-| Signature | HMAC-SHA256 over raw bytes, constant-time compare |
-| Rate limit | token bucket per location, idle-bucket eviction |
-| Idempotency | dedupe key collapses redeliveries onto the first event |
-| Ordering | stream-aware guard defers out-of-order events, never drops |
-| Backpressure | bounded queue → explicit `OUT_OF_ORDER` state + replay path |
-| Retries | jittered exponential backoff, capped attempts, panic isolation |
-| Opt-out | hard stop with distinct projection state |
-
-Full detail: [`docs/go-engine.md`](docs/go-engine.md) ·
-endpoints, env inventory and the `convertctl` CLI live there too.
-
----
-
-## The reporting contract
-
-`bun run demo:reset` installs fixtures that satisfy the acceptance contract
-exactly, visible on `#/reports` for **Last 30 days** — verify any time with
-`bun scripts/verify-fixture.ts`:
-
-| Metric | Expected |
-|---|---|
-| Booking rate | **58.3%** — 7 of 12 mature eligible inquiries booked within 14 days |
-| Attendance | **83.3%** show rate — 5 held, 1 no-show, 1 cancellation separate |
-| Estimate acceptance | **50%** — 2 accepted of 4 sent (revisions count once) |
-| Collected revenue | **USD 1,400** — receipts minus refund, +450 unmatched in review queue |
-| Experiment | A **50.0%** vs B **66.7%** (+16.7 pp), flagged inconclusive (n=6 < 30) |
-
----
-
-## Scripts
-
-| Command | Purpose |
-|---|---|
-| `bun run dev` | Web app (single route + REST API) |
-| `bun run lint` / `npx tsc --noEmit` | Lint / typecheck |
-| `bun run db:push` | Apply schema |
-| `bun run db:seed` | Seed if empty |
-| `bun run demo:reset` | Explicit demo reset with fixtures |
-| `bun run db:use-postgres` / `db:use-sqlite` | Flip datasource provider |
-| `bun run db:seed-perf` | 10k-inquiry performance dataset (separate tenant) |
-| `bun scripts/verify-fixture.ts` | Assert the reporting contract |
-
----
-
-## Documentation
-
-| Document | Contents |
-|---|---|
-| [`docs/go-engine.md`](docs/go-engine.md) | Go engine: pipeline contract, endpoints, env, CLI |
-| [`docs/ghl-installation-guide.md`](docs/ghl-installation-guide.md) | WordPress embed, location mapping, playbooks, snapshot recipe |
-| [`docs/configuration-inventory.md`](docs/configuration-inventory.md) | Every key: origin, optional?, what it unlocks |
-| [`docs/acceptance-report.md`](docs/acceptance-report.md) | Commands run, results, screenshots, honest limitations |
-
----
+<br/>
 
 ## Roadmap
 
-- [x] In-process automation engine with stop rules, dedupe keys, replay
-- [x] **Go engine — webhook ingest, journal, priority queue, workers**
-- [x] Reporting contract with verifiable deterministic fixtures
-- [ ] Live Neon PostgreSQL cutover (awaiting keys — switch is scripted)
-- [ ] GHL adapter live verification (awaiting `GHL_CLIENT_ID/SECRET`)
-- [ ] Postgres-backed durable queue bridging app ⇄ engine
+- [x] HMAC-verified webhook ingest with idempotency and ordering guards
+- [x] GoHighLevel API v2 SDK (contacts, opportunities, conversations, workflows, tasks, notes)
+- [x] Priority queue with retries, backoff and jitter
+- [x] Deterministic lead scoring + declarative rules engine
+- [x] z.ai brain with deterministic fallbacks
+- [x] PostgreSQL durable mirror (events, contacts, action audit)
+- [x] Prometheus metrics + operator endpoints + ghlctl CLI
+- [ ] OAuth 2.0 marketplace app flow for multi-location installs
+- [ ] Neon Postgres production cutover
+- [ ] A/B reply templates with outcome feedback loop
 
-<details>
-<summary><b>Known limitations — the honest list</b></summary>
+<br/>
 
-- The Go engine ships in-repo and is verified with `go build` / `go vet` plus
-  a live end-to-end smoke test (signed ingest, duplicate collapse, opt-out
-  hard stop, replay, metrics); the app ⇄ engine durable-queue bridge is
-  designed but not yet wired (the in-process tick remains the dispatcher).
-- The Postgres/Neon switch is scripted but **not exercised against a live
-  Neon instance** (awaiting keys).
-- GHL adapter endpoints are recorded from current docs and flagged for
-  **live verification** once `GHL_CLIENT_ID/SECRET` exist; signature scheme
-  and header names should be re-checked at configuration time.
-- OIDC staff sign-in is scaffolded (envs reserved) with the local role path
-  active — **awaiting credentials**.
-- Jobber payment connector: contract + match/review UX modeled; OAuth wiring
-  **awaiting credentials**.
+## License
 
-</details>
+Released under the [MIT License](LICENSE).
 
----
+<br/>
 
 <div align="center">
 
-<img width="100%" src="https://raw.githubusercontent.com/faisukhan01/convert/output/profile-3d-contrib/profile-season-animate.svg" alt="RidgeLine 3D contribution graph (animated)" />
+<img src="docs/assets/wave-bottom.svg" alt="" width="100%" height="72"/>
 
-<img width="100%" src="https://raw.githubusercontent.com/faisukhan01/convert/output/github-snake-dark.svg" alt="Contribution snake animation" />
+<a href="https://github.com/faisukhan01/convert"><img src="https://img.shields.io/badge/Built_with-Go_Stack-00ADD8?style=flat-square&logo=go&logoColor=white" alt="Built with Go Stack"/></a>
+<a href="https://highlevel.com"><img src="https://img.shields.io/badge/GHL-Native-16A34A?style=flat-square&labelColor=18181b" alt="GHL Native"/></a>
+<a href="https://z.ai"><img src="https://img.shields.io/badge/Brain-z.ai-A855F7?style=flat-square&labelColor=18181b" alt="z.ai brain"/></a>
+<a href="https://www.postgresql.org"><img src="https://img.shields.io/badge/Store-PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL"/></a>
 
-<br /><br />
-
-<a href="https://github.com/faisukhan01/convert/commits/main">
-  <img alt="Total commits" src="https://img.shields.io/github/commit-activity/t/faisukhan01/convert?style=flat-square&label=Total%20commits&labelColor=18181b&color=f59e0b" />
-</a>
-<a href="https://github.com/faisukhan01/convert/commits/main">
-  <img alt="Last commit" src="https://img.shields.io/github/last-commit/faisukhan01/convert/main?style=flat-square&label=Last%20commit&labelColor=18181b&color=d97706" />
-</a>
-<a href="https://github.com/faisukhan01/convert/graphs/contributors">
-  <img alt="Contributors" src="https://img.shields.io/github/contributors/faisukhan01/convert?style=flat-square&label=Contributors&labelColor=18181b&color=fbbf24" />
-</a>
-<a href="https://github.com/faisukhan01/convert">
-  <img alt="Languages" src="https://img.shields.io/github/languages/count/faisukhan01/convert?style=flat-square&label=Languages&labelColor=18181b&color=f59e0b" />
-</a>
-<a href="https://github.com/faisukhan01/convert">
-  <img alt="Repo size" src="https://img.shields.io/github/repo-size/faisukhan01/convert?style=flat-square&label=Repo%20size&labelColor=18181b&color=d97706" />
-</a>
-<a href="https://github.com/faisukhan01/convert/stargazers">
-  <img alt="Stars" src="https://img.shields.io/github/stars/faisukhan01/convert?style=flat-square&label=Stars&labelColor=18181b&color=fbbf24" />
-</a>
-
-<br />
-
-<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&height=120&color=0:fbbf24,60:d97706,100:18181b&section=footer" alt="footer wave" />
-
-<b>RidgeLine</b> — built for the busy Monday. Licensed under MIT.
+**RidgeLine Convert** — from lead to customer, on autopilot.
 
 </div>
