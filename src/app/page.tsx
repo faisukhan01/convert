@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { parseHash, navigate, useAppStore, roleAt } from "@/store/app";
 import { AppShell } from "@/components/app/shell";
+import { LandingView } from "@/components/app/views/landing";
 import { SignInView } from "@/components/app/views/signin";
 import { TodayView } from "@/components/app/views/today";
 import { InquiriesView } from "@/components/app/views/inquiries";
@@ -35,17 +36,19 @@ export default function Page() {
     void loadSession();
   }, [loadSession]);
 
-  // Redirect logic once the session resolves
+  // Redirect logic once the session resolves. Signed-out visitors get the marketing
+  // landing page by default; signed-in users skip straight to the desk.
   useEffect(() => {
     if (sessionLoading) return;
     const segments = route.segments;
-    const isPublic = segments[0] === "public" || segments[0] === "signin";
-    if (!session?.user && !isPublic) {
-      navigate("/signin");
+    const first = segments[0];
+    if (session?.user && (first === undefined || first === "signin" || first === "landing")) {
+      navigate("/today");
       return;
     }
-    if (session?.user && (segments.length === 0 || (segments[0] === "signin"))) {
-      navigate("/today");
+    if (!session?.user) {
+      const allowed = first === undefined || first === "signin" || first === "landing" || first === "public";
+      if (!allowed) navigate("/signin");
     }
   }, [session, sessionLoading, route]);
 
@@ -62,7 +65,7 @@ export default function Page() {
   }
 
   if (!session?.user) {
-    return <SignInView />;
+    return route.segments[0] === "signin" ? <SignInView /> : <LandingView />;
   }
 
   const view = route.segments[0] ?? "today";

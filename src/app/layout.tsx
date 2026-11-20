@@ -22,7 +22,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         {/* eslint-disable-next-line @next/next/no-page-custom-font -- App Router single-page app */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,450;0,9..144,560;0,9..144,640;1,9..144,450;1,9..144,520&display=swap"
           rel="stylesheet"
         />
       </head>
