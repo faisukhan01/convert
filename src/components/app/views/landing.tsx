@@ -17,7 +17,7 @@ import {
   Play,
   Quote,
 } from "lucide-react";
-import { navigate } from "@/store/app";
+import { navigate, useAppStore } from "@/store/app";
 import { Logo } from "@/components/app/shell";
 
 /**
@@ -200,11 +200,18 @@ function scrollToSection(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+/** CTAs: signed-in visitors go straight to the desk; everyone else goes to sign-in. */
+function ctaNavigate() {
+  const authed = !!useAppStore.getState().session?.user;
+  navigate(authed ? "/today" : "/signin");
+}
+
 /* ────────────── sections ────────────── */
 
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const authed = !!useAppStore((s) => s.session)?.user;
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 14);
     onScroll();
@@ -243,16 +250,18 @@ function Nav() {
           ))}
         </nav>
         <div className="hidden items-center gap-2 md:flex">
+          {!authed && (
+            <button
+              onClick={ctaNavigate}
+              className={`rounded-full px-4 py-2 text-[13px] font-semibold transition-colors ${
+                scrolled ? "text-foreground hover:bg-accent" : "text-white hover:bg-white/15"
+              }`}
+            >
+              Sign in
+            </button>
+          )}
           <button
-            onClick={() => navigate("/signin")}
-            className={`rounded-full px-4 py-2 text-[13px] font-semibold transition-colors ${
-              scrolled ? "text-foreground hover:bg-accent" : "text-white hover:bg-white/15"
-            }`}
-          >
-            Sign in
-          </button>
-          <button
-            onClick={() => navigate("/signin")}
+            onClick={ctaNavigate}
             className={`group inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-semibold shadow-lg transition-transform hover:scale-[1.03] ${
               scrolled ? "bg-primary text-primary-foreground" : "bg-white text-neutral-900"
             }`}
@@ -287,7 +296,7 @@ function Nav() {
             </button>
           ))}
           <button
-            onClick={() => navigate("/signin")}
+            onClick={ctaNavigate}
             className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"
           >
             Open the app <ArrowRight className="h-4 w-4" />
@@ -353,7 +362,7 @@ function Hero() {
         </p>
         <div className="mt-9 flex flex-wrap items-center gap-3.5">
           <button
-            onClick={() => navigate("/signin")}
+            onClick={ctaNavigate}
             className="group inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-6 text-[15px] font-semibold text-neutral-900 shadow-2xl transition-transform hover:scale-[1.03]"
           >
             <Play className="h-4 w-4 fill-neutral-900" />
@@ -666,7 +675,7 @@ function FinalCta() {
         </p>
         <div className="rv mt-9 flex flex-wrap items-center justify-center gap-3.5" style={{ ["--rv-delay" as string]: "160ms" }}>
           <button
-            onClick={() => navigate("/signin")}
+            onClick={ctaNavigate}
             className="group inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-7 text-[15px] font-semibold text-neutral-900 shadow-2xl transition-transform hover:scale-[1.03]"
           >
             Open the app
@@ -709,7 +718,7 @@ function Footer() {
             <div>
               <p className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">Get started</p>
               <ul className="space-y-2.5 text-[13.5px]">
-                <li><button onClick={() => navigate("/signin")} className="text-muted-foreground transition-colors hover:text-foreground">Open the app</button></li>
+                <li><button onClick={ctaNavigate} className="text-muted-foreground transition-colors hover:text-foreground">Open the app</button></li>
                 <li><button onClick={() => (window.location.hash = "#/public/intake")} className="text-muted-foreground transition-colors hover:text-foreground">Homeowner booking</button></li>
                 <li>
                   <a

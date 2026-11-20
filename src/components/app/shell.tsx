@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { toast } from "sonner";
 import {
   LayoutDashboard, ClipboardList, CalendarDays, FileText, BarChart3, Inbox, Settings,
-  Building2, Home, Menu, ChevronDown, Moon, Sun, LogOut, ExternalLink, Clock,
+  Building2, Home, Menu, ChevronDown, Moon, Sun, LogOut, ExternalLink, Clock, Globe,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -97,6 +97,13 @@ export function AppShell({ route, children }: ShellProps) {
           {visibleNav.map((item) => <NavButton key={item.key} item={item} />)}
           <div className="my-2 border-t" />
           {visibleMore.map((item) => <NavButton key={item.key} item={item} />)}
+          <div className="my-2 border-t" />
+          <button
+            onClick={() => navigate("/landing")}
+            className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground min-h-[40px] w-full"
+          >
+            <Globe className="h-4 w-4 shrink-0" /> Marketing site
+          </button>
           <div className="mt-auto px-2 pt-4 text-[11px] leading-relaxed text-muted-foreground">
             <div className="font-medium text-foreground/80">{session?.user?.name}</div>
             <div>{role.replace("_", " ").toLowerCase()}</div>
@@ -131,6 +138,12 @@ export function AppShell({ route, children }: ShellProps) {
                       className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent min-h-[40px] w-full"
                     >
                       <Home className="h-4 w-4" /> Homeowner view
+                    </button>
+                    <button
+                      onClick={() => navigate("/landing")}
+                      className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent min-h-[40px] w-full"
+                    >
+                      <Globe className="h-4 w-4" /> Marketing site
                     </button>
                     <button
                       onClick={() => void signOut().then(() => navigate("/signin"))}
@@ -210,6 +223,8 @@ export function AppShell({ route, children }: ShellProps) {
             <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
               <span>RidgeLine — estimate desk for roofing teams. Demo data is synthetic; no live provider configured.</span>
               <span className="flex items-center gap-3">
+                <button className="hover:text-foreground underline-offset-2 hover:underline" onClick={() => navigate("/landing")}>Marketing site</button>
+                <span aria-hidden>·</span>
                 <button className="hover:text-foreground underline-offset-2 hover:underline" onClick={() => navigate("/public/intake")}>Homeowner booking</button>
                 <span aria-hidden>·</span>
                 <span>Postgres-ready · GHL connector simulated in demo mode</span>

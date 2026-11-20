@@ -42,7 +42,7 @@ export default function Page() {
     if (sessionLoading) return;
     const segments = route.segments;
     const first = segments[0];
-    if (session?.user && (first === undefined || first === "signin" || first === "landing")) {
+    if (session?.user && (first === undefined || first === "signin")) {
       navigate("/today");
       return;
     }
@@ -66,6 +66,12 @@ export default function Page() {
 
   if (!session?.user) {
     return route.segments[0] === "signin" ? <SignInView /> : <LandingView />;
+  }
+
+  // Signed-in users may still visit the marketing site explicitly (e.g. #/landing or
+  // the "Marketing site" links in the shell); #/signin itself always bounces to the desk.
+  if (route.segments[0] === "landing") {
+    return <LandingView />;
   }
 
   const view = route.segments[0] ?? "today";
