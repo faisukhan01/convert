@@ -7,11 +7,11 @@ import {
 } from "@/lib/templates";
 
 /**
- * Automation engine. In this deployment the worker runs in-process (a Postgres-backed queue
- * such as River replaces the interval when the Go/worker split is enabled — see README).
- * Every send re-checks eligibility immediately before dispatch, so a reply, opt-out, manual
- * pause or decision that arrives before the send wins the race. Unique dedupe keys make
- * overlapping triggers (calendar notification + workflow + retry) produce exactly one message.
+ * Automation engine. The worker runs in-process against the PostgreSQL-backed durable
+ * queue (BackgroundJob). Every send re-checks eligibility immediately before dispatch, so a
+ * reply, opt-out, manual pause or decision that arrives before the send wins the race. Unique
+ * dedupe keys make overlapping triggers (calendar notification + workflow + retry) produce
+ * exactly one message.
  */
 
 type TickResult = { sent: number; canceled: number; deferred: number; digests: number };

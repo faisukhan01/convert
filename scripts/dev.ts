@@ -55,10 +55,23 @@ async function ensurePostgres(): Promise<void> {
   console.error("[dev] PostgreSQL did not start on :5432 — continuing, DB-backed routes may fail.");
 }
 
-async function main() {
-  await ensurePostgres();
+function isRemoteDb(url?: string): boolean {
+  if (!url) return false;
+  return !url.includes("localhost") && !url.includes("127.0.0.1") && !url.startsWith("file:");
+}
 
+async function main() {
   const envFile = parseEnvFile();
+
+  // Use the configured DATABASE_URL as-is (e.g. Neon). Only boot the embedded
+  // PostgreSQL cluster when no usable external database is configured.
+  const effectiveDb = envFile.DATABASE_URL || process.env.DATABASE_URL;
+  if (!isRemoteDb(effectiveDb)) {
+    await ensurePostgres();
+  } else {
+    console.log("[dev] remote DATABASE_URL detected — using it directly (embedded PostgreSQL skipped)");
+  }
+
   if (envFile.DATABASE_URL && process.env.DATABASE_URL !== envFile.DATABASE_URL) {
     console.log(`[dev] DATABASE_URL overridden from .env (inherited value ignored)`);
   }
