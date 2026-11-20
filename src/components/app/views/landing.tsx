@@ -5,14 +5,16 @@ import {
   ArrowRight,
   ArrowUpRight,
   BarChart3,
+  Building2,
   CalendarCheck2,
+  Camera,
   Check,
-  Eye,
   FileText,
   Inbox,
   LayoutDashboard,
   Play,
-  Wallet,
+  Send,
+  ShieldCheck,
 } from "lucide-react";
 import {
   AnimatePresence,
@@ -28,10 +30,10 @@ import { Logo } from "@/components/app/shell";
 /**
  * RidgeLine marketing landing — the front door of the product.
  * Real live-action hero footage (Coverr, free license), real job-site
- * photography, actual screenshots of the running product inside browser
- * frames, and scroll-driven motion (framer-motion): the desk morphs flat
- * as it enters, live events pop over it, screens auto-tour, and the
- * how-it-works rail draws itself as you read.
+ * photography, actual screenshots of the running product inside a
+ * browser frame, and scroll-driven motion (framer-motion): the desk
+ * morphs flat as it enters, then auto-tours every real screen on a
+ * timed loop; a living bento grid shows the messy middle automated.
  */
 
 const HERO = {
@@ -128,13 +130,6 @@ const FLOW = [
   },
 ];
 
-const STATS = [
-  { to: 92, suffix: "%", label: "of quotes get automatic follow-ups" },
-  { to: 6, suffix: " min", label: "from missed call to booked inspection" },
-  { to: 4, suffix: "", label: "stages in one pipeline, zero spreadsheets" },
-  { to: 100, suffix: "%", label: "of actions on the audit record" },
-];
-
 /* ────────────── motion presets ────────────── */
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -174,39 +169,6 @@ function useRevealOnScroll() {
   }, []);
 }
 
-function CountUp({ to, suffix, duration = 1600 }: { to: number; suffix?: string; duration?: number }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const [val, setVal] = useState(0);
-  const started = useRef(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (!entries[0].isIntersecting || started.current) return;
-        started.current = true;
-        const t0 = performance.now();
-        const tick = (t: number) => {
-          const p = Math.min(1, (t - t0) / duration);
-          const eased = 1 - Math.pow(1 - p, 3);
-          setVal(Math.round(to * eased));
-          if (p < 1) requestAnimationFrame(tick);
-        };
-        requestAnimationFrame(tick);
-      },
-      { threshold: 0.4 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [to, duration]);
-  return (
-    <span ref={ref}>
-      {val}
-      {suffix}
-    </span>
-  );
-}
-
 function scrollToSection(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -217,8 +179,8 @@ function ctaNavigate() {
   navigate(authed ? "/today" : "/signin");
 }
 
-/** A browser-chrome frame around a real product screenshot. */
-function BrowserFrame({ src, alt, label, className = "" }: { src: string; alt: string; label: string; className?: string }) {
+/** A browser-chrome frame around real product screenshots. */
+function BrowserFrame({ label, className = "", children }: { label: string; className?: string; children: ReactNode }) {
   return (
     <figure className={`overflow-hidden rounded-xl border border-border bg-card shadow-[0_40px_90px_-40px_rgba(15,23,42,0.5)] ${className}`}>
       <div className="flex items-center gap-2 border-b border-border/70 bg-muted/70 px-3.5 py-2.5">
@@ -231,39 +193,8 @@ function BrowserFrame({ src, alt, label, className = "" }: { src: string; alt: s
           {label}
         </span>
       </div>
-      <img src={src} alt={alt} className="block w-full" loading="lazy" />
+      {children}
     </figure>
-  );
-}
-
-/** A small “live event” card that pops in and then floats gently forever. */
-function FloatCard({
-  className = "",
-  delay = 0,
-  floatDelay = 0,
-  children,
-}: {
-  className?: string;
-  delay?: number;
-  floatDelay?: number;
-  children: ReactNode;
-}) {
-  return (
-    <motion.div
-      className={`absolute z-20 ${className}`}
-      initial={{ opacity: 0, scale: 0.7, y: 22 }}
-      whileInView={{ opacity: 1, scale: 1, y: 0 }}
-      viewport={{ once: true, margin: "-10%" }}
-      transition={{ type: "spring", stiffness: 240, damping: 19, delay }}
-    >
-      <motion.div
-        animate={{ y: [0, -7, 0] }}
-        transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: floatDelay }}
-        className="flex items-center gap-3 rounded-xl border border-border/70 bg-card/95 py-2.5 pl-3 pr-4 shadow-[0_18px_44px_-18px_rgba(15,23,42,0.45)] backdrop-blur-sm"
-      >
-        {children}
-      </motion.div>
-    </motion.div>
   );
 }
 
@@ -281,7 +212,7 @@ function Nav() {
   }, []);
   const links = [
     { label: "Product", id: "product" },
-    { label: "Screens", id: "screens" },
+    { label: "Features", id: "features" },
     { label: "How it works", id: "how" },
   ];
   return (
@@ -478,9 +409,11 @@ function Wordmarks() {
 }
 
 /**
- * The product desk: the headline reveals in staggered lines, the real
- * Today screenshot morphs from a tilted card to flat as it scrolls into
- * view, and live events pop over it and float — the page feels alive.
+ * The product desk: the headline reveals in staggered lines, the desk
+ * morphs from a tilted card to flat as it scrolls into view — then the
+ * real product screens auto-tour: every view slides in on a timed
+ * loop (like flipping through the app itself), with a live progress
+ * rail. Hovering pauses; clicking a segment jumps.
  */
 function Product() {
   const shotRef = useRef<HTMLDivElement>(null);
@@ -489,6 +422,34 @@ function Product() {
   const scale = useTransform(scrollYProgress, [0, 1], [0.94, 1]);
   const lift = useTransform(scrollYProgress, [0, 1], [56, 0]);
   const glow = useTransform(scrollYProgress, [0, 0.55, 1], [0.15, 0.85, 1]);
+
+  // The auto-tour: the desk flips to the next real screen every ~4.4s.
+  // Hover-capable pointers pause it; leaving or clicking a segment
+  // restarts the clock.
+  const [active, setActive] = useState(0);
+  const [cycle, setCycle] = useState(0);
+  const [hold, setHold] = useState(false);
+  const canHover = useRef(false);
+  useEffect(() => {
+    canHover.current = window.matchMedia("(hover: hover)").matches;
+  }, []);
+
+  useEffect(() => {
+    if (hold) return;
+    const t = setTimeout(() => {
+      setActive((a) => (a + 1) % SCREENS.length);
+      setCycle((c) => c + 1);
+    }, 4400);
+    return () => clearTimeout(t);
+  }, [hold, cycle]);
+
+  const jump = (i: number) => {
+    if (i === active) return;
+    setActive(i);
+    setCycle((c) => c + 1);
+  };
+
+  const s = SCREENS[active];
 
   return (
     <section id="product" className="scroll-mt-16 bg-background py-24 md:py-28">
@@ -512,7 +473,14 @@ function Product() {
           </motion.p>
         </motion.div>
 
-        <div ref={shotRef} className="relative">
+        <div
+          ref={shotRef}
+          className="relative"
+          onPointerEnter={() => {
+            if (canHover.current) setHold(true);
+          }}
+          onPointerLeave={() => setHold(false)}
+        >
           {/* ambient glow that intensifies as the desk arrives */}
           <motion.div
             aria-hidden
@@ -524,7 +492,7 @@ function Product() {
             className="absolute -inset-x-10 bottom-0 -top-14 rounded-[64px] blur-2xl md:-inset-x-16"
           />
 
-          {/* the desk — starts tilted in perspective, lands flat */}
+          {/* the desk — starts tilted in perspective, lands flat, then tours itself */}
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -532,79 +500,134 @@ function Product() {
             transition={{ duration: 0.6 }}
             style={{ rotateX, scale, y: lift, transformPerspective: 1400 }}
           >
-            <BrowserFrame
-              src="/img/app/today.png"
-              alt="RidgeLine Today view: needs a response, inspections today, estimates awaiting a reply"
-              label="app.ridgeline.dev/#/today"
-            />
+            <BrowserFrame label={s.label}>
+              <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={s.key}
+                    initial={{ opacity: 0, x: 34 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -26 }}
+                    transition={{ duration: 0.5, ease: EASE }}
+                    className="absolute inset-0"
+                  >
+                    <img
+                      src={s.shot}
+                      alt={s.alt}
+                      className="tour-zoom block h-full w-full object-cover"
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </BrowserFrame>
           </motion.div>
 
-          {/* live events popping over the desk */}
-          <FloatCard className="-right-2 top-8 sm:-right-6 md:-right-12 lg:-right-16" delay={0.4} floatDelay={0.5}>
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600">
-              <CalendarCheck2 className="h-[18px] w-[18px]" />
-            </span>
-            <span>
-              <span className="block text-[12.5px] font-bold tracking-tight text-foreground">Inspection booked</span>
-              <span className="block text-[11px] text-muted-foreground">Rosa Alvarez · today 10:00 AM</span>
-            </span>
-          </FloatCard>
+          {/* what you're looking at, crossfading with the tour */}
+          <div className="mt-7 flex flex-col items-center gap-5">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={s.key}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.4, ease: EASE }}
+                className="flex max-w-lg items-start gap-3"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <s.icon className="h-[18px] w-[18px]" />
+                </span>
+                <span>
+                  <span className="block text-[14px] font-bold tracking-tight text-foreground">{s.title}</span>
+                  <span className="mt-0.5 block text-[12.5px] leading-snug text-muted-foreground">{s.desc}</span>
+                </span>
+              </motion.div>
+            </AnimatePresence>
 
-          <FloatCard className="-left-2 bottom-24 sm:-left-6 md:-left-12 lg:-left-16" delay={0.65} floatDelay={1.7}>
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Eye className="h-[18px] w-[18px]" />
-            </span>
-            <span>
-              <span className="block text-[12.5px] font-bold tracking-tight text-foreground">Estimate viewed</span>
-              <span className="block text-[11px] text-muted-foreground">Grace Nolan · E-1043 · $8,500</span>
-            </span>
-          </FloatCard>
-
-          <FloatCard className="-right-2 bottom-4 hidden sm:block sm:-right-6 md:-right-10" delay={0.9} floatDelay={2.9}>
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600">
-              <Wallet className="h-[18px] w-[18px]" />
-            </span>
-            <span>
-              <span className="block text-[12.5px] font-bold tracking-tight text-foreground">Payment matched</span>
-              <span className="block text-[11px] text-muted-foreground">$12,480 · Alderman Residence</span>
-            </span>
-          </FloatCard>
+            {/* tour rail — the active segment fills itself in real time */}
+            <div className="flex items-center gap-2" role="tablist" aria-label="Product screen tour">
+              {SCREENS.map((item, i) => {
+                const on = i === active;
+                return (
+                  <button
+                    key={item.key}
+                    role="tab"
+                    aria-selected={on}
+                    aria-label={item.tab}
+                    onClick={() => jump(i)}
+                    className={`h-1.5 overflow-hidden rounded-full transition-all duration-500 ${
+                      on ? "w-16 bg-primary/25" : "w-2.5 bg-border hover:bg-primary/40"
+                    }`
+                  }
+                  >
+                    {on && (
+                      <span
+                        key={`${active}-${cycle}`}
+                        className={`tour-fill block h-full w-full rounded-full bg-primary ${hold ? "is-paused" : ""}`}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
+/* ────────────── living visuals for the feature bento ────────────── */
+
+const QUEUE_FEED = [
+  { tag: "New call", tone: "bg-amber-500/10 text-amber-700", text: "McAllister Residence", meta: "respond by 2:00 PM" },
+  { tag: "Web form", tone: "bg-primary/10 text-primary", text: "Quote request · Berry Lane", meta: "assign an estimator" },
+  { tag: "Referral", tone: "bg-emerald-500/10 text-emerald-700", text: "Alderman Residence", meta: "inspection Fri 10:00 AM" },
+];
+
+const PIPELINE = [
+  { label: "Sent", sub: "E-1043 · Grace Nolan" },
+  { label: "Viewed", sub: "opened 11:47 AM", live: true },
+  { label: "Nudged", sub: "auto follow-up · day 3" },
+  { label: "Accepted", sub: "$8,500 · deposit due", done: true },
+];
+
+const AUDIT_LINES = [
+  "09:12 · call logged · 2m 14s",
+  "10:00 · inspection booked · Rosa Alvarez",
+  "11:47 · E-1043 opened · first view",
+  "13:05 · payment matched · $12,480",
+];
+
+const LOCATIONS = [
+  { name: "Summit Roofing Co.", metric: "booked", value: 92 },
+  { name: "North Peak Exteriors", metric: "collected", value: 78 },
+  { name: "Cedarline Roofing", metric: "answered", value: 96 },
+];
+
+const CARD =
+  "group relative overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_22px_55px_-34px_rgba(15,23,42,0.4)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_34px_75px_-32px_rgba(15,23,42,0.5)]";
+
 /**
- * Screens showcase: four real screens, auto-touring with an animated
- * pill indicator; hovering pauses, clicking jumps and holds the tour.
+ * Feature bento: "the messy middle, automated." Every card carries its
+ * own small, living visual — a queue that cycles, a pipeline that
+ * pulses, an audit log that writes itself, bars that fill on arrival.
  */
-function Screens() {
-  const [active, setActive] = useState(0);
-  const [hold, setHold] = useState(false);
-  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+function Features() {
+  const [feed, setFeed] = useState(0);
+  const [audit, setAudit] = useState(1);
 
   useEffect(() => {
-    if (hold) return;
-    const t = setInterval(() => setActive((a) => (a + 1) % SCREENS.length), 6500);
+    const t = setInterval(() => setFeed((f) => (f + 1) % QUEUE_FEED.length), 2800);
     return () => clearInterval(t);
-  }, [hold]);
-
-  useEffect(() => () => {
-    if (holdTimer.current) clearTimeout(holdTimer.current);
   }, []);
 
-  const pick = (i: number) => {
-    setActive(i);
-    setHold(true);
-    if (holdTimer.current) clearTimeout(holdTimer.current);
-    holdTimer.current = setTimeout(() => setHold(false), 12000);
-  };
-
-  const s = SCREENS[active];
+  useEffect(() => {
+    const t = setInterval(() => setAudit((a) => (a >= AUDIT_LINES.length ? 1 : a + 1)), 1150);
+    return () => clearInterval(t);
+  }, []);
 
   return (
-    <section id="screens" className="scroll-mt-16 border-y border-border/70 bg-muted/40 py-24 md:py-28">
+    <section id="features" className="scroll-mt-16 border-y border-border/70 bg-muted/40 py-24 md:py-28">
       <div className="mx-auto max-w-6xl px-5 md:px-8">
         <motion.div
           variants={headWrap}
@@ -614,96 +637,234 @@ function Screens() {
           className="mx-auto mb-14 max-w-2xl text-center"
         >
           <motion.p variants={headItem} className="mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">
-            Inside the desk
+            Why RidgeLine
           </motion.p>
           <motion.h2 variants={headItem} className="text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]">
-            Four screens. Zero guesswork.
+            The messy middle, automated.
           </motion.h2>
           <motion.p variants={headItem} className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-            Real screens from the running app — the same views your owner, office and estimators get.
+            The work between the first call and the final payment is where roofing teams lose money.
+            RidgeLine closes every gap — automatically, and on the record.
           </motion.p>
         </motion.div>
 
-        <div
-          className="grid items-start gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,8fr)] lg:gap-14"
-          onPointerEnter={() => setHold(true)}
-          onPointerLeave={() => setHold(false)}
+        <motion.div
+          variants={headWrap}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-10%" }}
+          className="grid gap-5 lg:grid-cols-6"
         >
-          {/* tab list — vertical on desktop, scrollable pills on mobile */}
-          <div
-            role="tablist"
-            aria-label="Product screens"
-            className="flex gap-3 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0"
-          >
-            {SCREENS.map((item, i) => {
-              const on = i === active;
-              return (
-                <button
-                  key={item.key}
-                  role="tab"
-                  aria-selected={on}
-                  onClick={() => pick(i)}
-                  className={`relative shrink-0 rounded-xl p-4 text-left transition-colors lg:w-full ${
-                    on ? "" : "hover:bg-foreground/[0.035]"
-                  }`}
-                >
-                  {on && (
-                    <motion.span
-                      layoutId="screens-active-pill"
-                      transition={{ type: "spring", stiffness: 340, damping: 32 }}
-                      className="absolute inset-0 rounded-xl border border-primary/25 bg-card shadow-[0_14px_34px_-18px_rgba(15,23,42,0.35)]"
-                    />
-                  )}
-                  <span className="relative flex items-start gap-3">
-                    <span
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors ${
-                        on ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      <item.icon className="h-[18px] w-[18px]" />
-                    </span>
-                    <span className="min-w-0">
-                      <span className={`block text-[14px] font-bold tracking-tight ${on ? "text-foreground" : "text-foreground/80"}`}>
-                        {item.tab}
-                      </span>
-                      <span className="mt-1 hidden text-[12.5px] leading-snug text-muted-foreground lg:block">
-                        {item.desc}
-                      </span>
-                    </span>
+          {/* the queue — cycles live */}
+          <motion.div variants={headItem} className={`${CARD} flex flex-col p-6 lg:col-span-4`}>
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Inbox className="h-[18px] w-[18px]" />
+              </span>
+              <h3 className="text-[17px] font-bold tracking-tight">One queue, zero spreadsheets</h3>
+            </div>
+            <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground">
+              Calls, web forms and referrals land in one queue — deduplicated, time-stamped and owned
+              by a real person with a real deadline.
+            </p>
+            <div className="mt-5 flex flex-1 flex-col rounded-xl border border-border/70 bg-background/60 p-3.5">
+              <div className="flex items-center justify-between px-1 pb-2.5">
+                <span className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Today · needs a response
+                </span>
+                <span className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-emerald-600">
+                  <span className="relative flex h-1.5 w-1.5" aria-hidden>
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   </span>
-                </button>
-              );
-            })}
-          </div>
+                  live
+                </span>
+              </div>
+              <div className="flex flex-1 flex-col justify-center gap-2.5 py-2">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={feed}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.45, ease: EASE }}
+                    className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-card px-3.5 py-3"
+                  >
+                    <span className="flex min-w-0 items-center gap-3">
+                      <span className={`shrink-0 rounded-md px-2 py-1 text-[10.5px] font-bold ${QUEUE_FEED[feed].tone}`}>
+                        {QUEUE_FEED[feed].tag}
+                      </span>
+                      <span className="truncate text-[13.5px] font-semibold text-foreground">
+                        {QUEUE_FEED[feed].text}
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-[11.5px] font-medium text-muted-foreground">
+                      {QUEUE_FEED[feed].meta}
+                    </span>
+                  </motion.div>
+                </AnimatePresence>
+                {/* dimmed depth rows — the queue keeps going */}
+                <div className="flex items-center justify-between gap-3 rounded-lg border border-border/40 bg-card/60 px-3.5 py-3 opacity-60">
+                  <span className="flex min-w-0 items-center gap-3">
+                    <span className="shrink-0 rounded-md bg-muted px-2 py-1 text-[10.5px] font-bold text-muted-foreground">
+                      Missed call
+                    </span>
+                    <span className="truncate text-[13.5px] font-semibold text-foreground/75">Marcus Webb</span>
+                  </span>
+                  <span className="shrink-0 text-[11.5px] font-medium text-muted-foreground/80">call back before noon</span>
+                </div>
+                <div className="flex items-center justify-between gap-3 rounded-lg border border-border/40 bg-card/60 px-3.5 py-3 opacity-40">
+                  <span className="flex min-w-0 items-center gap-3">
+                    <span className="shrink-0 rounded-md bg-muted px-2 py-1 text-[10.5px] font-bold text-muted-foreground">
+                      Walk-in
+                    </span>
+                    <span className="truncate text-[13.5px] font-semibold text-foreground/75">Parker Lind</span>
+                  </span>
+                  <span className="shrink-0 text-[11.5px] font-medium text-muted-foreground/80">quote · roof replacement</span>
+                </div>
+              </div>
+              <p className="px-1 pt-2 text-[11px] font-medium text-muted-foreground">
+                + 12 more in the queue today · every row has an owner and a deadline
+              </p>
+            </div>
+          </motion.div>
 
-          {/* the active screen, animated in */}
-          <div className="relative">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={s.key}
-                initial={{ opacity: 0, x: 40, scale: 0.985 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: -28, scale: 0.99 }}
-                transition={{ duration: 0.45, ease: EASE }}
-              >
-                <BrowserFrame src={s.shot} alt={s.alt} label={s.label} />
-                <p className="mt-5 text-center text-[12.5px] leading-relaxed text-muted-foreground">
-                  <span className="font-semibold text-foreground/80">{s.title}</span> — {s.desc}
-                </p>
-              </motion.div>
-            </AnimatePresence>
-
-            {/* tour progress */}
-            <div className="mt-6 flex items-center justify-center gap-2" aria-hidden>
-              {SCREENS.map((item, i) => (
-                <span
-                  key={item.key}
-                  className={`h-1.5 rounded-full transition-all duration-500 ${i === active ? "w-7 bg-primary" : "w-2.5 bg-border"}`}
-                />
+          {/* quotes that chase */}
+          <motion.div variants={headItem} className={`${CARD} p-6 lg:col-span-2`}>
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Send className="h-[18px] w-[18px]" />
+              </span>
+              <h3 className="text-[17px] font-bold tracking-tight">Quotes that chase themselves</h3>
+            </div>
+            <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground">
+              The desk sees the moment a quote is opened — and nudges the homeowner for you until
+              there is an answer.
+            </p>
+            <div className="mt-5">
+              {PIPELINE.map((p, i) => (
+                <div key={p.label} className="relative flex gap-3 pb-4 last:pb-0">
+                  {i < PIPELINE.length - 1 && (
+                    <span className="absolute bottom-0 left-[9px] top-[22px] w-px bg-border" aria-hidden />
+                  )}
+                  <span className="relative z-10 mt-0.5 flex h-[19px] w-[19px] shrink-0 items-center justify-center rounded-full">
+                    {p.done ? (
+                      <span className="flex h-[19px] w-[19px] items-center justify-center rounded-full bg-emerald-500 text-white">
+                        <Check className="h-3 w-3" />
+                      </span>
+                    ) : (
+                      <span
+                        className={`h-[11px] w-[11px] rounded-full ${
+                          p.live ? "bg-primary" : "border-2 border-primary/45 bg-background"
+                        }`}
+                      />
+                    )}
+                    {p.live && (
+                      <motion.span
+                        animate={{ scale: [1, 2.1], opacity: [0.55, 0] }}
+                        transition={{ duration: 1.9, repeat: Infinity, ease: "easeOut" }}
+                        className="absolute inset-0 rounded-full bg-primary"
+                        aria-hidden
+                      />
+                    )}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[13px] font-bold text-foreground">{p.label}</span>
+                    <span className="block text-[11.5px] text-muted-foreground">{p.sub}</span>
+                  </span>
+                </div>
               ))}
             </div>
-          </div>
-        </div>
+          </motion.div>
+
+          {/* audit log — writes itself */}
+          <motion.div variants={headItem} className={`${CARD} p-6 lg:col-span-2`}>
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <ShieldCheck className="h-[18px] w-[18px]" />
+              </span>
+              <h3 className="text-[17px] font-bold tracking-tight">On the audit record</h3>
+            </div>
+            <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground">
+              Every call, visit and decision is time-stamped against the job — accountability by
+              default, not by nagging.
+            </p>
+            <div className="mt-5 h-[118px] overflow-hidden rounded-xl border border-border/70 bg-neutral-950 p-4 font-mono">
+              {AUDIT_LINES.slice(0, audit).map((l) => (
+                <motion.p
+                  key={l}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: EASE }}
+                  className="truncate text-[11px] leading-[1.9] text-emerald-300/90"
+                >
+                  <span className="text-white/30">$</span> {l}
+                </motion.p>
+              ))}
+              <span className="ml-1 inline-block h-3.5 w-1.5 animate-pulse bg-emerald-400/80" aria-hidden />
+            </div>
+          </motion.div>
+
+          {/* multi-location — bars fill on arrival */}
+          <motion.div variants={headItem} className={`${CARD} p-6 lg:col-span-2`}>
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Building2 className="h-[18px] w-[18px]" />
+              </span>
+              <h3 className="text-[17px] font-bold tracking-tight">Multi-location, one dashboard</h3>
+            </div>
+            <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground">
+              Conversion, aging and collectible revenue for every branch — side by side, exportable
+              in one click.
+            </p>
+            <div className="mt-6 space-y-4">
+              {LOCATIONS.map((loc, i) => (
+                <div key={loc.name}>
+                  <div className="mb-1.5 flex items-center justify-between text-[11.5px]">
+                    <span className="font-semibold text-foreground/85">{loc.name}</span>
+                    <span className="font-medium text-muted-foreground">
+                      {loc.value}% {loc.metric}
+                    </span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${loc.value}%` }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 1.1, delay: 0.15 + i * 0.15, ease: EASE }}
+                      className="h-full rounded-full bg-primary"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* photo evidence — real job-site photography */}
+          <motion.div variants={headItem} className={`${CARD} lg:col-span-2`}>
+            <div className="relative h-full min-h-[280px]">
+              <img
+                src="/img/roofing/crew-chimney.jpg"
+                alt="Roofer photographing chimney flashing during an inspection"
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/92 via-neutral-950/30 to-transparent" aria-hidden />
+              <div className="absolute inset-x-0 bottom-0 p-5">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15 text-white backdrop-blur-sm">
+                  <Camera className="h-4 w-4" />
+                </span>
+                <h3 className="mt-2.5 text-[16px] font-bold tracking-tight text-white">
+                  Photo evidence on every visit
+                </h3>
+                <p className="mt-1 text-[12.5px] leading-relaxed text-white/70">
+                  Inspections capture photos and measurements on the spot — attached to the job
+                  forever.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );
@@ -802,31 +963,6 @@ function How() {
   );
 }
 
-function Stats() {
-  return (
-    <section className="relative overflow-hidden bg-neutral-950 py-20 md:py-24">
-      <img
-        src="/img/roofing/shingles-texture.jpg"
-        alt=""
-        aria-hidden
-        className="absolute inset-0 h-full w-full object-cover opacity-[0.14]"
-        loading="lazy"
-      />
-      <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/85 via-neutral-950/60 to-neutral-950/85" aria-hidden />
-      <div className="relative mx-auto grid max-w-6xl gap-10 px-5 sm:grid-cols-2 md:grid-cols-4 md:px-8">
-        {STATS.map((s, i) => (
-          <div key={s.label} className="rv text-center md:text-left" style={{ ["--rv-delay" as string]: `${i * 90}ms` }}>
-            <p className="text-5xl font-bold tracking-tight text-white md:text-[56px]">
-              <CountUp to={s.to} suffix={s.suffix} />
-            </p>
-            <p className="mt-2.5 text-[12.5px] leading-snug text-white/65">{s.label}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function FinalCta() {
   return (
     <section className="relative overflow-hidden py-28 md:py-32">
@@ -885,7 +1021,7 @@ function Footer() {
               <p className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">Product</p>
               <ul className="space-y-2.5 text-[13.5px]">
                 <li><button onClick={() => scrollToSection("product")} className="text-muted-foreground transition-colors hover:text-foreground">Product tour</button></li>
-                <li><button onClick={() => scrollToSection("screens")} className="text-muted-foreground transition-colors hover:text-foreground">Inside the app</button></li>
+                <li><button onClick={() => scrollToSection("features")} className="text-muted-foreground transition-colors hover:text-foreground">Why RidgeLine</button></li>
                 <li><button onClick={() => scrollToSection("how")} className="text-muted-foreground transition-colors hover:text-foreground">How it works</button></li>
               </ul>
             </div>
@@ -926,9 +1062,8 @@ export function LandingView() {
         <Hero />
         <Wordmarks />
         <Product />
-        <Screens />
+        <Features />
         <How />
-        <Stats />
         <FinalCta />
       </main>
       <footer className="mt-auto"><Footer /></footer>

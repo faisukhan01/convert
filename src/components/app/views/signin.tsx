@@ -1,7 +1,7 @@
 "use client";
 
-
 import { useState } from "react";
+import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,13 +9,27 @@ import { api } from "@/hooks/use-api";
 import { useAppStore } from "@/store/app";
 import { toast } from "sonner";
 import { Logo } from "@/components/app/shell";
-import { ArrowLeft, ArrowRight, Eye, EyeOff, Home, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, EyeOff, Home, Loader2, Lock } from "lucide-react";
 
 /**
- * Staff sign-in — a focused, centered entry point on a quiet dark backdrop.
- * No decorative imagery: just the brand, the form, and one-click demo roles.
- * All auth behavior (Bearer token + cookie session) is unchanged.
+ * Staff sign-in — the same stage as the landing page: the live-action
+ * job-site footage behind a heavy scrim, filmic grain, and one glass
+ * card that rises into place with staggered fields. No decorative
+ * side-imagery, no clip-art: just brand, form, and one-click demo roles.
+ * Auth behavior (Bearer token + cookie session) is unchanged.
  */
+
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+const riseWrap: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
+};
+
+const riseItem: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.65, ease: EASE } },
+};
 
 const DEMO_ACCOUNTS = [
   { email: "owner@ridgeline.demo", name: "Priya Shah", role: "Owner" },
@@ -50,32 +64,58 @@ export function SignInView() {
 
   return (
     <div className="grain relative flex min-h-screen flex-col overflow-hidden bg-neutral-950">
-      {/* backdrop: soft brand glow + faint dot grid — no imagery */}
-      <div className="rl-dots pointer-events-none absolute inset-0" aria-hidden />
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[420px]"
+      {/* same live-action footage as the landing hero — one continuous brand */}
+      <video
+        className="absolute inset-0 h-full w-full object-cover"
+        src="/media/roof-hero.mp4"
+        poster="/media/roof-hero-poster.jpg"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
         aria-hidden
-        style={{ background: "radial-gradient(60% 100% at 50% 0%, rgba(30,76,126,0.28) 0%, rgba(30,76,126,0.06) 55%, transparent 100%)" }}
       />
+      {/* heavy scrims so the form owns the stage */}
+      <div className="absolute inset-0 bg-neutral-950/75" aria-hidden />
+      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/35 to-neutral-950/60" aria-hidden />
+      <div className="rl-dots pointer-events-none absolute inset-0 opacity-50" aria-hidden />
 
       {/* top bar */}
-      <header className="relative z-10 flex items-center justify-between px-5 py-5 sm:px-8">
+      <motion.header
+        initial={{ opacity: 0, y: -14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: EASE }}
+        className="relative z-10 flex items-center justify-between px-5 py-5 sm:px-8"
+      >
         <button
           onClick={() => (window.location.hash = "#/landing")}
-          className="inline-flex min-h-[36px] items-center gap-1.5 text-[13px] font-medium text-white/60 transition-colors hover:text-white"
+          className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-medium text-white/60 transition-colors hover:bg-white/10 hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" /> Back to site
         </button>
-        <span className="[&_span]:text-white"><Logo compact /></span>
-      </header>
+        <Logo tone="light" tagline={false} />
+      </motion.header>
 
-      {/* centered card */}
-      <main className="relative z-10 flex flex-1 items-center justify-center px-5 pb-16 pt-6 sm:px-8">
-        <div className="w-full max-w-[440px]">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-6 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.8)] backdrop-blur-xl sm:p-8">
-            <h1 className="text-[24px] font-bold tracking-tight text-white">Sign in to RidgeLine</h1>
+      {/* the card */}
+      <main className="relative z-10 flex flex-1 items-center justify-center px-5 pb-14 pt-6 sm:px-8">
+        <motion.div
+          variants={riseWrap}
+          initial="hidden"
+          animate="show"
+          className="w-full max-w-[460px]"
+        >
+          <motion.div
+            variants={riseItem}
+            className="rounded-3xl border border-white/10 bg-white/[0.07] p-6 shadow-[0_60px_130px_-35px_rgba(0,0,0,0.9)] backdrop-blur-2xl sm:p-8"
+          >
+            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.2em] text-white/85">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
+              Estimate desk for roofing teams
+            </p>
+            <h1 className="text-[26px] font-bold tracking-tight text-white">Sign in to RidgeLine</h1>
             <p className="mt-1.5 text-[13.5px] leading-relaxed text-white/55">
-              The estimate desk for roofing teams. Staff access only — homeowners can book without an account.
+              Staff access only — homeowners can book an inspection without an account.
             </p>
 
             <form
@@ -85,7 +125,7 @@ export function SignInView() {
                 void signIn(email, password);
               }}
             >
-              <div className="space-y-1.5">
+              <motion.div variants={riseItem} className="space-y-1.5">
                 <Label htmlFor="email" className="text-[12.5px] font-semibold text-white/80">Work email</Label>
                 <Input
                   id="email"
@@ -96,8 +136,8 @@ export function SignInView() {
                   required
                   className="h-11 rounded-xl border-white/15 bg-white/[0.08] text-white placeholder:text-white/35 focus-visible:border-white/30 focus-visible:ring-white/20"
                 />
-              </div>
-              <div className="space-y-1.5">
+              </motion.div>
+              <motion.div variants={riseItem} className="space-y-1.5">
                 <Label htmlFor="password" className="text-[12.5px] font-semibold text-white/80">Password</Label>
                 <div className="relative">
                   <Input
@@ -120,57 +160,62 @@ export function SignInView() {
                 <p className="text-[11px] text-white/45">
                   Demo password <code className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-[10.5px] text-white/75">demo</code>
                 </p>
-              </div>
-              <Button
-                type="submit"
-                className="h-11 w-full rounded-xl bg-white text-[14px] font-semibold text-neutral-900 shadow-lg hover:bg-white/90"
-                disabled={busy}
-              >
-                {busy ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Signing in…
-                  </>
-                ) : (
-                  <>
-                    Sign in
-                    <ArrowRight className="h-4 w-4" />
-                  </>
-                )}
-              </Button>
+              </motion.div>
+              <motion.div variants={riseItem}>
+                <Button
+                  type="submit"
+                  className="group h-11 w-full rounded-xl bg-white text-[14px] font-semibold text-neutral-900 shadow-lg transition-all hover:bg-white/90 hover:shadow-xl"
+                  disabled={busy}
+                >
+                  {busy ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Signing in…
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="h-4 w-4" />
+                      Sign in
+                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                    </>
+                  )}
+                </Button>
+              </motion.div>
             </form>
-          </div>
+          </motion.div>
 
           {/* one-click demo roles */}
-          <p className="mb-3 mt-8 text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-white/40">
-            One-click demo roles
-          </p>
-          <div className="grid grid-cols-2 gap-2.5">
-            {DEMO_ACCOUNTS.map((a) => (
-              <button
-                key={a.email}
-                onClick={() => void signIn(a.email, "demo")}
-                disabled={busy}
-                className="group flex min-h-[56px] items-center gap-3 rounded-xl border border-white/10 bg-white/[0.05] p-3 text-left transition-all hover:border-white/25 hover:bg-white/[0.1] focus-visible:ring-2 focus-visible:ring-white/30 disabled:opacity-60"
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[12px] font-bold text-white/85 transition-colors group-hover:bg-white group-hover:text-neutral-900">
-                  {a.name.split(" ").map((n) => n[0]).join("")}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[13px] font-semibold text-white/90">{a.name}</span>
-                  <span className="block text-[10.5px] font-medium uppercase tracking-wide text-white/45">{a.role}</span>
-                </span>
-                {pending === a.email ? (
-                  <Loader2 className="h-4 w-4 shrink-0 animate-spin text-white/80" />
-                ) : (
-                  <ArrowRight className="h-4 w-4 shrink-0 text-white/30 transition-all group-hover:translate-x-0.5 group-hover:text-white/80" />
-                )}
-              </button>
-            ))}
-          </div>
+          <motion.div variants={riseItem}>
+            <p className="mb-3 mt-8 text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-white/40">
+              One-click demo roles
+            </p>
+            <div className="grid grid-cols-2 gap-2.5">
+              {DEMO_ACCOUNTS.map((a) => (
+                <button
+                  key={a.email}
+                  onClick={() => void signIn(a.email, "demo")}
+                  disabled={busy}
+                  className="group flex min-h-[56px] items-center gap-3 rounded-xl border border-white/10 bg-white/[0.05] p-3 text-left backdrop-blur-sm transition-all hover:border-white/25 hover:bg-white/[0.1] focus-visible:ring-2 focus-visible:ring-white/30 disabled:opacity-60"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-[12px] font-bold text-white/85 transition-colors group-hover:bg-white group-hover:text-neutral-900">
+                    {a.name.split(" ").map((n) => n[0]).join("")}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[13px] font-semibold text-white/90">{a.name}</span>
+                    <span className="block text-[10.5px] font-medium uppercase tracking-wide text-white/45">{a.role}</span>
+                  </span>
+                  {pending === a.email ? (
+                    <Loader2 className="h-4 w-4 shrink-0 animate-spin text-white/80" />
+                  ) : (
+                    <ArrowRight className="h-4 w-4 shrink-0 text-white/30 transition-all group-hover:translate-x-0.5 group-hover:text-white/80" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </motion.div>
 
-          <p className="mt-8 flex items-center justify-center gap-1.5 text-[12.5px] text-white/50">
-            <Home className="h-3.5 w-3.5" />
+          <motion.p variants={riseItem} className="mt-8 flex items-center justify-center gap-1.5 text-[12.5px] text-white/50">
+            <Home className="h-3.5 w-3.5" aria-hidden />
             Homeowner?{" "}
             <button
               className="font-medium text-white/85 underline underline-offset-2 transition-colors hover:text-white"
@@ -179,13 +224,18 @@ export function SignInView() {
               Book an inspection here
             </button>{" "}
             — no sign-in needed.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
       </main>
 
-      <footer className="relative z-10 pb-6 text-center text-[11px] text-white/35">
+      <motion.footer
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.8, duration: 0.6 }}
+        className="relative z-10 pb-6 text-center text-[11px] text-white/35"
+      >
         RidgeLine · demo data is synthetic · Postgres-ready · GHL connector simulated
-      </footer>
+      </motion.footer>
     </div>
   );
 }

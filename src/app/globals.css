@@ -185,3 +185,24 @@
   .rv { opacity: 1; transform: none; }
   .rl-kenburns { animation: none; }
 }
+
+/* Product-screen auto-tour — timed progress fill + slow push-in on each shot */
+@keyframes tourFill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.tour-fill {
+  transform-origin: left;
+  animation: tourFill 4.4s linear forwards;
+}
+.tour-fill.is-paused { animation-play-state: paused; }
+
+@keyframes tourZoom {
+  from { transform: scale(1); }
+  to   { transform: scale(1.028); }
+}
+.tour-zoom { animation: tourZoom 7.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-fill, .tour-zoom { animation-duration: 0.01s; animation-iteration-count: 1; }
+}

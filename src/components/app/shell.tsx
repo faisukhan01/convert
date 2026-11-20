@@ -48,24 +48,27 @@ export function Logo({
   const sub = tone === "light" ? "text-white/60" : "text-muted-foreground";
   return (
     <span className="flex select-none items-center gap-2.5">
-      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true" className="shrink-0">
+      {/* RidgeLine mark — a twin-peak roof ridge on a petrol tile */}
+      <svg width="30" height="30" viewBox="0 0 40 40" aria-hidden="true" className="shrink-0">
         <defs>
-          <linearGradient id={`rl-g-${uid}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="oklch(0.50 0.098 243)" />
-            <stop offset="1" stopColor="oklch(0.37 0.085 243)" />
+          <linearGradient id={`rl-g-${uid}`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#31719F" />
+            <stop offset="1" stopColor="#16354E" />
           </linearGradient>
         </defs>
-        <rect width="32" height="32" rx="8.5" fill={`url(#rl-g-${uid})`} />
+        <rect width="40" height="40" rx="11" fill={`url(#rl-g-${uid})`} />
         <path
-          d="M6.5 21.5 13.5 11.5l4.6 5.4 7.4-8.9"
-          fill="none"
-          stroke="white"
-          strokeWidth="2.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          d="M7.5 28.5 15.5 14l6 7.6 3.7-4.6 7.3 11.5Z"
+          fill="white"
+          fillOpacity="0.97"
         />
-        <circle cx="25.5" cy="8" r="2.05" fill="white" />
-        <path d="M6.5 25.75h6.5" stroke="white" strokeOpacity="0.45" strokeWidth="2.4" strokeLinecap="round" />
+        <path
+          d="M10 32.5h20"
+          stroke="white"
+          strokeOpacity="0.38"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+        />
       </svg>
       {!compact && (
         <span className={`text-[15.5px] font-bold leading-none tracking-tight ${word}`}>
