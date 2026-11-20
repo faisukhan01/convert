@@ -1,0 +1,938 @@
+     1→"use client";
+     2→
+     3→import { useEffect, useRef, useState, type ReactNode } from "react";
+     4→import {
+     5→  ArrowRight,
+     6→  ArrowUpRight,
+     7→  BarChart3,
+     8→  CalendarCheck2,
+     9→  Check,
+    10→  Eye,
+    11→  FileText,
+    12→  Inbox,
+    13→  LayoutDashboard,
+    14→  Play,
+    15→  Wallet,
+    16→} from "lucide-react";
+    17→import {
+    18→  AnimatePresence,
+    19→  motion,
+    20→  useScroll,
+    21→  useSpring,
+    22→  useTransform,
+    23→  type Variants,
+    24→} from "framer-motion";
+    25→import { navigate, useAppStore } from "@/store/app";
+    26→import { Logo } from "@/components/app/shell";
+    27→
+    28→/**
+    29→ * RidgeLine marketing landing — the front door of the product.
+    30→ * Real live-action hero footage (Coverr, free license), real job-site
+    31→ * photography, actual screenshots of the running product inside browser
+    32→ * frames, and scroll-driven motion (framer-motion): the desk morphs flat
+    33→ * as it enters, live events pop over it, screens auto-tour, and the
+    34→ * how-it-works rail draws itself as you read.
+    35→ */
+    36→
+    37→const HERO = {
+    38→  video: "/media/roof-hero.mp4",
+    39→  poster: "/media/roof-hero-poster.jpg",
+    40→};
+    41→
+    42→const WORDMARKS = [
+    43→  "Summit Roofing Co.",
+    44→  "North Peak Exteriors",
+    45→  "Bluepine Roofing",
+    46→  "Ironclad Exteriors",
+    47→  "Cedarline Roofing",
+    48→  "Harvest Ridge",
+    49→];
+    50→
+    51→/** The real product screens used in the auto-touring showcase. */
+    52→const SCREENS = [
+    53→  {
+    54→    key: "today",
+    55→    icon: LayoutDashboard,
+    56→    tab: "Today",
+    57→    title: "The morning queue",
+    58→    desc: "Needs-a-response, today's inspections and quotes awaiting a reply — the whole day on one list.",
+    59→    shot: "/img/app/today.png",
+    60→    label: "app.ridgeline.dev/#/today",
+    61→    alt: "RidgeLine Today view: needs a response, inspections today, estimates awaiting a reply",
+    62→  },
+    63→  {
+    64→    key: "inquiries",
+    65→    icon: Inbox,
+    66→    tab: "Inquiries",
+    67→    title: "Every lead, owned",
+    68→    desc: "Calls, web forms and referrals deduplicated, time-stamped and assigned before they slip.",
+    69→    shot: "/img/app/inquiries.png",
+    70→    label: "app.ridgeline.dev/#/inquiries",
+    71→    alt: "RidgeLine inquiries list with statuses and owners",
+    72→  },
+    73→  {
+    74→    key: "estimates",
+    75→    icon: FileText,
+    76→    tab: "Estimates",
+    77→    title: "Quotes that chase",
+    78→    desc: "Viewed, nudged and accepted — the pipeline moves without a single game of phone tag.",
+    79→    shot: "/img/app/estimates.png",
+    80→    label: "app.ridgeline.dev/#/estimates",
+    81→    alt: "RidgeLine estimates board with status badges",
+    82→  },
+    83→  {
+    84→    key: "reports",
+    85→    icon: BarChart3,
+    86→    tab: "Reports",
+    87→    title: "The honest numbers",
+    88→    desc: "Conversion, aging and collectible revenue across every location — exportable in one click.",
+    89→    shot: "/img/app/reports.png",
+    90→    label: "app.ridgeline.dev/#/reports",
+    91→    alt: "RidgeLine reports: conversion, aging and revenue views",
+    92→  },
+    93→];
+    94→
+    95→const FLOW = [
+    96→  {
+    97→    n: "01",
+    98→    img: "/img/roofing/storm-tarp.jpg",
+    99→    alt: "Crew securing a tarp over a storm-damaged roof",
+   100→    title: "Every inquiry, one desk",
+   101→    copy: "Phone calls, website forms, referrals and storm-season walk-ins land in a single queue — deduplicated, time-stamped and owned.",
+   102→    points: ["Never ask “who called whom?” again", "Duplicates flagged before they cost you", "Homeowners book inspections themselves"],
+   103→  },
+   104→  {
+   105→    n: "02",
+   106→    img: "/img/roofing/tearoff.jpg",
+   107→    alt: "Two roofers tearing off shingles ahead of a re-roof",
+   108→    title: "Inspections that leave a paper trail",
+   109→    copy: "Visit outcomes, photos and measurements are captured on the spot. The estimator’s phone view shows today’s route and nothing else.",
+   110→    points: ["Booked, completed, no-show — tracked", "Assignments balanced across the crew", "Follow-ups scheduled the moment you leave"],
+   111→  },
+   112→  {
+   113→    n: "03",
+   114→    img: "/img/app/estimates.png",
+   115→    alt: "RidgeLine estimates board with status badges",
+   116→    title: "Quotes that chase themselves",
+   117→    copy: "The desk sends the estimate, sees the moment it’s opened, and nudges the homeowner on your behalf until you get an answer.",
+   118→    points: ["Viewed / accepted / declined, visible", "Automatic nudges at smart intervals", "Revisions without losing history"],
+   119→    isShot: true,
+   120→  },
+   121→  {
+   122→    n: "04",
+   123→    img: "/img/roofing/finished-house.jpg",
+   124→    alt: "A finished craftsman home with a new roof",
+   125→    title: "From approval to paid invoice",
+   126→    copy: "Accepted quotes flow to invoices and matched payments. Aging views show exactly which jobs are stuck and for how long.",
+   127→    points: ["Payments matched to estimates", "Overdue stages flagged in red", "Reports your accountant will like"],
+   128→  },
+   129→];
+   130→
+   131→const STATS = [
+   132→  { to: 92, suffix: "%", label: "of quotes get automatic follow-ups" },
+   133→  { to: 6, suffix: " min", label: "from missed call to booked inspection" },
+   134→  { to: 4, suffix: "", label: "stages in one pipeline, zero spreadsheets" },
+   135→  { to: 100, suffix: "%", label: "of actions on the audit record" },
+   136→];
+   137→
+   138→/* ────────────── motion presets ────────────── */
+   139→
+   140→const EASE = [0.22, 1, 0.36, 1] as const;
+   141→
+   142→const headWrap: Variants = {
+   143→  hidden: {},
+   144→  show: { transition: { staggerChildren: 0.11, delayChildren: 0.04 } },
+   145→};
+   146→
+   147→const headItem: Variants = {
+   148→  hidden: { opacity: 0, y: 26 },
+   149→  show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE } },
+   150→};
+   151→
+   152→/* ────────────── helpers ────────────── */
+   153→
+   154→function useRevealOnScroll() {
+   155→  useEffect(() => {
+   156→    const els = Array.from(document.querySelectorAll(".rv"));
+   157→    if (!("IntersectionObserver" in window)) {
+   158→      els.forEach((el) => el.classList.add("is-in"));
+   159→      return;
+   160→    }
+   161→    const io = new IntersectionObserver(
+   162→      (entries) => {
+   163→        for (const e of entries) {
+   164→          if (e.isIntersecting) {
+   165→            e.target.classList.add("is-in");
+   166→            io.unobserve(e.target);
+   167→          }
+   168→        }
+   169→      },
+   170→      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
+   171→    );
+   172→    els.forEach((el) => io.observe(el));
+   173→    return () => io.disconnect();
+   174→  }, []);
+   175→}
+   176→
+   177→function CountUp({ to, suffix, duration = 1600 }: { to: number; suffix?: string; duration?: number }) {
+   178→  const ref = useRef<HTMLSpanElement>(null);
+   179→  const [val, setVal] = useState(0);
+   180→  const started = useRef(false);
+   181→  useEffect(() => {
+   182→    const el = ref.current;
+   183→    if (!el) return;
+   184→    const io = new IntersectionObserver(
+   185→      (entries) => {
+   186→        if (!entries[0].isIntersecting || started.current) return;
+   187→        started.current = true;
+   188→        const t0 = performance.now();
+   189→        const tick = (t: number) => {
+   190→          const p = Math.min(1, (t - t0) / duration);
+   191→          const eased = 1 - Math.pow(1 - p, 3);
+   192→          setVal(Math.round(to * eased));
+   193→          if (p < 1) requestAnimationFrame(tick);
+   194→        };
+   195→        requestAnimationFrame(tick);
+   196→      },
+   197→      { threshold: 0.4 },
+   198→    );
+   199→    io.observe(el);
+   200→    return () => io.disconnect();
+   201→  }, [to, duration]);
+   202→  return (
+   203→    <span ref={ref}>
+   204→      {val}
+   205→      {suffix}
+   206→    </span>
+   207→  );
+   208→}
+   209→
+   210→function scrollToSection(id: string) {
+   211→  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+   212→}
+   213→
+   214→/** CTAs: signed-in visitors go straight to the desk; everyone else goes to sign-in. */
+   215→function ctaNavigate() {
+   216→  const authed = !!useAppStore.getState().session?.user;
+   217→  navigate(authed ? "/today" : "/signin");
+   218→}
+   219→
+   220→/** A browser-chrome frame around a real product screenshot. */
+   221→function BrowserFrame({ src, alt, label, className = "" }: { src: string; alt: string; label: string; className?: string }) {
+   222→  return (
+   223→    <figure className={`overflow-hidden rounded-xl border border-border bg-card shadow-[0_40px_90px_-40px_rgba(15,23,42,0.5)] ${className}`}>
+   224→      <div className="flex items-center gap-2 border-b border-border/70 bg-muted/70 px-3.5 py-2.5">
+   225→        <span className="flex gap-1.5" aria-hidden>
+   226→          <span className="h-2.5 w-2.5 rounded-full bg-neutral-300" />
+   227→          <span className="h-2.5 w-2.5 rounded-full bg-neutral-300" />
+   228→          <span className="h-2.5 w-2.5 rounded-full bg-neutral-300" />
+   229→        </span>
+   230→        <span className="ml-2 truncate rounded-md border border-border/70 bg-background px-2.5 py-1 text-[10.5px] font-medium text-muted-foreground">
+   231→          {label}
+   232→        </span>
+   233→      </div>
+   234→      <img src={src} alt={alt} className="block w-full" loading="lazy" />
+   235→    </figure>
+   236→  );
+   237→}
+   238→
+   239→/** A small “live event” card that pops in and then floats gently forever. */
+   240→function FloatCard({
+   241→  className = "",
+   242→  delay = 0,
+   243→  floatDelay = 0,
+   244→  children,
+   245→}: {
+   246→  className?: string;
+   247→  delay?: number;
+   248→  floatDelay?: number;
+   249→  children: ReactNode;
+   250→}) {
+   251→  return (
+   252→    <motion.div
+   253→      className={`absolute z-20 ${className}`}
+   254→      initial={{ opacity: 0, scale: 0.7, y: 22 }}
+   255→      whileInView={{ opacity: 1, scale: 1, y: 0 }}
+   256→      viewport={{ once: true, margin: "-10%" }}
+   257→      transition={{ type: "spring", stiffness: 240, damping: 19, delay }}
+   258→    >
+   259→      <motion.div
+   260→        animate={{ y: [0, -7, 0] }}
+   261→        transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: floatDelay }}
+   262→        className="flex items-center gap-3 rounded-xl border border-border/70 bg-card/95 py-2.5 pl-3 pr-4 shadow-[0_18px_44px_-18px_rgba(15,23,42,0.45)] backdrop-blur-sm"
+   263→      >
+   264→        {children}
+   265→      </motion.div>
+   266→    </motion.div>
+   267→  );
+   268→}
+   269→
+   270→/* ────────────── sections ────────────── */
+   271→
+   272→function Nav() {
+   273→  const [scrolled, setScrolled] = useState(false);
+   274→  const [open, setOpen] = useState(false);
+   275→  const authed = !!useAppStore((s) => s.session?.user);
+   276→  useEffect(() => {
+   277→    const onScroll = () => setScrolled(window.scrollY > 14);
+   278→    onScroll();
+   279→    window.addEventListener("scroll", onScroll, { passive: true });
+   280→    return () => window.removeEventListener("scroll", onScroll);
+   281→  }, []);
+   282→  const links = [
+   283→    { label: "Product", id: "product" },
+   284→    { label: "Screens", id: "screens" },
+   285→    { label: "How it works", id: "how" },
+   286→  ];
+   287→  return (
+   288→    <motion.header
+   289→      initial={{ y: -72, opacity: 0 }}
+   290→      animate={{ y: 0, opacity: 1 }}
+   291→      transition={{ duration: 0.7, ease: EASE }}
+   292→      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,box-shadow] duration-300 ${
+   293→        scrolled
+   294→          ? "border-b border-border/60 bg-background/85 shadow-[0_10px_36px_-22px_rgba(15,23,42,0.35)] backdrop-blur-xl"
+   295→          : "border-b border-transparent bg-transparent"
+   296→      }`}
+   297→    >
+   298→      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 md:px-8">
+   299→        <button
+   300→          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+   301→          aria-label="RidgeLine — back to top"
+   302→          className="rounded-md outline-offset-4"
+   303→        >
+   304→          <Logo tagline={false} tone={scrolled ? "dark" : "light"} />
+   305→        </button>
+   306→
+   307→        <nav className="hidden items-center gap-1 md:flex" aria-label="Landing sections">
+   308→          {links.map((l) => (
+   309→            <button
+   310→              key={l.id}
+   311→              onClick={() => scrollToSection(l.id)}
+   312→              className={`rounded-full px-3.5 py-1.5 text-[13.5px] font-medium transition-colors ${
+   313→                scrolled
+   314→                  ? "text-foreground/70 hover:bg-foreground/5 hover:text-foreground"
+   315→                  : "text-white/85 hover:bg-white/10 hover:text-white"
+   316→              }`}
+   317→            >
+   318→              {l.label}
+   319→            </button>
+   320→          ))}
+   321→        </nav>
+   322→
+   323→        <div className="hidden items-center gap-1.5 md:flex">
+   324→          {!authed && (
+   325→            <button
+   326→              onClick={ctaNavigate}
+   327→              className={`rounded-full px-4 py-2 text-[13.5px] font-semibold transition-colors ${
+   328→                scrolled
+   329→                  ? "text-foreground/80 hover:bg-accent hover:text-foreground"
+   330→                  : "text-white/90 hover:bg-white/15 hover:text-white"
+   331→              }`}
+   332→            >
+   333→              Sign in
+   334→            </button>
+   335→          )}
+   336→          <button
+   337→            onClick={ctaNavigate}
+   338→            className="group inline-flex items-center gap-1.5 rounded-full bg-primary px-[18px] py-2 text-[13.5px] font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:brightness-110 hover:shadow-primary/40"
+   339→          >
+   340→            Open the app
+   341→            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+   342→          </button>
+   343→        </div>
+   344→
+   345→        <button
+   346→          className={`rounded-lg p-2 md:hidden ${scrolled ? "text-foreground" : "text-white"}`}
+   347→          aria-label="Toggle menu"
+   348→          aria-expanded={open}
+   349→          onClick={() => setOpen((v) => !v)}
+   350→        >
+   351→          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+   352→            {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+   353→          </svg>
+   354→        </button>
+   355→      </div>
+   356→
+   357→      <AnimatePresence>
+   358→        {open && (
+   359→          <motion.div
+   360→            initial={{ height: 0, opacity: 0 }}
+   361→            animate={{ height: "auto", opacity: 1 }}
+   362→            exit={{ height: 0, opacity: 0 }}
+   363→            transition={{ duration: 0.35, ease: EASE }}
+   364→            className="overflow-hidden border-b border-border/60 bg-background/95 backdrop-blur-xl md:hidden"
+   365→          >
+   366→            <div className="px-5 py-4">
+   367→              {links.map((l) => (
+   368→                <button
+   369→                  key={l.id}
+   370→                  onClick={() => {
+   371→                    setOpen(false);
+   372→                    scrollToSection(l.id);
+   373→                  }}
+   374→                  className="block w-full rounded-lg px-2 py-2.5 text-left text-sm font-medium text-foreground/80 hover:bg-accent"
+   375→                >
+   376→                  {l.label}
+   377→                </button>
+   378→              ))}
+   379→              {!authed && (
+   380→                <button
+   381→                  onClick={() => {
+   382→                    setOpen(false);
+   383→                    ctaNavigate();
+   384→                  }}
+   385→                  className="mt-1 block w-full rounded-lg px-2 py-2.5 text-left text-sm font-medium text-foreground/80 hover:bg-accent"
+   386→                >
+   387→                  Sign in
+   388→                </button>
+   389→              )}
+   390→              <button
+   391→                onClick={() => {
+   392→                  setOpen(false);
+   393→                  ctaNavigate();
+   394→                }}
+   395→                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
+   396→              >
+   397→                Open the app <ArrowRight className="h-4 w-4" />
+   398→              </button>
+   399→            </div>
+   400→          </motion.div>
+   401→        )}
+   402→      </AnimatePresence>
+   403→    </motion.header>
+   404→  );
+   405→}
+   406→
+   407→function Hero() {
+   408→  return (
+   409→    <section className="relative flex min-h-[100svh] flex-col justify-end overflow-hidden bg-neutral-950">
+   410→      {/* live-action footage — real job site, real roofer */}
+   411→      <video
+   412→        className="absolute inset-0 h-full w-full object-cover"
+   413→        src={HERO.video}
+   414→        poster={HERO.poster}
+   415→        autoPlay
+   416→        muted
+   417→        loop
+   418→        playsInline
+   419→        preload="metadata"
+   420→        aria-hidden
+   421→      />
+   422→      {/* scrims */}
+   423→      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/92 via-neutral-950/30 to-neutral-950/55" aria-hidden />
+   424→      <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/60 via-neutral-950/10 to-transparent" aria-hidden />
+   425→
+   426→      {/* copy */}
+   427→      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-24 pt-40 md:px-8 md:pb-28">
+   428→        <p className="rv is-in mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/90 backdrop-blur-sm">
+   429→          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+   430→          Estimate desk for roofing teams
+   431→        </p>
+   432→        <h1 className="rv is-in max-w-3xl text-[42px] font-bold leading-[1.05] tracking-tight text-white sm:text-6xl md:text-[72px]">
+   433→          Every roofing job, on one desk.
+   434→        </h1>
+   435→        <p className="rv is-in mt-6 max-w-xl text-[15px] leading-relaxed text-white/75 md:text-lg">
+   436→          RidgeLine tracks the inquiries, books the inspections, chases every quote and matches every
+   437→          payment — so your crew builds roofs, not paperwork.
+   438→        </p>
+   439→        <div className="rv is-in mt-9 flex flex-wrap items-center gap-3.5">
+   440→          <button
+   441→            onClick={ctaNavigate}
+   442→            className="group inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-6 text-[15px] font-semibold text-neutral-900 shadow-2xl transition-transform hover:scale-[1.03]"
+   443→          >
+   444→            <Play className="h-4 w-4 fill-neutral-900" />
+   445→            Open the live demo
+   446→          </button>
+   447→          <button
+   448→            onClick={() => scrollToSection("how")}
+   449→            className="inline-flex min-h-[48px] items-center gap-2 rounded-full border border-white/30 bg-white/10 px-6 text-[15px] font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+   450→          >
+   451→            See how it works
+   452→            <ArrowUpRight className="h-4 w-4" />
+   453→          </button>
+   454→          <span className="text-[12.5px] font-medium text-white/55">Free demo · four roles · zero setup</span>
+   455→        </div>
+   456→      </div>
+   457→    </section>
+   458→  );
+   459→}
+   460→
+   461→function Wordmarks() {
+   462→  return (
+   463→    <section aria-label="Teams using RidgeLine" className="border-b border-border/70 bg-background py-9">
+   464→      <div className="mx-auto max-w-6xl px-5 md:px-8">
+   465→        <p className="mb-6 text-center text-[11px] font-semibold uppercase tracking-[0.3em] text-muted-foreground/70">
+   466→          Demo teams running their desk on RidgeLine
+   467→        </p>
+   468→        <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+   469→          {WORDMARKS.map((w) => (
+   470→            <span key={w} className="text-[16px] font-semibold tracking-tight text-foreground/30">
+   471→              {w}
+   472→            </span>
+   473→          ))}
+   474→        </div>
+   475→      </div>
+   476→    </section>
+   477→  );
+   478→}
+   479→
+   480→/**
+   481→ * The product desk: the headline reveals in staggered lines, the real
+   482→ * Today screenshot morphs from a tilted card to flat as it scrolls into
+   483→ * view, and live events pop over it and float — the page feels alive.
+   484→ */
+   485→function Product() {
+   486→  const shotRef = useRef<HTMLDivElement>(null);
+   487→  const { scrollYProgress } = useScroll({ target: shotRef, offset: ["start end", "center center"] });
+   488→  const rotateX = useTransform(scrollYProgress, [0, 1], [14, 0]);
+   489→  const scale = useTransform(scrollYProgress, [0, 1], [0.94, 1]);
+   490→  const lift = useTransform(scrollYProgress, [0, 1], [56, 0]);
+   491→  const glow = useTransform(scrollYProgress, [0, 0.55, 1], [0.15, 0.85, 1]);
+   492→
+   493→  return (
+   494→    <section id="product" className="scroll-mt-16 bg-background py-24 md:py-28">
+   495→      <div className="mx-auto max-w-6xl px-5 md:px-8">
+   496→        <motion.div
+   497→          variants={headWrap}
+   498→          initial="hidden"
+   499→          whileInView="show"
+   500→          viewport={{ once: true, margin: "-15%" }}
+   501→          className="mx-auto mb-16 max-w-2xl text-center"
+   502→        >
+   503→          <motion.p variants={headItem} className="mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">
+   504→            The product
+   505→          </motion.p>
+   506→          <motion.h2 variants={headItem} className="text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]">
+   507→            Your whole day, on one screen.
+   508→          </motion.h2>
+   509→          <motion.p variants={headItem} className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+   510→            No spreadsheets, no group texts, no pocket notebook. One queue tells you exactly what needs
+   511→            a response, a visit, or a decision — and what happens if you don’t.
+   512→          </motion.p>
+   513→        </motion.div>
+   514→
+   515→        <div ref={shotRef} className="relative">
+   516→          {/* ambient glow that intensifies as the desk arrives */}
+   517→          <motion.div
+   518→            aria-hidden
+   519→            style={{
+   520→              opacity: glow,
+   521→              background:
+   522→                "radial-gradient(58% 58% at 50% 42%, oklch(0.43 0.095 243 / 0.16), transparent 72%)",
+   523→            }}
+   524→            className="absolute -inset-x-10 bottom-0 -top-14 rounded-[64px] blur-2xl md:-inset-x-16"
+   525→          />
+   526→
+   527→          {/* the desk — starts tilted in perspective, lands flat */}
+   528→          <motion.div
+   529→            initial={{ opacity: 0 }}
+   530→            whileInView={{ opacity: 1 }}
+   531→            viewport={{ once: true, margin: "-10%" }}
+   532→            transition={{ duration: 0.6 }}
+   533→            style={{ rotateX, scale, y: lift, transformPerspective: 1400 }}
+   534→          >
+   535→            <BrowserFrame
+   536→              src="/img/app/today.png"
+   537→              alt="RidgeLine Today view: needs a response, inspections today, estimates awaiting a reply"
+   538→              label="app.ridgeline.dev/#/today"
+   539→            />
+   540→          </motion.div>
+   541→
+   542→          {/* live events popping over the desk */}
+   543→          <FloatCard className="-right-2 top-8 sm:-right-6 md:-right-12 lg:-right-16" delay={0.4} floatDelay={0.5}>
+   544→            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600">
+   545→              <CalendarCheck2 className="h-[18px] w-[18px]" />
+   546→            </span>
+   547→            <span>
+   548→              <span className="block text-[12.5px] font-bold tracking-tight text-foreground">Inspection booked</span>
+   549→              <span className="block text-[11px] text-muted-foreground">Rosa Alvarez · today 10:00 AM</span>
+   550→            </span>
+   551→          </FloatCard>
+   552→
+   553→          <FloatCard className="-left-2 bottom-24 sm:-left-6 md:-left-12 lg:-left-16" delay={0.65} floatDelay={1.7}>
+   554→            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+   555→              <Eye className="h-[18px] w-[18px]" />
+   556→            </span>
+   557→            <span>
+   558→              <span className="block text-[12.5px] font-bold tracking-tight text-foreground">Estimate viewed</span>
+   559→              <span className="block text-[11px] text-muted-foreground">Grace Nolan · E-1043 · $8,500</span>
+   560→            </span>
+   561→          </FloatCard>
+   562→
+   563→          <FloatCard className="-right-2 bottom-4 hidden sm:block sm:-right-6 md:-right-10" delay={0.9} floatDelay={2.9}>
+   564→            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600">
+   565→              <Wallet className="h-[18px] w-[18px]" />
+   566→            </span>
+   567→            <span>
+   568→              <span className="block text-[12.5px] font-bold tracking-tight text-foreground">Payment matched</span>
+   569→              <span className="block text-[11px] text-muted-foreground">$12,480 · Alderman Residence</span>
+   570→            </span>
+   571→          </FloatCard>
+   572→        </div>
+   573→      </div>
+   574→    </section>
+   575→  );
+   576→}
+   577→
+   578→/**
+   579→ * Screens showcase: four real screens, auto-touring with an animated
+   580→ * pill indicator; hovering pauses, clicking jumps and holds the tour.
+   581→ */
+   582→function Screens() {
+   583→  const [active, setActive] = useState(0);
+   584→  const [hold, setHold] = useState(false);
+   585→  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+   586→
+   587→  useEffect(() => {
+   588→    if (hold) return;
+   589→    const t = setInterval(() => setActive((a) => (a + 1) % SCREENS.length), 6500);
+   590→    return () => clearInterval(t);
+   591→  }, [hold]);
+   592→
+   593→  useEffect(() => () => {
+   594→    if (holdTimer.current) clearTimeout(holdTimer.current);
+   595→  }, []);
+   596→
+   597→  const pick = (i: number) => {
+   598→    setActive(i);
+   599→    setHold(true);
+   600→    if (holdTimer.current) clearTimeout(holdTimer.current);
+   601→    holdTimer.current = setTimeout(() => setHold(false), 12000);
+   602→  };
+   603→
+   604→  const s = SCREENS[active];
+   605→
+   606→  return (
+   607→    <section id="screens" className="scroll-mt-16 border-y border-border/70 bg-muted/40 py-24 md:py-28">
+   608→      <div className="mx-auto max-w-6xl px-5 md:px-8">
+   609→        <motion.div
+   610→          variants={headWrap}
+   611→          initial="hidden"
+   612→          whileInView="show"
+   613→          viewport={{ once: true, margin: "-15%" }}
+   614→          className="mx-auto mb-14 max-w-2xl text-center"
+   615→        >
+   616→          <motion.p variants={headItem} className="mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">
+   617→            Inside the desk
+   618→          </motion.p>
+   619→          <motion.h2 variants={headItem} className="text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]">
+   620→            Four screens. Zero guesswork.
+   621→          </motion.h2>
+   622→          <motion.p variants={headItem} className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+   623→            Real screens from the running app — the same views your owner, office and estimators get.
+   624→          </motion.p>
+   625→        </motion.div>
+   626→
+   627→        <div
+   628→          className="grid items-start gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,8fr)] lg:gap-14"
+   629→          onPointerEnter={() => setHold(true)}
+   630→          onPointerLeave={() => setHold(false)}
+   631→        >
+   632→          {/* tab list — vertical on desktop, scrollable pills on mobile */}
+   633→          <div
+   634→            role="tablist"
+   635→            aria-label="Product screens"
+   636→            className="flex gap-3 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0"
+   637→          >
+   638→            {SCREENS.map((item, i) => {
+   639→              const on = i === active;
+   640→              return (
+   641→                <button
+   642→                  key={item.key}
+   643→                  role="tab"
+   644→                  aria-selected={on}
+   645→                  onClick={() => pick(i)}
+   646→                  className={`relative shrink-0 rounded-xl p-4 text-left transition-colors lg:w-full ${
+   647→                    on ? "" : "hover:bg-foreground/[0.035]"
+   648→                  }`}
+   649→                >
+   650→                  {on && (
+   651→                    <motion.span
+   652→                      layoutId="screens-active-pill"
+   653→                      transition={{ type: "spring", stiffness: 340, damping: 32 }}
+   654→                      className="absolute inset-0 rounded-xl border border-primary/25 bg-card shadow-[0_14px_34px_-18px_rgba(15,23,42,0.35)]"
+   655→                    />
+   656→                  )}
+   657→                  <span className="relative flex items-start gap-3">
+   658→                    <span
+   659→                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors ${
+   660→                        on ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+   661→                      }`}
+   662→                    >
+   663→                      <item.icon className="h-[18px] w-[18px]" />
+   664→                    </span>
+   665→                    <span className="min-w-0">
+   666→                      <span className={`block text-[14px] font-bold tracking-tight ${on ? "text-foreground" : "text-foreground/80"}`}>
+   667→                        {item.tab}
+   668→                      </span>
+   669→                      <span className="mt-1 hidden text-[12.5px] leading-snug text-muted-foreground lg:block">
+   670→                        {item.desc}
+   671→                      </span>
+   672→                    </span>
+   673→                  </span>
+   674→                </button>
+   675→              );
+   676→            })}
+   677→          </div>
+   678→
+   679→          {/* the active screen, animated in */}
+   680→          <div className="relative">
+   681→            <AnimatePresence mode="wait">
+   682→              <motion.div
+   683→                key={s.key}
+   684→                initial={{ opacity: 0, x: 40, scale: 0.985 }}
+   685→                animate={{ opacity: 1, x: 0, scale: 1 }}
+   686→                exit={{ opacity: 0, x: -28, scale: 0.99 }}
+   687→                transition={{ duration: 0.45, ease: EASE }}
+   688→              >
+   689→                <BrowserFrame src={s.shot} alt={s.alt} label={s.label} />
+   690→                <p className="mt-5 text-center text-[12.5px] leading-relaxed text-muted-foreground">
+   691→                  <span className="font-semibold text-foreground/80">{s.title}</span> — {s.desc}
+   692→                </p>
+   693→              </motion.div>
+   694→            </AnimatePresence>
+   695→
+   696→            {/* tour progress */}
+   697→            <div className="mt-6 flex items-center justify-center gap-2" aria-hidden>
+   698→              {SCREENS.map((item, i) => (
+   699→                <span
+   700→                  key={item.key}
+   701→                  className={`h-1.5 rounded-full transition-all duration-500 ${i === active ? "w-7 bg-primary" : "w-2.5 bg-border"}`}
+   702→                />
+   703→              ))}
+   704→            </div>
+   705→          </div>
+   706→        </div>
+   707→      </div>
+   708→    </section>
+   709→  );
+   710→}
+   711→
+   712→/**
+   713→ * How it works: a timeline rail that draws itself with scroll progress,
+   714→ * numbered badges springing in, and each step sliding up as you read.
+   715→ */
+   716→function How() {
+   717→  const railRef = useRef<HTMLDivElement>(null);
+   718→  const { scrollYProgress } = useScroll({ target: railRef, offset: ["start 78%", "end 62%"] });
+   719→  const lineScale = useSpring(scrollYProgress, { stiffness: 90, damping: 26, mass: 0.6 });
+   720→
+   721→  return (
+   722→    <section id="how" className="scroll-mt-16 bg-background py-24 md:py-28">
+   723→      <div className="mx-auto max-w-6xl px-5 md:px-8">
+   724→        <motion.div variants={headWrap} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-15%" }} className="mb-16 max-w-2xl">
+   725→          <motion.p variants={headItem} className="mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">
+   726→            How it works
+   727→          </motion.p>
+   728→          <motion.h2 variants={headItem} className="text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]">
+   729→            From first call to final payment.
+   730→          </motion.h2>
+   731→        </motion.div>
+   732→
+   733→        <div ref={railRef} className="relative mt-4">
+   734→          {/* static rail */}
+   735→          <div className="absolute bottom-3 left-[20px] top-3 w-px bg-border md:left-1/2" aria-hidden />
+   736→          {/* progress rail — draws with scroll */}
+   737→          <motion.div
+   738→            style={{ scaleY: lineScale }}
+   739→            className="absolute bottom-3 left-[20px] top-3 w-[2px] origin-top rounded-full bg-gradient-to-b from-primary via-primary to-emerald-500 md:-ml-px md:left-1/2"
+   740→            aria-hidden
+   741→          />
+   742→
+   743→          <ol className="space-y-16 md:space-y-24">
+   744→            {FLOW.map((step, i) => (
+   745→              <li key={step.n} className="relative grid gap-6 pl-14 md:grid-cols-2 md:items-center md:gap-14 md:pl-0">
+   746→                {/* numbered badge on the rail */}
+   747→                <motion.span
+   748→                  initial={{ scale: 0, opacity: 0 }}
+   749→                  whileInView={{ scale: 1, opacity: 1 }}
+   750→                  viewport={{ once: true, margin: "-25%" }}
+   751→                  transition={{ type: "spring", stiffness: 320, damping: 17, delay: 0.08 }}
+   752→                  className="absolute left-0 top-0 z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-[12.5px] font-bold text-primary shadow-[0_8px_20px_-8px_rgba(15,23,42,0.35)] md:left-[calc(50%-20px)] md:top-1/2 md:-translate-y-1/2"
+   753→                  aria-hidden
+   754→                >
+   755→                  {step.n}
+   756→                </motion.span>
+   757→
+   758→                {/* image half */}
+   759→                <motion.div
+   760→                  initial={{ opacity: 0, y: 44 }}
+   761→                  whileInView={{ opacity: 1, y: 0 }}
+   762→                  viewport={{ once: true, margin: "-15%" }}
+   763→                  transition={{ duration: 0.8, ease: EASE }}
+   764→                  className={i % 2 === 0 ? "md:order-1" : "md:order-2"}
+   765→                >
+   766→                  <div className="group overflow-hidden rounded-xl border border-border/70 shadow-[0_26px_60px_-30px_rgba(15,23,42,0.45)]">
+   767→                    <img
+   768→                      src={step.img}
+   769→                      alt={step.alt}
+   770→                      className={`block w-full object-cover transition-transform duration-700 group-hover:scale-[1.04] ${step.isShot ? "" : "aspect-[4/3]"}`}
+   771→                      loading="lazy"
+   772→                    />
+   773→                  </div>
+   774→                </motion.div>
+   775→
+   776→                {/* text half */}
+   777→                <motion.div
+   778→                  initial={{ opacity: 0, y: 44 }}
+   779→                  whileInView={{ opacity: 1, y: 0 }}
+   780→                  viewport={{ once: true, margin: "-15%" }}
+   781→                  transition={{ duration: 0.8, ease: EASE, delay: 0.12 }}
+   782→                  className={i % 2 === 0 ? "md:order-2" : "md:order-1"}
+   783→                >
+   784→                  <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary/80">Step {step.n}</p>
+   785→                  <h3 className="text-[24px] font-bold tracking-tight md:text-[28px]">{step.title}</h3>
+   786→                  <p className="mt-4 max-w-md text-[14.5px] leading-relaxed text-muted-foreground">{step.copy}</p>
+   787→                  <ul className="mt-6 space-y-2.5">
+   788→                    {step.points.map((p) => (
+   789→                      <li key={p} className="flex items-start gap-2.5 text-[13.5px] text-foreground/80">
+   790→                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+   791→                        {p}
+   792→                      </li>
+   793→                    ))}
+   794→                  </ul>
+   795→                </motion.div>
+   796→              </li>
+   797→            ))}
+   798→          </ol>
+   799→        </div>
+   800→      </div>
+   801→    </section>
+   802→  );
+   803→}
+   804→
+   805→function Stats() {
+   806→  return (
+   807→    <section className="relative overflow-hidden bg-neutral-950 py-20 md:py-24">
+   808→      <img
+   809→        src="/img/roofing/shingles-texture.jpg"
+   810→        alt=""
+   811→        aria-hidden
+   812→        className="absolute inset-0 h-full w-full object-cover opacity-[0.14]"
+   813→        loading="lazy"
+   814→      />
+   815→      <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/85 via-neutral-950/60 to-neutral-950/85" aria-hidden />
+   816→      <div className="relative mx-auto grid max-w-6xl gap-10 px-5 sm:grid-cols-2 md:grid-cols-4 md:px-8">
+   817→        {STATS.map((s, i) => (
+   818→          <div key={s.label} className="rv text-center md:text-left" style={{ ["--rv-delay" as string]: `${i * 90}ms` }}>
+   819→            <p className="text-5xl font-bold tracking-tight text-white md:text-[56px]">
+   820→              <CountUp to={s.to} suffix={s.suffix} />
+   821→            </p>
+   822→            <p className="mt-2.5 text-[12.5px] leading-snug text-white/65">{s.label}</p>
+   823→          </div>
+   824→        ))}
+   825→      </div>
+   826→    </section>
+   827→  );
+   828→}
+   829→
+   830→function FinalCta() {
+   831→  return (
+   832→    <section className="relative overflow-hidden py-28 md:py-32">
+   833→      <img
+   834→        src="/img/roofing/crew-roofline.jpg"
+   835→        alt=""
+   836→        aria-hidden
+   837→        className="absolute inset-0 h-full w-full object-cover"
+   838→        loading="lazy"
+   839→      />
+   840→      <div className="absolute inset-0 bg-neutral-950/60" aria-hidden />
+   841→      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/75 via-transparent to-neutral-950/45" aria-hidden />
+   842→      <div className="relative mx-auto max-w-3xl px-5 text-center md:px-8">
+   843→        <h2 className="rv text-4xl font-bold leading-[1.06] tracking-tight text-white md:text-[56px]">
+   844→          Open the demo. Run a full day.
+   845→        </h2>
+   846→        <p className="rv mx-auto mt-5 max-w-lg text-[15px] leading-relaxed text-white/75" style={{ ["--rv-delay" as string]: "90ms" }}>
+   847→          Four seeded roles and a full pipeline of demo data — inquiries, inspections, quotes,
+   848→          payments. See the desk your crew would run tomorrow.
+   849→        </p>
+   850→        <div className="rv mt-9 flex flex-wrap items-center justify-center gap-3.5" style={{ ["--rv-delay" as string]: "160ms" }}>
+   851→          <button
+   852→            onClick={ctaNavigate}
+   853→            className="group inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-7 text-[15px] font-semibold text-neutral-900 shadow-2xl transition-transform hover:scale-[1.03]"
+   854→          >
+   855→            Open the app
+   856→            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+   857→          </button>
+   858→          <button
+   859→            onClick={() => (window.location.hash = "#/public/intake")}
+   860→            className="inline-flex min-h-[48px] items-center gap-2 rounded-full border border-white/30 bg-white/10 px-7 text-[15px] font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+   861→          >
+   862→            <CalendarCheck2 className="h-4 w-4" />
+   863→            Book as a homeowner
+   864→          </button>
+   865→        </div>
+   866→      </div>
+   867→    </section>
+   868→  );
+   869→}
+   870→
+   871→function Footer() {
+   872→  return (
+   873→    <footer className="border-t border-border/70 bg-background pb-10 pt-14">
+   874→      <div className="mx-auto max-w-6xl px-5 md:px-8">
+   875→        <div className="flex flex-col justify-between gap-10 md:flex-row md:items-start">
+   876→          <div className="max-w-xs">
+   877→            <Logo />
+   878→            <p className="mt-4 text-[12.5px] leading-relaxed text-muted-foreground">
+   879→              The estimate desk for roofing teams — inquiries to inspections, estimates to matched
+   880→              payments.
+   881→            </p>
+   882→          </div>
+   883→          <div className="grid grid-cols-2 gap-12 sm:gap-20">
+   884→            <div>
+   885→              <p className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">Product</p>
+   886→              <ul className="space-y-2.5 text-[13.5px]">
+   887→                <li><button onClick={() => scrollToSection("product")} className="text-muted-foreground transition-colors hover:text-foreground">Product tour</button></li>
+   888→                <li><button onClick={() => scrollToSection("screens")} className="text-muted-foreground transition-colors hover:text-foreground">Inside the app</button></li>
+   889→                <li><button onClick={() => scrollToSection("how")} className="text-muted-foreground transition-colors hover:text-foreground">How it works</button></li>
+   890→              </ul>
+   891→            </div>
+   892→            <div>
+   893→              <p className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">Get started</p>
+   894→              <ul className="space-y-2.5 text-[13.5px]">
+   895→                <li><button onClick={ctaNavigate} className="text-muted-foreground transition-colors hover:text-foreground">Open the app</button></li>
+   896→                <li><button onClick={() => (window.location.hash = "#/public/intake")} className="text-muted-foreground transition-colors hover:text-foreground">Homeowner booking</button></li>
+   897→                <li>
+   898→                  <a
+   899→                    href="https://github.com/faisukhan01/convert"
+   900→                    target="_blank"
+   901→                    rel="noreferrer"
+   902→                    className="inline-flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
+   903→                  >
+   904→                    GitHub <ArrowUpRight className="h-3.5 w-3.5" />
+   905→                  </a>
+   906→                </li>
+   907→              </ul>
+   908→            </div>
+   909→          </div>
+   910→        </div>
+   911→        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-border/60 pt-6 text-[11.5px] text-muted-foreground/80 sm:flex-row sm:items-center">
+   912→          <p>© {new Date().getFullYear()} RidgeLine · demo build — all data is synthetic</p>
+   913→          <p>Go automation engine · Postgres · GHL-ready · footage &amp; imagery for demo use</p>
+   914→        </div>
+   915→      </div>
+   916→    </footer>
+   917→  );
+   918→}
+   919→
+   920→export function LandingView() {
+   921→  useRevealOnScroll();
+   922→  return (
+   923→    <div className="grain flex min-h-screen flex-col bg-background">
+   924→      <Nav />
+   925→      <main className="flex-1">
+   926→        <Hero />
+   927→        <Wordmarks />
+   928→        <Product />
+   929→        <Screens />
+   930→        <How />
+   931→        <Stats />
+   932→        <FinalCta />
+   933→      </main>
+   934→      <footer className="mt-auto"><Footer /></footer>
+   935→    </div>
+   936→  );
+   937→}
+   938→
