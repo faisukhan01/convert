@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   title: "RidgeLine — Estimate desk for roofing teams",
@@ -17,16 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        {/* eslint-disable-next-line @next/next/no-page-custom-font -- App Router single-page app */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,450;0,9..144,560;0,9..144,640;1,9..144,450;1,9..144,520&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="antialiased bg-background text-foreground" style={{ fontFamily: "'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif" }}>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
+      <body className="antialiased bg-background text-foreground" style={{ fontFamily: "var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif" }}>
         {children}
         <Toaster position="top-right" richColors closeButton />
       </body>

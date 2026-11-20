@@ -1,7 +1,7 @@
 "use client";
 
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -9,7 +9,6 @@ import {
   Building2,
   CalendarCheck2,
   Check,
-  ChevronDown,
   ClipboardList,
   FileCheck2,
   HardHat,
@@ -22,19 +21,16 @@ import { Logo } from "@/components/app/shell";
 
 /**
  * RidgeLine marketing landing — the front door of the product.
- * Editorial, photography-led, deliberately restrained: real job-site imagery,
- * a cinematic auto-advancing hero, slow reveals, and copy written for roofing
- * operators rather than developers. All interactions degrade gracefully with
- * prefers-reduced-motion.
+ * Built like a real SaaS marketing site: a live-action hero video (Coverr,
+ * free license), real job-site photography, and actual screenshots of the
+ * running product inside browser frames. Single sans typeface, flat layout,
+ * no decorative effects — credibility over decoration.
  */
 
-const HERO_FRAMES = [
-  { src: "/img/roofing/hero-1.webp", tag: "The call", line: "A homeowner needs a roof. The job enters the desk." },
-  { src: "/img/roofing/hero-2.webp", tag: "The crew", line: "Nothing waits in a notebook. Work rolls the same day." },
-  { src: "/img/roofing/hero-3.webp", tag: "The inspection", line: "Findings logged on the record, not on memory." },
-  { src: "/img/roofing/hero-4.webp", tag: "The quote", line: "Estimates out fast — follow-ups handled for you." },
-  { src: "/img/roofing/hero-5.webp", tag: "The payoff", line: "Approved, invoiced, matched — every dollar on the books." },
-];
+const HERO = {
+  video: "/media/roof-hero.mp4",
+  poster: "/media/roof-hero-poster.jpg",
+};
 
 const WORDMARKS = [
   "Summit Roofing Co.",
@@ -45,35 +41,54 @@ const WORDMARKS = [
   "Harvest Ridge",
 ];
 
+const MINI_FEATURES = [
+  {
+    icon: PhoneMissed,
+    title: "Missed calls become booked inspections",
+    copy: "Every call, website form and referral lands in one queue — deduplicated, time-stamped, owned by someone.",
+  },
+  {
+    icon: BellRing,
+    title: "Quotes chase themselves",
+    copy: "RidgeLine notices when an estimate is opened and nudges the homeowner on schedule until you get an answer.",
+  },
+  {
+    icon: FileCheck2,
+    title: "Payments tie back to the quote",
+    copy: "Accepted estimates flow to invoices and matched payments, so the books always agree with the roof.",
+  },
+];
+
 const FLOW = [
   {
     n: "01",
-    img: "/img/roofing/flow-1.webp",
-    alt: "Roofing crew arriving at a neighborhood job site",
+    img: "/img/roofing/storm-tarp.jpg",
+    alt: "Crew securing a tarp over a storm-damaged roof",
     title: "Every inquiry, one desk",
     copy: "Phone calls, website forms, referrals and storm-season walk-ins land in a single queue — deduplicated, time-stamped and owned.",
     points: ["Never ask “who called whom?” again", "Duplicates flagged before they cost you", "Homeowners book inspections themselves"],
   },
   {
     n: "02",
-    img: "/img/roofing/flow-2.webp",
-    alt: "Close-up of a hammer on asphalt shingles",
+    img: "/img/roofing/tearoff.jpg",
+    alt: "Two roofers tearing off shingles ahead of a re-roof",
     title: "Inspections that leave a paper trail",
     copy: "Visit outcomes, photos and measurements are captured on the spot. The estimator’s phone view shows today’s route and nothing else.",
     points: ["Booked, completed, no-show — tracked", "Assignments balanced across the crew", "Follow-ups scheduled the moment you leave"],
   },
   {
     n: "03",
-    img: "/img/roofing/flow-3.webp",
-    alt: "Roofing craftsman fastening shingles with a nail gun",
+    img: "/img/app/estimates.png",
+    alt: "RidgeLine estimates board with status badges",
     title: "Quotes that chase themselves",
-    copy: "The desk sends the estimate, notices when it’s opened, and nudges the homeowner on your behalf until you get an answer.",
+    copy: "The desk sends the estimate, sees the moment it’s opened, and nudges the homeowner on your behalf until you get an answer.",
     points: ["Viewed / accepted / declined, visible", "Automatic nudges at smart intervals", "Revisions without losing history"],
+    isShot: true,
   },
   {
     n: "04",
-    img: "/img/roofing/flow-4.webp",
-    alt: "A finished white farmhouse with a new roof",
+    img: "/img/roofing/finished-house.jpg",
+    alt: "A finished craftsman home with a new roof",
     title: "From approval to paid invoice",
     copy: "Accepted quotes flow to invoices and matched payments. Aging views show exactly which jobs are stuck and for how long.",
     points: ["Payments matched to estimates", "Overdue stages flagged in red", "Reports your accountant will like"],
@@ -104,7 +119,7 @@ const ROLES = [
     icon: HardHat,
     title: "Estimator",
     line: "A phone built for the roof",
-    copy: "Today’s visits, one tap outcomes, and the next appointment always in view — even in gloves.",
+    copy: "Today’s visits, one-tap outcomes, and the next appointment always in view — even in gloves.",
   },
   {
     icon: Building2,
@@ -206,6 +221,25 @@ function ctaNavigate() {
   navigate(authed ? "/today" : "/signin");
 }
 
+/** A browser-chrome frame around a real product screenshot. */
+function BrowserFrame({ src, alt, label, className = "" }: { src: string; alt: string; label: string; className?: string }) {
+  return (
+    <figure className={`overflow-hidden rounded-xl border border-border bg-card shadow-[0_30px_80px_-36px_rgba(15,23,42,0.45)] ${className}`}>
+      <div className="flex items-center gap-2 border-b border-border/70 bg-muted/70 px-3.5 py-2.5">
+        <span className="flex gap-1.5" aria-hidden>
+          <span className="h-2.5 w-2.5 rounded-full bg-neutral-300" />
+          <span className="h-2.5 w-2.5 rounded-full bg-neutral-300" />
+          <span className="h-2.5 w-2.5 rounded-full bg-neutral-300" />
+        </span>
+        <span className="ml-2 truncate rounded-md border border-border/70 bg-background px-2.5 py-1 text-[10.5px] font-medium text-muted-foreground">
+          {label}
+        </span>
+      </div>
+      <img src={src} alt={alt} className="block w-full" loading="lazy" />
+    </figure>
+  );
+}
+
 /* ────────────── sections ────────────── */
 
 function Nav() {
@@ -219,7 +253,7 @@ function Nav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
   const links = [
-    { label: "The desk", id: "product" },
+    { label: "Product", id: "product" },
     { label: "How it works", id: "how" },
     { label: "Who it's for", id: "roles" },
     { label: "Reviews", id: "reviews" },
@@ -308,59 +342,38 @@ function Nav() {
 }
 
 function Hero() {
-  const [active, setActive] = useState(0);
-  const reduced = useMemo(
-    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    [],
-  );
-  useEffect(() => {
-    if (reduced) return;
-    const t = setInterval(() => setActive((a) => (a + 1) % HERO_FRAMES.length), 5600);
-    return () => clearInterval(t);
-  }, [reduced]);
-
-  const frame = HERO_FRAMES[active];
   return (
     <section className="relative flex min-h-[100svh] flex-col justify-end overflow-hidden bg-neutral-950">
-      {/* photography — crossfading slow push-in */}
-      {HERO_FRAMES.map((f, i) => (
-        <div
-          key={f.src}
-          className="absolute inset-0 transition-opacity duration-[1400ms] ease-out"
-          style={{ opacity: i === active ? 1 : 0 }}
-          aria-hidden={i !== active}
-        >
-          <img
-            key={i === active ? `active-${active}` : `idle-${i}`}
-            src={f.src}
-            alt=""
-            className={`h-full w-full object-cover ${i === active && !reduced ? "rl-kenburns" : ""}`}
-            loading={i === 0 ? "eager" : "lazy"}
-            fetchPriority={i === 0 ? "high" : "low"}
-          />
-        </div>
-      ))}
+      {/* live-action footage — real job site, real roofer */}
+      <video
+        className="absolute inset-0 h-full w-full object-cover"
+        src={HERO.video}
+        poster={HERO.poster}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        aria-hidden
+      />
       {/* scrims */}
-      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/85 via-neutral-950/25 to-neutral-950/55" aria-hidden />
-      <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/55 via-transparent to-transparent" aria-hidden />
+      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/92 via-neutral-950/30 to-neutral-950/55" aria-hidden />
+      <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/60 via-neutral-950/10 to-transparent" aria-hidden />
 
       {/* copy */}
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-28 pt-40 md:px-8 md:pb-32">
-        <p className="rv is-in mb-5 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/90 backdrop-blur-sm">
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-24 pt-40 md:px-8 md:pb-28">
+        <p className="rv is-in mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/90 backdrop-blur-sm">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
           Estimate desk for roofing teams
         </p>
-        <h1 className="font-display max-w-3xl text-[42px] font-[560] leading-[1.04] tracking-tight text-white sm:text-6xl md:text-[76px]">
-          The desk that turns{" "}
-          <br className="hidden sm:block" />
-          <em className="font-[450] italic text-amber-100/95">leaks</em> into{" "}
-          <em className="font-[450] italic text-amber-100/95">finished jobs</em>.
+        <h1 className="rv is-in max-w-3xl text-[42px] font-bold leading-[1.05] tracking-tight text-white sm:text-6xl md:text-[72px]">
+          Every roofing job, on one desk.
         </h1>
-        <p className="mt-6 max-w-xl text-[15px] leading-relaxed text-white/75 md:text-lg">
-          RidgeLine catches every homeowner request, books the inspection, chases every quote and
-          follows the money to the last invoice — so your crew builds roofs, not paperwork.
+        <p className="rv is-in mt-6 max-w-xl text-[15px] leading-relaxed text-white/75 md:text-lg">
+          RidgeLine tracks the inquiries, books the inspections, chases every quote and matches every
+          payment — so your crew builds roofs, not paperwork.
         </p>
-        <div className="mt-9 flex flex-wrap items-center gap-3.5">
+        <div className="rv is-in mt-9 flex flex-wrap items-center gap-3.5">
           <button
             onClick={ctaNavigate}
             className="group inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-6 text-[15px] font-semibold text-neutral-900 shadow-2xl transition-transform hover:scale-[1.03]"
@@ -375,75 +388,26 @@ function Hero() {
             See how it works
             <ArrowUpRight className="h-4 w-4" />
           </button>
-        </div>
-
-        {/* film-strip controls */}
-        <div className="mt-14 hidden items-end gap-6 md:flex">
-          <div className="flex max-w-xl flex-1 gap-2" role="tablist" aria-label="Hero scenes">
-            {HERO_FRAMES.map((f, i) => (
-              <button
-                key={f.tag}
-                role="tab"
-                aria-selected={i === active}
-                aria-label={`Scene ${i + 1}: ${f.tag}`}
-                onClick={() => setActive(i)}
-                className="group relative flex-1 pb-3"
-              >
-                <span className="block h-[3px] w-full overflow-hidden rounded-full bg-white/25">
-                  {i === active ? (
-                    <span
-                      key={active}
-                      className="block h-full w-full origin-left bg-white"
-                      style={{ animation: reduced ? "none" : "rl-meter 5.6s linear forwards" }}
-                    />
-                  ) : (
-                    <span className={`block h-full w-full origin-left ${i < active ? "bg-white/60" : "bg-transparent"}`} />
-                  )}
-                </span>
-                <span
-                  className={`absolute inset-x-0 bottom-0 whitespace-nowrap text-center text-[9.5px] font-semibold uppercase tracking-[0.14em] transition-colors ${
-                    i === active ? "text-white" : "text-white/40 group-hover:text-white/70"
-                  }`}
-                >
-                  {f.tag}
-                </span>
-              </button>
-            ))}
-          </div>
-          <p className="max-w-[240px] text-[12px] leading-snug text-white/70">{frame.line}</p>
+          <span className="text-[12.5px] font-medium text-white/55">Free demo · four roles · zero setup</span>
         </div>
       </div>
-
-      {/* scroll cue */}
-      <button
-        onClick={() => scrollToSection("product")}
-        aria-label="Scroll to content"
-        className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 text-white/60 transition-colors hover:text-white"
-      >
-        <ChevronDown className="h-6 w-6 animate-bounce" />
-      </button>
     </section>
   );
 }
 
 function Wordmarks() {
-  const row = [...WORDMARKS, ...WORDMARKS];
   return (
-    <section aria-label="Teams using RidgeLine" className="border-b border-border/70 bg-background py-8">
-      <div className="mx-auto max-w-6xl overflow-hidden px-5 md:px-8">
-        <p className="mb-5 text-center text-[11px] font-semibold uppercase tracking-[0.3em] text-muted-foreground/70">
+    <section aria-label="Teams using RidgeLine" className="border-b border-border/70 bg-background py-9">
+      <div className="mx-auto max-w-6xl px-5 md:px-8">
+        <p className="mb-6 text-center text-[11px] font-semibold uppercase tracking-[0.3em] text-muted-foreground/70">
           Demo teams running their desk on RidgeLine
         </p>
-        <div className="relative">
-          <div className="rl-marquee flex w-max items-center gap-14 whitespace-nowrap pr-14">
-            {row.map((w, i) => (
-              <span key={`${w}-${i}`} className="font-display text-[17px] font-[450] text-foreground/35">
-                {w}
-              </span>
-            ))}
-          </div>
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background to-transparent" />
+        <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+          {WORDMARKS.map((w) => (
+            <span key={w} className="text-[16px] font-semibold tracking-tight text-foreground/30">
+              {w}
+            </span>
+          ))}
         </div>
       </div>
     </section>
@@ -452,58 +416,56 @@ function Wordmarks() {
 
 function Product() {
   return (
-    <section id="product" className="bg-background py-24 md:py-32">
-      <div className="mx-auto grid max-w-6xl gap-14 px-5 md:grid-cols-[1fr_1.05fr] md:gap-16 md:px-8">
-        {/* sticky copy */}
-        <div className="md:sticky md:top-28 md:self-start">
-          <p className="rv mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">The problem</p>
-          <h2 className="rv font-display text-4xl font-[560] leading-[1.08] tracking-tight md:text-[52px]" style={{ ["--rv-delay" as string]: "60ms" }}>
-            Quotes don’t die in RidgeLine.
-            <br />
-            <em className="font-[450] italic text-primary">They get chased.</em>
+    <section id="product" className="bg-background py-24 md:py-28">
+      <div className="mx-auto max-w-6xl px-5 md:px-8">
+        <div className="mx-auto mb-14 max-w-2xl text-center">
+          <p className="rv mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">The product</p>
+          <h2 className="rv text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]" style={{ ["--rv-delay" as string]: "60ms" }}>
+            Your whole day, on one screen.
           </h2>
-          <p className="rv mt-6 max-w-md text-[15px] leading-relaxed text-muted-foreground" style={{ ["--rv-delay" as string]: "120ms" }}>
-            Most lost jobs aren’t lost to a better roofer — they’re lost to the roofer who followed
-            up first. RidgeLine is built around that truth: it remembers, it reminds, it follows the
-            money.
+          <p className="rv mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground" style={{ ["--rv-delay" as string]: "120ms" }}>
+            No spreadsheets, no group texts, no pocket notebook. One queue tells you exactly what needs
+            a response, a visit, or a decision — and what happens if you don’t.
           </p>
-          <ul className="rv mt-8 space-y-4" style={{ ["--rv-delay" as string]: "180ms" }}>
-            {[
-              { icon: PhoneMissed, text: "Missed calls become booked inspections, not lost customers" },
-              { icon: BellRing, text: "Every unanswered quote gets nudged automatically" },
-              { icon: FileCheck2, text: "Invoices tie back to the exact estimate that won the job" },
-            ].map(({ icon: Icon, text }) => (
-              <li key={text} className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Icon className="h-4 w-4" />
-                </span>
-                <span className="text-[14.5px] leading-snug text-foreground/80">{text}</span>
-              </li>
-            ))}
-          </ul>
         </div>
 
-        {/* collage */}
-        <div className="rv relative min-h-[560px]" style={{ ["--rv-delay" as string]: "120ms" }}>
-          <div className="rl-tilt-a absolute left-0 top-0 w-[72%] overflow-hidden rounded-2xl border border-border/60 shadow-[0_24px_60px_-24px_rgba(20,20,20,0.45)]">
-            <img src="/img/roofing/crew-1.webp" alt="Roofing crew in hi-vis working on a roof" className="aspect-[4/3] w-full object-cover" loading="lazy" />
+        {/* the real desk */}
+        <div className="rv" style={{ ["--rv-delay" as string]: "80ms" }}>
+          <BrowserFrame
+            src="/img/app/today.png"
+            alt="RidgeLine Today view: needs a response, inspections today, estimates awaiting a reply"
+            label="app.ridgeline.dev/#/today"
+          />
+        </div>
+
+        {/* three mini features under the shot */}
+        <div className="mt-14 grid gap-10 md:grid-cols-3 md:gap-8">
+          {MINI_FEATURES.map((f, i) => (
+            <div key={f.title} className="rv" style={{ ["--rv-delay" as string]: `${i * 90}ms` }}>
+              <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <f.icon className="h-5 w-5" />
+              </span>
+              <h3 className="text-[16.5px] font-bold tracking-tight">{f.title}</h3>
+              <p className="mt-2.5 text-[13.5px] leading-relaxed text-muted-foreground">{f.copy}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* more of the real product */}
+        <div className="mt-16 grid gap-6 md:grid-cols-2">
+          <div className="rv" style={{ ["--rv-delay" as string]: "60ms" }}>
+            <BrowserFrame
+              src="/img/app/inquiries.png"
+              alt="RidgeLine inquiries list with statuses and owners"
+              label="app.ridgeline.dev/#/inquiries"
+            />
           </div>
-          <div className="rl-tilt-b absolute right-0 top-[30%] w-[46%] overflow-hidden rounded-2xl border border-border/60 shadow-[0_24px_60px_-24px_rgba(20,20,20,0.45)]">
-            <img src="/img/roofing/flow-3.webp" alt="Craftsman fastening shingles with a nail gun" className="aspect-[3/4] w-full object-cover" loading="lazy" />
-          </div>
-          <div className="rl-tilt-a absolute bottom-0 left-[8%] w-[58%] overflow-hidden rounded-2xl border border-border/60 shadow-[0_24px_60px_-24px_rgba(20,20,20,0.45)]">
-            <img src="/img/roofing/crew-2.webp" alt="Aerial view of materials being lifted onto a roof" className="aspect-[16/10] w-full object-cover" loading="lazy" />
-          </div>
-          {/* floating product moments */}
-          <div className="absolute -left-2 top-[38%] z-10 hidden rounded-xl border border-border/70 bg-card/95 px-3.5 py-2.5 shadow-xl backdrop-blur sm:block">
-            <p className="text-[11px] font-semibold text-foreground">E-1043 · viewed 2m ago</p>
-            <p className="text-[10.5px] text-muted-foreground">Grace Nolan · $6,900</p>
-          </div>
-          <div className="absolute bottom-[16%] right-[2%] z-10 hidden rounded-xl border border-border/70 bg-card/95 px-3.5 py-2.5 shadow-xl backdrop-blur sm:block">
-            <p className="flex items-center gap-1.5 text-[11px] font-semibold text-foreground">
-              <Check className="h-3.5 w-3.5 text-emerald-600" /> Nudge sent automatically
-            </p>
-            <p className="text-[10.5px] text-muted-foreground">Parker Lind · callback 2 of 3</p>
+          <div className="rv md:mt-12" style={{ ["--rv-delay" as string]: "140ms" }}>
+            <BrowserFrame
+              src="/img/app/reports.png"
+              alt="RidgeLine reports: conversion, aging and revenue views"
+              label="app.ridgeline.dev/#/reports"
+            />
           </div>
         </div>
       </div>
@@ -513,32 +475,33 @@ function Product() {
 
 function How() {
   return (
-    <section id="how" className="border-y border-border/70 bg-[oklch(0.965_0.008_88)] py-24 md:py-32">
+    <section id="how" className="border-y border-border/70 bg-muted/40 py-24 md:py-28">
       <div className="mx-auto max-w-6xl px-5 md:px-8">
         <div className="mb-16 max-w-2xl">
-          <p className="rv mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">The pipeline</p>
-          <h2 className="rv font-display text-4xl font-[560] leading-[1.08] tracking-tight md:text-[52px]" style={{ ["--rv-delay" as string]: "60ms" }}>
-            First call to final payment,
-            <em className="font-[450] italic text-primary"> one straight line</em>.
+          <p className="rv mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">How it works</p>
+          <h2 className="rv text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]" style={{ ["--rv-delay" as string]: "60ms" }}>
+            From first call to final payment.
           </h2>
         </div>
-        <div className="space-y-16 md:space-y-24">
+        <div className="space-y-16 md:space-y-20">
           {FLOW.map((s, i) => (
             <div
               key={s.n}
               className={`rv flex flex-col gap-8 md:items-center md:gap-14 ${i % 2 === 1 ? "md:flex-row-reverse" : "md:flex-row"}`}
             >
-              <div className="relative md:w-[46%]">
-                <div className="overflow-hidden rounded-2xl border border-border/60 shadow-[0_24px_60px_-28px_rgba(20,20,20,0.45)]">
-                  <img src={s.img} alt={s.alt} className="aspect-[4/3] w-full object-cover transition-transform duration-700 hover:scale-[1.03]" loading="lazy" />
+              <div className="md:w-[46%]">
+                <div className="overflow-hidden rounded-xl border border-border/70 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.4)]">
+                  <img
+                    src={s.img}
+                    alt={s.alt}
+                    className={`block w-full object-cover ${s.isShot ? "" : "aspect-[4/3]"}`}
+                    loading="lazy"
+                  />
                 </div>
-                <span className="font-display absolute -left-3 -top-7 select-none text-[72px] font-[450] leading-none text-primary/15 md:-left-8">
-                  {s.n}
-                </span>
               </div>
               <div className="md:w-[54%]">
                 <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary/80">Step {s.n}</p>
-                <h3 className="font-display text-[26px] font-[560] tracking-tight md:text-[32px]">{s.title}</h3>
+                <h3 className="text-[24px] font-bold tracking-tight md:text-[28px]">{s.title}</h3>
                 <p className="mt-4 max-w-md text-[14.5px] leading-relaxed text-muted-foreground">{s.copy}</p>
                 <ul className="mt-6 space-y-2.5">
                   {s.points.map((p) => (
@@ -561,17 +524,17 @@ function Stats() {
   return (
     <section className="relative overflow-hidden bg-neutral-950 py-20 md:py-24">
       <img
-        src="/img/roofing/hero-3.webp"
+        src="/img/roofing/shingles-texture.jpg"
         alt=""
         aria-hidden
-        className="absolute inset-0 h-full w-full object-cover opacity-[0.16]"
+        className="absolute inset-0 h-full w-full object-cover opacity-[0.14]"
         loading="lazy"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/80 via-neutral-950/60 to-neutral-950/80" aria-hidden />
+      <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/85 via-neutral-950/60 to-neutral-950/85" aria-hidden />
       <div className="relative mx-auto grid max-w-6xl gap-10 px-5 sm:grid-cols-2 md:grid-cols-4 md:px-8">
         {STATS.map((s, i) => (
           <div key={s.label} className="rv text-center md:text-left" style={{ ["--rv-delay" as string]: `${i * 90}ms` }}>
-            <p className="font-display text-5xl font-[560] tracking-tight text-white md:text-[56px]">
+            <p className="text-5xl font-bold tracking-tight text-white md:text-[56px]">
               <CountUp to={s.to} suffix={s.suffix} />
             </p>
             <p className="mt-2.5 text-[12.5px] leading-snug text-white/65">{s.label}</p>
@@ -584,14 +547,13 @@ function Stats() {
 
 function Roles() {
   return (
-    <section id="roles" className="bg-background py-24 md:py-32">
+    <section id="roles" className="bg-background py-24 md:py-28">
       <div className="mx-auto max-w-6xl px-5 md:px-8">
         <div className="mb-14 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
           <div className="max-w-xl">
-            <p className="rv mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">Who it’s for</p>
-            <h2 className="rv font-display text-4xl font-[560] leading-[1.08] tracking-tight md:text-[52px]" style={{ ["--rv-delay" as string]: "60ms" }}>
-              Built for the whole crew —
-              <em className="font-[450] italic text-primary"> not just the boss</em>.
+            <p className="rv mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">Who it's for</p>
+            <h2 className="rv text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]" style={{ ["--rv-delay" as string]: "60ms" }}>
+              Built for every seat on the crew.
             </h2>
           </div>
           <p className="rv max-w-sm text-[14px] leading-relaxed text-muted-foreground" style={{ ["--rv-delay" as string]: "120ms" }}>
@@ -603,14 +565,14 @@ function Roles() {
           {ROLES.map((r, i) => (
             <div
               key={r.title}
-              className="rv group rounded-2xl border border-border/70 bg-card p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_44px_-20px_rgba(20,20,20,0.35)]"
+              className="rv group rounded-xl border border-border/70 bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_-20px_rgba(15,23,42,0.3)]"
               style={{ ["--rv-delay" as string]: `${i * 80}ms` }}
             >
-              <span className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+              <span className="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                 <r.icon className="h-5 w-5" />
               </span>
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">{r.title}</p>
-              <h3 className="font-display mt-1.5 text-[19px] font-[560] tracking-tight">{r.line}</h3>
+              <h3 className="mt-1.5 text-[17px] font-bold tracking-tight">{r.line}</h3>
               <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">{r.copy}</p>
             </div>
           ))}
@@ -622,23 +584,23 @@ function Roles() {
 
 function Reviews() {
   return (
-    <section id="reviews" className="border-y border-border/70 bg-[oklch(0.965_0.008_88)] py-24 md:py-32">
+    <section id="reviews" className="border-y border-border/70 bg-muted/40 py-24 md:py-28">
       <div className="mx-auto max-w-6xl px-5 md:px-8">
         <div className="mb-14 max-w-2xl">
           <p className="rv mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">From the desk</p>
-          <h2 className="rv font-display text-4xl font-[560] leading-[1.08] tracking-tight md:text-[52px]" style={{ ["--rv-delay" as string]: "60ms" }}>
-            The people who <em className="font-[450] italic text-primary">live in it</em> daily.
+          <h2 className="rv text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]" style={{ ["--rv-delay" as string]: "60ms" }}>
+            The people who live in it daily.
           </h2>
         </div>
         <div className="grid gap-5 md:grid-cols-3">
           {REVIEWS.map((r, i) => (
             <figure
               key={r.name}
-              className="rv flex flex-col rounded-2xl border border-border/70 bg-card p-7"
+              className="rv flex flex-col rounded-xl border border-border/70 bg-card p-7"
               style={{ ["--rv-delay" as string]: `${i * 90}ms` }}
             >
-              <Quote className="h-6 w-6 text-primary/30" />
-              <blockquote className="font-display mt-4 flex-1 text-[17px] font-[450] leading-relaxed text-foreground/90">
+              <Quote className="h-5 w-5 text-primary/40" />
+              <blockquote className="mt-4 flex-1 text-[15px] leading-relaxed text-foreground/90">
                 “{r.quote}”
               </blockquote>
               <figcaption className="mt-6 flex items-center gap-3 border-t border-border/60 pt-5">
@@ -660,18 +622,23 @@ function Reviews() {
 
 function FinalCta() {
   return (
-    <section className="relative overflow-hidden py-28 md:py-36">
-      <img src="/img/roofing/signin-b.webp" alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-      <div className="absolute inset-0 bg-neutral-950/55" aria-hidden />
-      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/70 via-transparent to-neutral-950/40" aria-hidden />
+    <section className="relative overflow-hidden py-28 md:py-32">
+      <img
+        src="/img/roofing/crew-roofline.jpg"
+        alt=""
+        aria-hidden
+        className="absolute inset-0 h-full w-full object-cover"
+        loading="lazy"
+      />
+      <div className="absolute inset-0 bg-neutral-950/60" aria-hidden />
+      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/75 via-transparent to-neutral-950/45" aria-hidden />
       <div className="relative mx-auto max-w-3xl px-5 text-center md:px-8">
-        <h2 className="rv font-display text-4xl font-[560] leading-[1.06] tracking-tight text-white md:text-[60px]">
-          Your next job starts
-          <em className="font-[450] italic text-amber-100/95"> at the ridge</em>.
+        <h2 className="rv text-4xl font-bold leading-[1.06] tracking-tight text-white md:text-[56px]">
+          Open the demo. Run a full day.
         </h2>
         <p className="rv mx-auto mt-5 max-w-lg text-[15px] leading-relaxed text-white/75" style={{ ["--rv-delay" as string]: "90ms" }}>
-          Open the live demo and run a full day — inquiries, inspections, quotes, payments — with
-          seeded roles and zero setup.
+          Four seeded roles and a full pipeline of demo data — inquiries, inspections, quotes,
+          payments. See the desk your crew would run tomorrow.
         </p>
         <div className="rv mt-9 flex flex-wrap items-center justify-center gap-3.5" style={{ ["--rv-delay" as string]: "160ms" }}>
           <button
@@ -710,6 +677,7 @@ function Footer() {
             <div>
               <p className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">Product</p>
               <ul className="space-y-2.5 text-[13.5px]">
+                <li><button onClick={() => scrollToSection("product")} className="text-muted-foreground transition-colors hover:text-foreground">Product tour</button></li>
                 <li><button onClick={() => scrollToSection("how")} className="text-muted-foreground transition-colors hover:text-foreground">How it works</button></li>
                 <li><button onClick={() => scrollToSection("roles")} className="text-muted-foreground transition-colors hover:text-foreground">Who it’s for</button></li>
                 <li><button onClick={() => scrollToSection("reviews")} className="text-muted-foreground transition-colors hover:text-foreground">Reviews</button></li>
@@ -736,7 +704,7 @@ function Footer() {
         </div>
         <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-border/60 pt-6 text-[11.5px] text-muted-foreground/80 sm:flex-row sm:items-center">
           <p>© {new Date().getFullYear()} RidgeLine · demo build — all data is synthetic</p>
-          <p>Go automation engine · Postgres · GHL-ready</p>
+          <p>Go automation engine · Postgres · GHL-ready · footage &amp; imagery for demo use</p>
         </div>
       </div>
     </footer>

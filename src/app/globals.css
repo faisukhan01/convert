@@ -147,9 +147,10 @@
 
 /* ═══════════════ RidgeLine marketing surfaces (landing + sign-in) ═══════════════ */
 
-.font-display {
-  font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
-  font-optical-sizing: auto;
+/* Subtle dot grid used on dark auth/marketing backdrops */
+.rl-dots {
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.075) 1px, transparent 0);
+  background-size: 26px 26px;
 }
 
 /* Filmic grain — a faint fixed overlay that keeps big photography from looking flat */
@@ -159,22 +160,16 @@
   inset: 0;
   pointer-events: none;
   z-index: 60;
-  opacity: 0.05;
+  opacity: 0.04;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
 }
 
-/* Slow cinematic push-in for hero photography */
+/* Slow cinematic push-in for static hero photography (video hero needs none) */
 @keyframes rl-kenburns {
   from { transform: scale(1.02) translateY(0.4%); }
   to   { transform: scale(1.12) translateY(-0.8%); }
 }
 .rl-kenburns { animation: rl-kenburns 9s ease-out forwards; }
-
-/* Hero frame progress meter */
-@keyframes rl-meter {
-  from { transform: scaleX(0); }
-  to   { transform: scaleX(1); }
-}
 
 /* Scroll reveal — elements start translated + faded, .is-in lands them */
 .rv {
@@ -186,18 +181,7 @@
 }
 .rv.is-in { opacity: 1; transform: none; }
 
-/* Editorial image tilt for the collage */
-.rl-tilt-a { transform: rotate(-2.2deg); }
-.rl-tilt-b { transform: rotate(1.6deg); }
-
-/* Marquee for the crew wordmarks */
-@keyframes rl-marquee {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-.rl-marquee { animation: rl-marquee 30s linear infinite; }
-
 @media (prefers-reduced-motion: reduce) {
   .rv { opacity: 1; transform: none; }
-  .rl-kenburns, .rl-marquee { animation: none; }
+  .rl-kenburns { animation: none; }
 }
