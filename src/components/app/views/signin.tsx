@@ -9,14 +9,15 @@ import { api } from "@/hooks/use-api";
 import { useAppStore } from "@/store/app";
 import { toast } from "sonner";
 import { Logo } from "@/components/app/shell";
-import { ArrowLeft, ArrowRight, Eye, EyeOff, Home, Loader2, Lock, Mail } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Home, Loader2, Lock, Mail } from "lucide-react";
 
 /**
  * Staff sign-in — the same stage as the landing page: live-action
- * job-site footage behind light scrims and filmic grain. Two layered
- * glass cards rise into place: the sign-in form sits to the left, the
- * one-click demo roles panel to the right. Auth behavior (Bearer token
- * + cookie session) is unchanged.
+ * job-site footage behind light scrims and filmic grain. Two fully
+ * transparent outline cards rise into place: the sign-in form sits to
+ * the left, the one-click demo roles panel to the right — fields and
+ * buttons pick up color on hover and press. Auth behavior (Bearer
+ * token + cookie session) is unchanged.
  */
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -88,13 +89,13 @@ export function SignInView() {
         transition={{ duration: 0.6, ease: EASE }}
         className="relative z-10 flex items-center justify-between px-5 py-5 sm:px-8"
       >
+        <Logo tone="light" tagline={false} />
         <button
           onClick={() => (window.location.hash = "#/landing")}
           className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-medium text-white/60 transition-colors hover:bg-white/10 hover:text-white"
         >
-          <ArrowLeft className="h-4 w-4" /> Back to site
+          Back to site <ArrowRight className="h-4 w-4" />
         </button>
-        <Logo tone="light" tagline={false} />
       </motion.header>
 
       {/* the stage: sign-in form pinned to the left corner, demo roles on the right */}
@@ -107,13 +108,11 @@ export function SignInView() {
         >
           {/* left corner — the sign-in form */}
           <motion.div variants={riseItem} className="w-full max-w-[500px] self-center justify-self-center md:justify-self-start">
-            <div className="rounded-[28px] bg-gradient-to-b from-white/40 via-white/[0.14] to-white/[0.05] p-px shadow-[0_60px_140px_-35px_rgba(0,0,0,0.95)]">
-              <div className="relative overflow-hidden rounded-[27px] bg-gradient-to-b from-[#122334] via-[#0d1a29] to-[#0a141f]">
-                {/* top sheen + brand glows on a solid, deep steel-blue panel */}
-                <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
-                <div aria-hidden className="absolute -right-24 -top-28 h-72 w-72 rounded-full bg-primary/40 blur-[100px]" />
-                <div aria-hidden className="absolute -bottom-32 -left-24 h-64 w-64 rounded-full bg-emerald-500/15 blur-[100px]" />
-                <div aria-hidden className="rl-dots pointer-events-none absolute inset-0 opacity-[0.16]" />
+            <div className="relative overflow-hidden rounded-[28px] border border-white/20 bg-transparent shadow-[0_50px_120px_-40px_rgba(0,0,0,0.8)]">
+                {/* top sheen + brand glows over the live footage */}
+                <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+                <div aria-hidden className="absolute -right-24 -top-28 h-72 w-72 rounded-full bg-primary/30 blur-[110px]" />
+                <div aria-hidden className="absolute -bottom-32 -left-24 h-64 w-64 rounded-full bg-emerald-500/10 blur-[110px]" />
 
                 <div className="relative p-6 sm:p-8">
                   <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.2em] text-white/85">
@@ -144,7 +143,7 @@ export function SignInView() {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
-                          className="h-12 rounded-xl border-white/15 bg-white/[0.07] pl-10 text-white placeholder:text-white/35 transition-colors focus-visible:border-white/35 focus-visible:ring-white/15"
+                          className="h-12 rounded-xl border-white/15 bg-transparent pl-10 text-white placeholder:text-white/35 transition-colors hover:border-white/35 hover:bg-white/10 focus-visible:border-white/45 focus-visible:bg-white/[0.12] focus-visible:ring-white/20"
                         />
                       </div>
                     </motion.div>
@@ -159,7 +158,7 @@ export function SignInView() {
                           placeholder="••••••••"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
-                          className="h-12 rounded-xl border-white/15 bg-white/[0.07] pl-10 pr-10 text-white transition-colors focus-visible:border-white/35 focus-visible:ring-white/15"
+                          className="h-12 rounded-xl border-white/15 bg-transparent pl-10 pr-10 text-white transition-colors hover:border-white/35 hover:bg-white/10 focus-visible:border-white/45 focus-visible:bg-white/[0.12] focus-visible:ring-white/20"
                         />
                         <button
                           type="button"
@@ -172,13 +171,13 @@ export function SignInView() {
                       </div>
                       <p className="flex items-center gap-2 pt-0.5 text-[11px] text-white/45">
                         Demo password
-                        <code className="rounded-lg border border-white/10 bg-white/[0.07] px-2 py-1 font-mono text-[10.5px] font-semibold text-white/80">demo</code>
+                        <code className="rounded-lg border border-white/15 bg-transparent px-2 py-1 font-mono text-[10.5px] font-semibold text-white/80">demo</code>
                       </p>
                     </motion.div>
                     <motion.div variants={riseItem} className="pt-1">
                       <Button
                         type="submit"
-                        className="group h-12 w-full rounded-xl bg-white text-[14.5px] font-bold text-neutral-900 shadow-[0_20px_50px_-14px_rgba(255,255,255,0.4)] transition-all hover:bg-white/90 hover:shadow-[0_24px_60px_-14px_rgba(255,255,255,0.5)]"
+                        className="group h-12 w-full rounded-xl bg-white text-[14.5px] font-bold text-neutral-900 shadow-[0_20px_50px_-14px_rgba(255,255,255,0.4)] transition-all hover:bg-primary hover:text-primary-foreground hover:shadow-[0_24px_60px_-14px_rgba(0,0,0,0.5)] active:scale-[0.98]"
                         disabled={busy}
                       >
                         {busy ? (
@@ -197,19 +196,16 @@ export function SignInView() {
                     </motion.div>
                   </form>
                 </div>
-              </div>
             </div>
           </motion.div>
 
           {/* right corner — one-click demo roles */}
           <motion.div variants={riseItem} className="w-full max-w-[500px] self-center justify-self-center md:justify-self-end">
-            <div className="h-full rounded-[28px] bg-gradient-to-b from-white/40 via-white/[0.14] to-white/[0.05] p-px shadow-[0_60px_140px_-35px_rgba(0,0,0,0.95)]">
-              <div className="relative flex h-full flex-col overflow-hidden rounded-[27px] bg-gradient-to-b from-[#122334] via-[#0d1a29] to-[#0a141f] p-6 sm:p-7">
-                {/* top sheen + brand glows on the same solid, deep steel-blue panel */}
-                <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
-                <div aria-hidden className="absolute -left-24 -top-28 h-72 w-72 rounded-full bg-primary/40 blur-[100px]" />
-                <div aria-hidden className="absolute -bottom-24 -right-20 h-52 w-52 rounded-full bg-emerald-500/12 blur-[100px]" />
-                <div aria-hidden className="rl-dots pointer-events-none absolute inset-0 opacity-[0.16]" />
+            <div className="relative flex h-full flex-col overflow-hidden rounded-[28px] border border-white/20 bg-transparent p-6 shadow-[0_50px_120px_-40px_rgba(0,0,0,0.8)] sm:p-7">
+                {/* top sheen + brand glows over the live footage */}
+                <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+                <div aria-hidden className="absolute -left-24 -top-28 h-72 w-72 rounded-full bg-primary/30 blur-[110px]" />
+                <div aria-hidden className="absolute -bottom-24 -right-20 h-52 w-52 rounded-full bg-emerald-500/10 blur-[110px]" />
 
                 <div className="relative">
                   <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-white/50">
@@ -226,9 +222,9 @@ export function SignInView() {
                       key={a.email}
                       onClick={() => void signIn(a.email, "demo")}
                       disabled={busy}
-                      className="group flex min-h-[58px] items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/[0.09] hover:shadow-[0_18px_45px_-20px_rgba(255,255,255,0.3)] focus-visible:ring-2 focus-visible:ring-white/30 disabled:opacity-60"
+                      className="group flex min-h-[58px] items-center gap-3 rounded-2xl border border-white/15 bg-transparent p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-white/45 hover:bg-white/[0.12] hover:shadow-[0_18px_45px_-20px_rgba(255,255,255,0.3)] active:bg-white/[0.16] focus-visible:bg-white/[0.12] focus-visible:ring-2 focus-visible:ring-white/30 disabled:opacity-60"
                     >
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.07] text-[12.5px] font-bold text-white/75 ring-1 ring-inset ring-white/15">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-transparent text-[12.5px] font-bold text-white/75 ring-1 ring-inset ring-white/25">
                         {a.name.split(" ").map((n) => n[0]).join("")}
                       </span>
                       <span className="min-w-0 flex-1">
@@ -238,7 +234,7 @@ export function SignInView() {
                       {pending === a.email ? (
                         <Loader2 className="h-4 w-4 shrink-0 animate-spin text-white/80" />
                       ) : (
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40 transition-all group-hover:border-white/30 group-hover:bg-white group-hover:text-neutral-900">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-transparent text-white/40 transition-all group-hover:border-white/40 group-hover:bg-white group-hover:text-neutral-900">
                           <ArrowRight className="h-3.5 w-3.5" />
                         </span>
                       )}
@@ -259,7 +255,6 @@ export function SignInView() {
                     — no sign-in needed.
                   </p>
                 </div>
-              </div>
             </div>
           </motion.div>
         </motion.div>

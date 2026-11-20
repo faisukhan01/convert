@@ -924,28 +924,23 @@ function ReportsMock() {
 
 /**
  * The interactive desk: a working miniature of the product rendered in
- * pure DOM — no screenshots. Clicking a page in the sidebar switches
- * the view (exactly like the real app); left alone, the desk tours
- * every page by itself every 3 seconds. Hovering pauses the tour.
+ * pure DOM — no screenshots. Clicking a page in the sidebar jumps there
+ * (exactly like the real app) and the tour keeps rolling: one page
+ * every 3 seconds, forever. A click just restarts the 3-second clock.
  */
 function AppPreview() {
   const [active, setActive] = useState(0);
   const [cycle, setCycle] = useState(0);
-  const [hold, setHold] = useState(false);
-  const canHover = useRef(false);
 
+  /* the tour never stops — every 3 seconds the desk advances to the next
+     page, even right after the user picks a page from the sidebar. */
   useEffect(() => {
-    canHover.current = window.matchMedia("(hover: hover)").matches;
-  }, []);
-
-  useEffect(() => {
-    if (hold) return;
     const t = setTimeout(() => {
       setActive((a) => (a + 1) % APP_PAGES.length);
       setCycle((c) => c + 1);
     }, 3000);
     return () => clearTimeout(t);
-  }, [hold, cycle]);
+  }, [cycle]);
 
   const jump = (i: number) => {
     if (i === active) return;
@@ -956,13 +951,7 @@ function AppPreview() {
   const page = APP_PAGES[active];
 
   return (
-    <div
-      className="relative"
-      onPointerEnter={() => {
-        if (canHover.current) setHold(true);
-      }}
-      onPointerLeave={() => setHold(false)}
-    >
+    <div className="relative">
       <BrowserFrame label={page.url}>
         <div className="relative flex h-[430px] w-full overflow-hidden bg-background sm:aspect-[16/10] sm:h-auto">
           {/* the sidebar — click a page to switch to it (desktop) */}
@@ -1109,7 +1098,7 @@ function Product() {
           {/* hint — the preview is live, not a screenshot */}
           <p className="mt-7 flex items-center justify-center gap-2 text-center text-[12.5px] font-medium text-muted-foreground">
             <MousePointerClick className="h-4 w-4 text-primary" aria-hidden />
-            Interactive preview — click a page in the sidebar, or let it tour itself every few seconds.
+            Interactive preview — click a page in the sidebar; the tour keeps rolling to the next page every 3 seconds.
           </p>
         </div>
       </div>
