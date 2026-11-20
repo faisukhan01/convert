@@ -5,16 +5,14 @@ import {
   ArrowRight,
   ArrowUpRight,
   BarChart3,
-  Building2,
   CalendarCheck2,
-  Camera,
   Check,
   FileText,
   Inbox,
   LayoutDashboard,
+  MousePointerClick,
   Play,
   Send,
-  ShieldCheck,
 } from "lucide-react";
 import {
   AnimatePresence,
@@ -50,49 +48,17 @@ const WORDMARKS = [
   "Harvest Ridge",
 ];
 
-/** The real product screens used in the auto-touring showcase. */
-const SCREENS = [
-  {
-    key: "today",
-    icon: LayoutDashboard,
-    tab: "Today",
-    title: "The morning queue",
-    desc: "Needs-a-response, today's inspections and quotes awaiting a reply — the whole day on one list.",
-    shot: "/img/app/today.png",
-    label: "app.ridgeline.dev/#/today",
-    alt: "RidgeLine Today view: needs a response, inspections today, estimates awaiting a reply",
-  },
-  {
-    key: "inquiries",
-    icon: Inbox,
-    tab: "Inquiries",
-    title: "Every lead, owned",
-    desc: "Calls, web forms and referrals deduplicated, time-stamped and assigned before they slip.",
-    shot: "/img/app/inquiries.png",
-    label: "app.ridgeline.dev/#/inquiries",
-    alt: "RidgeLine inquiries list with statuses and owners",
-  },
-  {
-    key: "estimates",
-    icon: FileText,
-    tab: "Estimates",
-    title: "Quotes that chase",
-    desc: "Viewed, nudged and accepted — the pipeline moves without a single game of phone tag.",
-    shot: "/img/app/estimates.png",
-    label: "app.ridgeline.dev/#/estimates",
-    alt: "RidgeLine estimates board with status badges",
-  },
-  {
-    key: "reports",
-    icon: BarChart3,
-    tab: "Reports",
-    title: "The honest numbers",
-    desc: "Conversion, aging and collectible revenue across every location — exportable in one click.",
-    shot: "/img/app/reports.png",
-    label: "app.ridgeline.dev/#/reports",
-    alt: "RidgeLine reports: conversion, aging and revenue views",
-  },
-];
+/**
+ * The pages shown inside the interactive product preview. Every "screen"
+ * below is real DOM — no screenshots — so the preview behaves like the
+ * running app: click a page in the sidebar and the view switches.
+ */
+const APP_PAGES = [
+  { key: "today", label: "Today", icon: LayoutDashboard, url: "app.ridgeline.dev/#/today" },
+  { key: "inquiries", label: "Inquiries", icon: Inbox, url: "app.ridgeline.dev/#/inquiries" },
+  { key: "estimates", label: "Estimates", icon: FileText, url: "app.ridgeline.dev/#/estimates" },
+  { key: "reports", label: "Reports", icon: BarChart3, url: "app.ridgeline.dev/#/reports" },
+] as const;
 
 const FLOW = [
   {
@@ -408,28 +374,275 @@ function Wordmarks() {
   );
 }
 
-/**
- * The product desk: the headline reveals in staggered lines, the desk
- * morphs from a tilted card to flat as it scrolls into view — then the
- * real product screens auto-tour: every view slides in on a timed
- * loop (like flipping through the app itself), with a live progress
- * rail. Hovering pauses; clicking a segment jumps.
- */
-function Product() {
-  const shotRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: shotRef, offset: ["start end", "center center"] });
-  const rotateX = useTransform(scrollYProgress, [0, 1], [14, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], [0.94, 1]);
-  const lift = useTransform(scrollYProgress, [0, 1], [56, 0]);
-  const glow = useTransform(scrollYProgress, [0, 0.55, 1], [0.15, 0.85, 1]);
+/* ────────────── the living product preview — pure DOM, zero screenshots ────────────── */
 
-  // The auto-tour: the desk flips to the next real screen every ~4.4s.
-  // Hover-capable pointers pause it; leaving or clicking a segment
-  // restarts the clock.
+/** One list row inside a preview screen. */
+function PreviewRow({ tag, tone, name, meta }: { tag: string; tone: string; name: string; meta: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-card px-2.5 py-1.5 sm:px-3.5 sm:py-2">
+      <span className="flex min-w-0 items-center gap-2">
+        <span className={`shrink-0 rounded px-1.5 py-0.5 text-[8.5px] font-bold sm:text-[10px] ${tone}`}>{tag}</span>
+        <span className="truncate text-[10.5px] font-semibold text-foreground sm:text-[12.5px]">{name}</span>
+      </span>
+      <span className="shrink-0 text-[9px] font-medium text-muted-foreground sm:text-[11px]">{meta}</span>
+    </div>
+  );
+}
+
+/** A small section label inside a preview screen. */
+function PreviewLabel({ children }: { children: ReactNode }) {
+  return (
+    <p className="px-0.5 pb-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-[10px]">
+      {children}
+    </p>
+  );
+}
+
+/** A preview screen header bar. */
+function PreviewHead({ title, chip }: { title: string; chip?: string }) {
+  return (
+    <div className="flex items-center justify-between border-b border-border/70 px-3 py-2 sm:px-5 sm:py-2.5">
+      <span className="flex items-center gap-2">
+        <span className="text-[12px] font-bold tracking-tight text-foreground sm:text-[14px]">{title}</span>
+        {chip && (
+          <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[8.5px] font-semibold text-muted-foreground sm:text-[9.5px]">
+            {chip}
+          </span>
+        )}
+      </span>
+      <span className="flex items-center gap-1.5 text-[8.5px] font-semibold uppercase tracking-[0.14em] text-emerald-600 sm:text-[9.5px]">
+        <span className="relative flex h-1.5 w-1.5" aria-hidden>
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        </span>
+        live
+      </span>
+    </div>
+  );
+}
+
+/** Page 1 — Today: the whole day on one list. */
+function TodayMock() {
+  return (
+    <div className="flex h-full flex-col bg-background">
+      <PreviewHead title="Today" chip="the whole day, one list" />
+      <div className="hidden gap-2 border-b border-border/60 bg-muted/40 px-5 py-2 sm:flex">
+        {["3 need a response", "2 inspections booked", "3 awaiting a reply"].map((c) => (
+          <span key={c} className="rounded-full border border-border/70 bg-card px-2.5 py-1 text-[10px] font-semibold text-foreground/75">
+            {c}
+          </span>
+        ))}
+      </div>
+      <div className="min-h-0 flex-1 space-y-3 overflow-hidden px-3 pt-2.5 sm:px-5 sm:pt-3.5">
+        <div>
+          <PreviewLabel>Needs a response</PreviewLabel>
+          <div className="space-y-1.5 sm:space-y-2">
+            <PreviewRow tag="Missed call" tone="bg-amber-500/15 text-amber-700" name="Marcus Webb" meta="call back before noon" />
+            <PreviewRow tag="New call" tone="bg-primary/10 text-primary" name="McAllister Residence" meta="respond by 2:00 PM" />
+            <PreviewRow tag="Web form" tone="bg-emerald-500/15 text-emerald-700" name="Quote request · Berry Lane" meta="assign an estimator" />
+          </div>
+        </div>
+        <div className="hidden sm:block">
+          <PreviewLabel>Inspections today</PreviewLabel>
+          <div className="space-y-1.5 sm:space-y-2">
+            <PreviewRow tag="10:00 AM" tone="bg-foreground/5 text-foreground/70" name="Rosa Alvarez · 118 Alder Creek Rd" meta="with Alex R." />
+            <PreviewRow tag="1:30 PM" tone="bg-foreground/5 text-foreground/70" name="Dwight Alderman · 44 Summit Pass" meta="with Marcus L." />
+          </div>
+        </div>
+        <div className="hidden sm:block">
+          <PreviewLabel>Estimates awaiting a reply</PreviewLabel>
+          <div className="space-y-2">
+            <PreviewRow tag="Viewed" tone="bg-primary/10 text-primary" name="E-1043 · Grace Nolan · $8,500" meta="nudge goes out tomorrow" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Page 2 — Inquiries: every lead, owned. */
+const INQUIRIES = [
+  { name: "Grace Nolan", src: "Web form", srcTone: "bg-primary/10 text-primary", status: "New", stTone: "bg-amber-500/15 text-amber-700", next: "Assign an estimator", owner: "PS", age: "4m ago" },
+  { name: "Marcus Webb", src: "Missed call", srcTone: "bg-amber-500/15 text-amber-700", status: "Contacted", stTone: "bg-foreground/5 text-foreground/70", next: "Call back before noon", owner: "ML", age: "26m ago" },
+  { name: "Rosa Alvarez", src: "Referral", srcTone: "bg-emerald-500/15 text-emerald-700", status: "Booked", stTone: "bg-emerald-500/15 text-emerald-700", next: "Inspection Fri 10:00", owner: "AR", age: "1h ago" },
+  { name: "Dwight Alderman", src: "Walk-in", srcTone: "bg-foreground/5 text-foreground/70", status: "Booked", stTone: "bg-emerald-500/15 text-emerald-700", next: "Photo report due", owner: "ML", age: "3h ago" },
+  { name: "Parker Lind", src: "Web form", srcTone: "bg-primary/10 text-primary", status: "New", stTone: "bg-amber-500/15 text-amber-700", next: "Assign an estimator", owner: "AR", age: "4h ago" },
+];
+
+function InquiriesMock() {
+  return (
+    <div className="flex h-full flex-col bg-background">
+      <PreviewHead title="Inquiries" chip="calls · forms · referrals" />
+      <div className="hidden grid-cols-[1.3fr_0.8fr_0.8fr_1.2fr_auto] gap-2 border-b border-border/60 bg-muted/40 px-5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:grid">
+        <span>Homeowner</span>
+        <span>Source</span>
+        <span>Status</span>
+        <span>Next step</span>
+        <span>Age</span>
+      </div>
+      <div className="min-h-0 flex-1 overflow-hidden">
+        {INQUIRIES.map((r) => (
+          <div
+            key={r.name}
+            className="flex items-center justify-between gap-2 border-b border-border/50 px-3 py-[7px] sm:grid sm:grid-cols-[1.3fr_0.8fr_0.8fr_1.2fr_auto] sm:gap-2 sm:px-5 sm:py-2"
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[8px] font-bold text-muted-foreground sm:h-6 sm:w-6 sm:text-[9px]">
+                {r.owner}
+              </span>
+              <span className="truncate text-[10.5px] font-semibold text-foreground sm:text-[12.5px]">{r.name}</span>
+            </span>
+            <span className="hidden sm:block">
+              <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${r.srcTone}`}>{r.src}</span>
+            </span>
+            <span className="hidden sm:block">
+              <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${r.stTone}`}>{r.status}</span>
+            </span>
+            <span className="hidden truncate text-[10.5px] text-muted-foreground sm:block">{r.next}</span>
+            <span className="shrink-0 text-[9px] font-medium text-muted-foreground sm:text-[11px]">{r.age}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Page 3 — Estimates: the pipeline that moves without phone tag. */
+const EST_COLS = [
+  { label: "Sent", count: 4, cards: [{ id: "E-1046", name: "Parker Lind", amt: "$6,900", sub: "sent 9:40 AM" }] },
+  { label: "Viewed", count: 3, live: true, cards: [{ id: "E-1043", name: "Grace Nolan", amt: "$8,500", sub: "opened 11:47 AM" }] },
+  { label: "Accepted", count: 2, done: true, cards: [{ id: "E-1039", name: "Rosa Alvarez", amt: "$12,480", sub: "deposit due Fri" }] },
+];
+
+function EstimatesMock() {
+  return (
+    <div className="flex h-full flex-col bg-background">
+      <PreviewHead title="Estimates" chip="sent → viewed → accepted" />
+      <div className="grid min-h-0 flex-1 grid-cols-3 gap-2 px-3 pb-3 pt-2.5 sm:gap-3 sm:px-5 sm:pb-4 sm:pt-3">
+        {EST_COLS.map((c) => (
+          <div key={c.label} className="flex min-h-0 flex-col rounded-lg border border-border/60 bg-muted/30">
+            <div className="flex items-center justify-between border-b border-border/60 px-2 py-1.5 sm:px-2.5">
+              <span className="flex items-center gap-1.5 text-[9.5px] font-bold text-foreground/85 sm:text-[11px]">
+                {c.done ? (
+                  <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500 text-white">
+                    <Check className="h-2 w-2" />
+                  </span>
+                ) : c.live ? (
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
+                ) : null}
+                {c.label}
+              </span>
+              <span className="text-[9px] font-semibold text-muted-foreground">{c.count}</span>
+            </div>
+            <div className="space-y-1.5 p-1.5 sm:p-2">
+              {c.cards.map((k) => (
+                <div key={k.id} className="rounded-md border border-border/60 bg-card p-1.5 sm:p-2">
+                  <p className="flex items-center justify-between text-[9px] font-semibold text-muted-foreground sm:text-[10px]">
+                    <span>{k.id}</span>
+                    <span>{k.amt}</span>
+                  </p>
+                  <p className="mt-0.5 truncate text-[10px] font-bold text-foreground sm:text-[11.5px]">{k.name}</p>
+                  <p className="truncate text-[8.5px] text-muted-foreground sm:text-[9.5px]">{k.sub}</p>
+                </div>
+              ))}
+              {/* ghost card — the pipeline keeps going */}
+              <div className="rounded-md border border-dashed border-border/50 p-1.5 opacity-50 sm:p-2">
+                <span className="block h-1.5 w-2/3 rounded bg-muted" />
+                <span className="mt-1 block h-1.5 w-1/2 rounded bg-muted" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Page 4 — Reports: the honest numbers, per location. */
+const REPORT_KPIS = [
+  { label: "Booked", value: "92%", delta: "+4.1 pt" },
+  { label: "Collected", value: "$148k", delta: "30 days" },
+  { label: "Response", value: "6m", delta: "median" },
+];
+const REPORT_BARS = [34, 52, 44, 66, 58, 78, 91];
+const REPORT_DAYS = ["M", "T", "W", "T", "F", "S", "S"];
+const REPORT_LOCS = [
+  { name: "Summit Roofing Co.", v: 92 },
+  { name: "North Peak Exteriors", v: 78 },
+  { name: "Cedarline Roofing", v: 96 },
+];
+
+function ReportsMock() {
+  return (
+    <div className="flex h-full flex-col bg-background">
+      <PreviewHead title="Reports" chip="every branch, side by side" />
+      <div className="grid grid-cols-3 gap-1.5 px-3 pt-2.5 sm:gap-2.5 sm:px-5 sm:pt-3">
+        {REPORT_KPIS.map((k) => (
+          <div key={k.label} className="rounded-lg border border-border/60 bg-card px-2 py-1.5 sm:px-3 sm:py-2">
+            <p className="text-[8.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:text-[9.5px]">{k.label}</p>
+            <p className="text-[13px] font-bold tracking-tight text-foreground sm:text-[16px]">{k.value}</p>
+            <p className="text-[8px] font-medium text-emerald-600 sm:text-[9px]">{k.delta}</p>
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 flex min-h-0 flex-1 gap-2 px-3 pb-3 sm:mt-3 sm:gap-3 sm:px-5 sm:pb-4">
+        {/* the week's bars draw themselves in */}
+        <div className="flex min-h-0 flex-[1.5] flex-col rounded-lg border border-border/60 bg-muted/30 p-2 sm:p-3">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Booked inquiries · this week</p>
+          <div className="flex min-h-0 flex-1 items-end gap-1.5 pt-2 sm:gap-2">
+            {REPORT_BARS.map((v, i) => (
+              <div key={i} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
+                <motion.div
+                  initial={{ scaleY: 0 }}
+                  animate={{ scaleY: 1 }}
+                  transition={{ duration: 0.6, delay: 0.06 * i, ease: EASE }}
+                  style={{ height: `${v}%`, transformOrigin: "bottom" }}
+                  className="w-full rounded-t-sm bg-primary/80 sm:bg-primary"
+                />
+                <span className="text-[8px] font-medium text-muted-foreground">{REPORT_DAYS[i]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* per-location bars */}
+        <div className="flex min-h-0 flex-1 flex-col justify-center rounded-lg border border-border/60 bg-muted/30 p-2 sm:p-3">
+          <p className="pb-1.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">By location</p>
+          <div className="space-y-2">
+            {REPORT_LOCS.map((loc, i) => (
+              <div key={loc.name}>
+                <div className="flex items-center justify-between text-[8.5px] sm:text-[10px]">
+                  <span className="truncate font-semibold text-foreground/85">{loc.name}</span>
+                  <span className="font-medium text-muted-foreground">{loc.v}%</span>
+                </div>
+                <div className="mt-1 h-1 overflow-hidden rounded-full bg-muted">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${loc.v}%` }}
+                    transition={{ duration: 0.8, delay: 0.15 + i * 0.12, ease: EASE }}
+                    className="h-full rounded-full bg-primary"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The interactive desk: a working miniature of the product rendered in
+ * pure DOM — no screenshots. Clicking a page in the sidebar switches
+ * the view (exactly like the real app); left alone, the desk tours
+ * every page by itself every ~4.6 seconds. Hovering pauses the tour.
+ */
+function AppPreview() {
   const [active, setActive] = useState(0);
   const [cycle, setCycle] = useState(0);
   const [hold, setHold] = useState(false);
   const canHover = useRef(false);
+
   useEffect(() => {
     canHover.current = window.matchMedia("(hover: hover)").matches;
   }, []);
@@ -437,9 +650,9 @@ function Product() {
   useEffect(() => {
     if (hold) return;
     const t = setTimeout(() => {
-      setActive((a) => (a + 1) % SCREENS.length);
+      setActive((a) => (a + 1) % APP_PAGES.length);
       setCycle((c) => c + 1);
-    }, 4400);
+    }, 4600);
     return () => clearTimeout(t);
   }, [hold, cycle]);
 
@@ -449,7 +662,119 @@ function Product() {
     setCycle((c) => c + 1);
   };
 
-  const s = SCREENS[active];
+  const page = APP_PAGES[active];
+
+  return (
+    <div
+      className="relative"
+      onPointerEnter={() => {
+        if (canHover.current) setHold(true);
+      }}
+      onPointerLeave={() => setHold(false)}
+    >
+      <BrowserFrame label={page.url}>
+        <div className="relative flex aspect-[4/3] w-full overflow-hidden bg-background sm:aspect-[16/10]">
+          {/* the sidebar — click a page to switch to it (desktop) */}
+          <aside className="hidden w-[190px] shrink-0 flex-col border-r border-border/70 bg-muted/50 px-2.5 pb-2.5 pt-3 sm:flex">
+            <div className="px-1.5 pb-3">
+              <Logo compact tone="dark" />
+            </div>
+            <div className="flex flex-col gap-1" role="tablist" aria-label="Product pages">
+              {APP_PAGES.map((p, i) => {
+                const on = i === active;
+                return (
+                  <button
+                    key={p.key}
+                    role="tab"
+                    aria-selected={on}
+                    onClick={() => jump(i)}
+                    className={`relative flex min-h-[36px] items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] font-medium transition-colors ${
+                      on
+                        ? "bg-primary/10 font-semibold text-primary"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                    }`}
+                  >
+                    {on && (
+                      <motion.span
+                        layoutId="preview-nav"
+                        className="absolute left-0 top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-full bg-primary"
+                        aria-hidden
+                      />
+                    )}
+                    <p.icon className="h-3.5 w-3.5 shrink-0" />
+                    {p.label}
+                    {on && (
+                      <span className="ml-auto rounded bg-primary/15 px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-wide text-primary">
+                        viewing
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-auto rounded-lg border border-dashed border-border/70 px-2.5 py-2 text-[9.5px] leading-snug text-muted-foreground">
+              Demo workspace · four roles · synthetic data
+            </div>
+          </aside>
+
+          <div className="flex min-w-0 flex-1 flex-col">
+            {/* the sidebar, as page chips on small screens */}
+            <div className="flex gap-1.5 overflow-x-auto border-b border-border/70 bg-muted/50 px-2 py-2 sm:hidden" role="tablist" aria-label="Product pages">
+              {APP_PAGES.map((p, i) => (
+                <button
+                  key={p.key}
+                  role="tab"
+                  aria-selected={i === active}
+                  onClick={() => jump(i)}
+                  className={`flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${
+                    i === active
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-border/60 bg-card text-muted-foreground"
+                  }`}
+                >
+                  <p.icon className="h-3 w-3" />
+                  {p.label}
+                </button>
+              ))}
+            </div>
+
+            {/* the active page — switches on sidebar click or on tour */}
+            <div className="relative min-h-0 flex-1">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={page.key}
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -22 }}
+                  transition={{ duration: 0.42, ease: EASE }}
+                  className="absolute inset-0"
+                >
+                  {active === 0 && <TodayMock />}
+                  {active === 1 && <InquiriesMock />}
+                  {active === 2 && <EstimatesMock />}
+                  {active === 3 && <ReportsMock />}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      </BrowserFrame>
+    </div>
+  );
+}
+
+/**
+ * The product section: the headline reveals in staggered lines, the
+ * desk morphs flat as it scrolls into view — and inside it is the
+ * living, clickable preview above.
+ */
+function Product() {
+  const shotRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: shotRef, offset: ["start end", "center center"] });
+  const rotateX = useTransform(scrollYProgress, [0, 1], [14, 0]);
+  const scale = useTransform(scrollYProgress, [0, 1], [0.94, 1]);
+  const lift = useTransform(scrollYProgress, [0, 1], [56, 0]);
+  const glow = useTransform(scrollYProgress, [0, 0.55, 1], [0.15, 0.85, 1]);
 
   return (
     <section id="product" className="scroll-mt-16 bg-background py-24 md:py-28">
@@ -473,14 +798,7 @@ function Product() {
           </motion.p>
         </motion.div>
 
-        <div
-          ref={shotRef}
-          className="relative"
-          onPointerEnter={() => {
-            if (canHover.current) setHold(true);
-          }}
-          onPointerLeave={() => setHold(false)}
-        >
+        <div ref={shotRef} className="relative">
           {/* ambient glow that intensifies as the desk arrives */}
           <motion.div
             aria-hidden
@@ -500,76 +818,14 @@ function Product() {
             transition={{ duration: 0.6 }}
             style={{ rotateX, scale, y: lift, transformPerspective: 1400 }}
           >
-            <BrowserFrame label={s.label}>
-              <div className="relative aspect-[16/10] overflow-hidden bg-muted">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={s.key}
-                    initial={{ opacity: 0, x: 34 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -26 }}
-                    transition={{ duration: 0.5, ease: EASE }}
-                    className="absolute inset-0"
-                  >
-                    <img
-                      src={s.shot}
-                      alt={s.alt}
-                      className="tour-zoom block h-full w-full object-cover"
-                    />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </BrowserFrame>
+            <AppPreview />
           </motion.div>
 
-          {/* what you're looking at, crossfading with the tour */}
-          <div className="mt-7 flex flex-col items-center gap-5">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={s.key}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.4, ease: EASE }}
-                className="flex max-w-lg items-start gap-3"
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <s.icon className="h-[18px] w-[18px]" />
-                </span>
-                <span>
-                  <span className="block text-[14px] font-bold tracking-tight text-foreground">{s.title}</span>
-                  <span className="mt-0.5 block text-[12.5px] leading-snug text-muted-foreground">{s.desc}</span>
-                </span>
-              </motion.div>
-            </AnimatePresence>
-
-            {/* tour rail — the active segment fills itself in real time */}
-            <div className="flex items-center gap-2" role="tablist" aria-label="Product screen tour">
-              {SCREENS.map((item, i) => {
-                const on = i === active;
-                return (
-                  <button
-                    key={item.key}
-                    role="tab"
-                    aria-selected={on}
-                    aria-label={item.tab}
-                    onClick={() => jump(i)}
-                    className={`h-1.5 overflow-hidden rounded-full transition-all duration-500 ${
-                      on ? "w-16 bg-primary/25" : "w-2.5 bg-border hover:bg-primary/40"
-                    }`
-                  }
-                  >
-                    {on && (
-                      <span
-                        key={`${active}-${cycle}`}
-                        className={`tour-fill block h-full w-full rounded-full bg-primary ${hold ? "is-paused" : ""}`}
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          {/* hint — the preview is live, not a screenshot */}
+          <p className="mt-7 flex items-center justify-center gap-2 text-center text-[12.5px] font-medium text-muted-foreground">
+            <MousePointerClick className="h-4 w-4 text-primary" aria-hidden />
+            Interactive preview — click a page in the sidebar, or let it tour itself every few seconds.
+          </p>
         </div>
       </div>
     </section>
@@ -591,38 +847,19 @@ const PIPELINE = [
   { label: "Accepted", sub: "$8,500 · deposit due", done: true },
 ];
 
-const AUDIT_LINES = [
-  "09:12 · call logged · 2m 14s",
-  "10:00 · inspection booked · Rosa Alvarez",
-  "11:47 · E-1043 opened · first view",
-  "13:05 · payment matched · $12,480",
-];
-
-const LOCATIONS = [
-  { name: "Summit Roofing Co.", metric: "booked", value: 92 },
-  { name: "North Peak Exteriors", metric: "collected", value: 78 },
-  { name: "Cedarline Roofing", metric: "answered", value: 96 },
-];
-
 const CARD =
   "group relative overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_22px_55px_-34px_rgba(15,23,42,0.4)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_34px_75px_-32px_rgba(15,23,42,0.5)]";
 
 /**
  * Feature bento: "the messy middle, automated." Every card carries its
  * own small, living visual — a queue that cycles, a pipeline that
- * pulses, an audit log that writes itself, bars that fill on arrival.
+ * pulses.
  */
 function Features() {
   const [feed, setFeed] = useState(0);
-  const [audit, setAudit] = useState(1);
 
   useEffect(() => {
     const t = setInterval(() => setFeed((f) => (f + 1) % QUEUE_FEED.length), 2800);
-    return () => clearInterval(t);
-  }, []);
-
-  useEffect(() => {
-    const t = setInterval(() => setAudit((a) => (a >= AUDIT_LINES.length ? 1 : a + 1)), 1150);
     return () => clearInterval(t);
   }, []);
 
@@ -777,93 +1014,6 @@ function Features() {
             </div>
           </motion.div>
 
-          {/* audit log — writes itself */}
-          <motion.div variants={headItem} className={`${CARD} p-6 lg:col-span-2`}>
-            <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <ShieldCheck className="h-[18px] w-[18px]" />
-              </span>
-              <h3 className="text-[17px] font-bold tracking-tight">On the audit record</h3>
-            </div>
-            <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground">
-              Every call, visit and decision is time-stamped against the job — accountability by
-              default, not by nagging.
-            </p>
-            <div className="mt-5 h-[118px] overflow-hidden rounded-xl border border-border/70 bg-neutral-950 p-4 font-mono">
-              {AUDIT_LINES.slice(0, audit).map((l) => (
-                <motion.p
-                  key={l}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, ease: EASE }}
-                  className="truncate text-[11px] leading-[1.9] text-emerald-300/90"
-                >
-                  <span className="text-white/30">$</span> {l}
-                </motion.p>
-              ))}
-              <span className="ml-1 inline-block h-3.5 w-1.5 animate-pulse bg-emerald-400/80" aria-hidden />
-            </div>
-          </motion.div>
-
-          {/* multi-location — bars fill on arrival */}
-          <motion.div variants={headItem} className={`${CARD} p-6 lg:col-span-2`}>
-            <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Building2 className="h-[18px] w-[18px]" />
-              </span>
-              <h3 className="text-[17px] font-bold tracking-tight">Multi-location, one dashboard</h3>
-            </div>
-            <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground">
-              Conversion, aging and collectible revenue for every branch — side by side, exportable
-              in one click.
-            </p>
-            <div className="mt-6 space-y-4">
-              {LOCATIONS.map((loc, i) => (
-                <div key={loc.name}>
-                  <div className="mb-1.5 flex items-center justify-between text-[11.5px]">
-                    <span className="font-semibold text-foreground/85">{loc.name}</span>
-                    <span className="font-medium text-muted-foreground">
-                      {loc.value}% {loc.metric}
-                    </span>
-                  </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${loc.value}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 1.1, delay: 0.15 + i * 0.15, ease: EASE }}
-                      className="h-full rounded-full bg-primary"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* photo evidence — real job-site photography */}
-          <motion.div variants={headItem} className={`${CARD} lg:col-span-2`}>
-            <div className="relative h-full min-h-[280px]">
-              <img
-                src="/img/roofing/crew-chimney.jpg"
-                alt="Roofer photographing chimney flashing during an inspection"
-                loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/92 via-neutral-950/30 to-transparent" aria-hidden />
-              <div className="absolute inset-x-0 bottom-0 p-5">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15 text-white backdrop-blur-sm">
-                  <Camera className="h-4 w-4" />
-                </span>
-                <h3 className="mt-2.5 text-[16px] font-bold tracking-tight text-white">
-                  Photo evidence on every visit
-                </h3>
-                <p className="mt-1 text-[12.5px] leading-relaxed text-white/70">
-                  Inspections capture photos and measurements on the spot — attached to the job
-                  forever.
-                </p>
-              </div>
-            </div>
-          </motion.div>
         </motion.div>
       </div>
     </section>
@@ -1062,8 +1212,8 @@ export function LandingView() {
         <Hero />
         <Wordmarks />
         <Product />
-        <Features />
         <How />
+        <Features />
         <FinalCta />
       </main>
       <footer className="mt-auto"><Footer /></footer>

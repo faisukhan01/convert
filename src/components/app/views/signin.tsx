@@ -76,10 +76,10 @@ export function SignInView() {
         preload="metadata"
         aria-hidden
       />
-      {/* heavy scrims so the form owns the stage */}
-      <div className="absolute inset-0 bg-neutral-950/75" aria-hidden />
-      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/35 to-neutral-950/60" aria-hidden />
-      <div className="rl-dots pointer-events-none absolute inset-0 opacity-50" aria-hidden />
+      {/* light scrims — the footage stays clearly visible; the glass cards keep text readable */}
+      <div className="absolute inset-0 bg-neutral-950/40" aria-hidden />
+      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/60 via-transparent to-neutral-950/25" aria-hidden />
+      <div className="rl-dots pointer-events-none absolute inset-0 opacity-25" aria-hidden />
 
       {/* top bar */}
       <motion.header
@@ -97,17 +97,18 @@ export function SignInView() {
         <Logo tone="light" tagline={false} />
       </motion.header>
 
-      {/* the card */}
+      {/* the stage: form on the left, demo roles on the right */}
       <main className="relative z-10 flex flex-1 items-center justify-center px-5 pb-14 pt-6 sm:px-8">
         <motion.div
           variants={riseWrap}
           initial="hidden"
           animate="show"
-          className="w-full max-w-[460px]"
+          className="mx-auto grid w-full max-w-[940px] items-stretch gap-5 md:grid-cols-[1fr_380px] md:gap-7"
         >
+          {/* left — the sign-in form */}
           <motion.div
             variants={riseItem}
-            className="rounded-3xl border border-white/10 bg-white/[0.07] p-6 shadow-[0_60px_130px_-35px_rgba(0,0,0,0.9)] backdrop-blur-2xl sm:p-8"
+            className="mx-auto w-full max-w-[460px] rounded-3xl border border-white/10 bg-white/[0.07] p-6 shadow-[0_60px_130px_-35px_rgba(0,0,0,0.9)] backdrop-blur-2xl sm:p-8 md:mx-0"
           >
             <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.2em] text-white/85">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
@@ -184,12 +185,18 @@ export function SignInView() {
             </form>
           </motion.div>
 
-          {/* one-click demo roles */}
-          <motion.div variants={riseItem}>
-            <p className="mb-3 mt-8 text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-white/40">
+          {/* right — one-click demo roles */}
+          <motion.div
+            variants={riseItem}
+            className="mx-auto flex w-full max-w-[460px] flex-col rounded-3xl border border-white/10 bg-white/[0.05] p-6 shadow-[0_40px_110px_-40px_rgba(0,0,0,0.8)] backdrop-blur-xl sm:p-7 md:mx-0"
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/40">
               One-click demo roles
             </p>
-            <div className="grid grid-cols-2 gap-2.5">
+            <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/45">
+              Pick a seat and you’re in — the workspace is fully seeded.
+            </p>
+            <div className="mt-5 flex flex-col gap-2.5">
               {DEMO_ACCOUNTS.map((a) => (
                 <button
                   key={a.email}
@@ -212,19 +219,20 @@ export function SignInView() {
                 </button>
               ))}
             </div>
+            <div className="mt-auto pt-5">
+              <p className="flex flex-wrap items-center gap-1.5 border-t border-white/10 pt-4 text-[12.5px] text-white/55">
+                <Home className="h-3.5 w-3.5" aria-hidden />
+                Homeowner?{" "}
+                <button
+                  className="font-medium text-white/85 underline underline-offset-2 transition-colors hover:text-white"
+                  onClick={() => (window.location.hash = "#/public/intake")}
+                >
+                  Book an inspection here
+                </button>{" "}
+                — no sign-in needed.
+              </p>
+            </div>
           </motion.div>
-
-          <motion.p variants={riseItem} className="mt-8 flex items-center justify-center gap-1.5 text-[12.5px] text-white/50">
-            <Home className="h-3.5 w-3.5" aria-hidden />
-            Homeowner?{" "}
-            <button
-              className="font-medium text-white/85 underline underline-offset-2 transition-colors hover:text-white"
-              onClick={() => (window.location.hash = "#/public/intake")}
-            >
-              Book an inspection here
-            </button>{" "}
-            — no sign-in needed.
-          </motion.p>
         </motion.div>
       </main>
 

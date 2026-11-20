@@ -30,9 +30,10 @@ const NAV_MORE = [
 ];
 
 /**
- * RidgeLine brand mark — an ascending ridge line with a summit point,
- * on a deep-slate tile. Used in the app sidebar, the marketing navbar,
- * the footer and the favicon (kept in sync manually).
+ * RidgeLine brand mark — a monoline ridge system: one solid ascending
+ * ridge line over a fainter echo ridge, engraved on a deep petrol tile.
+ * Used in the app sidebar, the marketing navbar, the footer and the
+ * favicon (kept in sync manually).
  */
 export function Logo({
   compact = false,
@@ -48,27 +49,37 @@ export function Logo({
   const sub = tone === "light" ? "text-white/60" : "text-muted-foreground";
   return (
     <span className="flex select-none items-center gap-2.5">
-      {/* RidgeLine mark — a twin-peak roof ridge on a petrol tile */}
+      {/* RidgeLine mark — monoline twin ridges on a petrol tile */}
       <svg width="30" height="30" viewBox="0 0 40 40" aria-hidden="true" className="shrink-0">
         <defs>
           <linearGradient id={`rl-g-${uid}`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#31719F" />
-            <stop offset="1" stopColor="#16354E" />
+            <stop offset="0" stopColor="#3D7CAE" />
+            <stop offset="0.55" stopColor="#25597F" />
+            <stop offset="1" stopColor="#122B40" />
           </linearGradient>
         </defs>
-        <rect width="40" height="40" rx="11" fill={`url(#rl-g-${uid})`} />
+        <rect width="40" height="40" rx="10" fill={`url(#rl-g-${uid})`} />
+        {/* echo ridge — the range behind */}
         <path
-          d="M7.5 28.5 15.5 14l6 7.6 3.7-4.6 7.3 11.5Z"
-          fill="white"
-          fillOpacity="0.97"
-        />
-        <path
-          d="M10 32.5h20"
-          stroke="white"
-          strokeOpacity="0.38"
-          strokeWidth="2.4"
+          d="M7 20.5 14.5 9.5 19.5 16 24 10.5 33 20.5"
+          fill="none"
+          stroke="#fff"
+          strokeOpacity="0.3"
+          strokeWidth="2.1"
           strokeLinecap="round"
+          strokeLinejoin="round"
         />
+        {/* main ridge — the line the eye follows */}
+        <path
+          d="M7 28.5 14.5 17.5 19.5 24 24 18.5 33 28.5"
+          fill="none"
+          stroke="#fff"
+          strokeWidth="2.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        {/* summit point */}
+        <circle cx="24" cy="18.5" r="1.7" fill="#fff" />
       </svg>
       {!compact && (
         <span className={`text-[15.5px] font-bold leading-none tracking-tight ${word}`}>
