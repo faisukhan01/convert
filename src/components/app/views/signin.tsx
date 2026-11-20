@@ -38,14 +38,6 @@ const DEMO_ACCOUNTS = [
   { email: "agency@ridgeline.demo", name: "Dana Whitfield", role: "Agency admin" },
 ];
 
-/** Per-role avatar duotones — small, tasteful, consistent on dark glass. */
-const ROLE_AVATAR: Record<string, string> = {
-  "Priya Shah": "from-violet-500/90 to-purple-500/90",
-  "Marcus Lee": "from-amber-500/90 to-orange-500/90",
-  "Alex Rivera": "from-emerald-500/90 to-teal-500/90",
-  "Dana Whitfield": "from-rose-500/90 to-pink-500/90",
-};
-
 export function SignInView() {
   const { loadSession } = useAppStore();
   const [email, setEmail] = useState("owner@ridgeline.demo");
@@ -105,22 +97,23 @@ export function SignInView() {
         <Logo tone="light" tagline={false} />
       </motion.header>
 
-      {/* the stage: sign-in form pinned to the left, demo roles on the right */}
-      <main className="relative z-10 flex flex-1 items-center px-5 pb-12 pt-4 sm:px-8 md:px-10">
+      {/* the stage: sign-in form pinned to the left corner, demo roles on the right */}
+      <main className="relative z-10 flex flex-1 items-center px-5 pb-12 pt-4 sm:px-8 md:px-12">
         <motion.div
           variants={riseWrap}
           initial="hidden"
           animate="show"
-          className="mx-auto grid w-full max-w-[1040px] items-stretch gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,400px)] md:gap-7 lg:gap-10"
+          className="mx-auto grid w-full max-w-[1440px] grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:gap-12"
         >
-          {/* left — the sign-in form */}
-          <motion.div variants={riseItem} className="mx-auto w-full max-w-[480px] md:mx-0">
-            <div className="rounded-[26px] bg-gradient-to-b from-white/30 via-white/[0.09] to-white/[0.04] p-px shadow-[0_60px_130px_-35px_rgba(0,0,0,0.9)]">
-              <div className="relative overflow-hidden rounded-[25px] bg-neutral-950/60 backdrop-blur-2xl">
-                {/* top sheen + brand glows */}
-                <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-                <div aria-hidden className="absolute -right-20 -top-24 h-60 w-60 rounded-full bg-primary/25 blur-3xl" />
-                <div aria-hidden className="absolute -bottom-28 -left-20 h-56 w-56 rounded-full bg-emerald-500/15 blur-3xl" />
+          {/* left corner — the sign-in form */}
+          <motion.div variants={riseItem} className="w-full max-w-[500px] self-center justify-self-center md:justify-self-start">
+            <div className="rounded-[28px] bg-gradient-to-b from-white/40 via-white/[0.14] to-white/[0.05] p-px shadow-[0_60px_140px_-35px_rgba(0,0,0,0.95)]">
+              <div className="relative overflow-hidden rounded-[27px] bg-gradient-to-b from-[#122334] via-[#0d1a29] to-[#0a141f]">
+                {/* top sheen + brand glows on a solid, deep steel-blue panel */}
+                <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
+                <div aria-hidden className="absolute -right-24 -top-28 h-72 w-72 rounded-full bg-primary/40 blur-[100px]" />
+                <div aria-hidden className="absolute -bottom-32 -left-24 h-64 w-64 rounded-full bg-emerald-500/15 blur-[100px]" />
+                <div aria-hidden className="rl-dots pointer-events-none absolute inset-0 opacity-[0.16]" />
 
                 <div className="relative p-6 sm:p-8">
                   <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.2em] text-white/85">
@@ -208,36 +201,34 @@ export function SignInView() {
             </div>
           </motion.div>
 
-          {/* right — one-click demo roles */}
-          <motion.div variants={riseItem} className="mx-auto w-full max-w-[480px] md:mx-0">
-            <div className="h-full rounded-[26px] bg-gradient-to-b from-white/25 via-white/[0.08] to-white/[0.03] p-px shadow-[0_40px_110px_-40px_rgba(0,0,0,0.85)]">
-              <div className="relative flex h-full flex-col overflow-hidden rounded-[25px] bg-neutral-950/50 p-6 backdrop-blur-2xl sm:p-7">
-                {/* top sheen + brand glow */}
-                <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-                <div aria-hidden className="absolute -left-16 -top-20 h-48 w-48 rounded-full bg-primary/20 blur-3xl" />
+          {/* right corner — one-click demo roles */}
+          <motion.div variants={riseItem} className="w-full max-w-[500px] self-center justify-self-center md:justify-self-end">
+            <div className="h-full rounded-[28px] bg-gradient-to-b from-white/40 via-white/[0.14] to-white/[0.05] p-px shadow-[0_60px_140px_-35px_rgba(0,0,0,0.95)]">
+              <div className="relative flex h-full flex-col overflow-hidden rounded-[27px] bg-gradient-to-b from-[#122334] via-[#0d1a29] to-[#0a141f] p-6 sm:p-7">
+                {/* top sheen + brand glows on the same solid, deep steel-blue panel */}
+                <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
+                <div aria-hidden className="absolute -left-24 -top-28 h-72 w-72 rounded-full bg-primary/40 blur-[100px]" />
+                <div aria-hidden className="absolute -bottom-24 -right-20 h-52 w-52 rounded-full bg-emerald-500/12 blur-[100px]" />
+                <div aria-hidden className="rl-dots pointer-events-none absolute inset-0 opacity-[0.16]" />
 
                 <div className="relative">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-white/45">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-white/50">
                     One-click demo roles
                   </p>
-                  <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/50">
+                  <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/55">
                     Pick a seat and you’re in — the workspace is fully seeded.
                   </p>
                 </div>
 
-                <div className="relative mt-5 flex flex-col gap-2.5">
+                <div className="relative mt-5 flex flex-1 flex-col justify-center gap-2.5">
                   {DEMO_ACCOUNTS.map((a) => (
                     <button
                       key={a.email}
                       onClick={() => void signIn(a.email, "demo")}
                       disabled={busy}
-                      className="group flex min-h-[58px] items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.09] hover:shadow-[0_18px_45px_-20px_rgba(255,255,255,0.35)] focus-visible:ring-2 focus-visible:ring-white/30 disabled:opacity-60"
+                      className="group flex min-h-[58px] items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/[0.09] hover:shadow-[0_18px_45px_-20px_rgba(255,255,255,0.3)] focus-visible:ring-2 focus-visible:ring-white/30 disabled:opacity-60"
                     >
-                      <span
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-[12.5px] font-bold text-white ring-1 ring-inset ring-white/25 ${
-                          ROLE_AVATAR[a.name] ?? "from-white/25 to-white/10"
-                        }`}
-                      >
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.07] text-[12.5px] font-bold text-white/75 ring-1 ring-inset ring-white/15">
                         {a.name.split(" ").map((n) => n[0]).join("")}
                       </span>
                       <span className="min-w-0 flex-1">

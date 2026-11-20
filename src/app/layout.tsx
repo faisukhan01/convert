@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description:
     "Multi-tenant booking and follow-up desk for roofing contractors: inquiries to inspections, estimates to matched payments. GHL-ready, runs locally with zero credentials.",
   icons: {
-    icon: "/img/ridgeline-logo.png",
+    icon: "/logo.svg",
   },
 };
 

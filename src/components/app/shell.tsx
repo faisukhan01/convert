@@ -30,44 +30,62 @@ const NAV_MORE = [
 ];
 
 /**
- * RidgeLine brand mark — the official house-and-growth logo on a crisp
- * white tile (reads cleanly over footage, glass and light surfaces).
- * Used in the app sidebar, the marketing navbar, the sign-in header,
- * the footer and the favicon (kept in sync manually).
+ * RidgeLine brand mark — the house-and-growth logo, drawn in pure SVG
+ * with `currentColor` so it always wears the theme color on any surface
+ * (light, dark, over footage). No background tile, no white box.
+ */
+export function LogoMark({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 64 64" fill="none" aria-hidden className={className}>
+      {/* roof */}
+      <path d="M7 34 30 12.5 51 28.5" stroke="currentColor" strokeWidth={6.5} strokeLinecap="round" strokeLinejoin="round" />
+      {/* chimney */}
+      <path d="M44 20.5V10h6.5v11.5" stroke="currentColor" strokeWidth={5.5} strokeLinecap="round" strokeLinejoin="round" />
+      {/* window */}
+      <g fill="currentColor">
+        <rect x="23.2" y="20.8" width="5.6" height="5.6" rx="1.4" />
+        <rect x="31.2" y="20.8" width="5.6" height="5.6" rx="1.4" />
+        <rect x="23.2" y="28.8" width="5.6" height="5.6" rx="1.4" />
+        <rect x="31.2" y="28.8" width="5.6" height="5.6" rx="1.4" />
+      </g>
+      {/* growth arrow — lighter shade for depth */}
+      <g opacity={0.62}>
+        <path d="M7 50.5c12 3.5 22.5 1 31.5-11" stroke="currentColor" strokeWidth={6.5} strokeLinecap="round" />
+        <path d="M48 29.5l-1.6 10.9-9.2-6.9z" fill="currentColor" />
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * RidgeLine logo lockup — theme-colored mark + wordmark, scaled for its
+ * context: compact inside the product mock, md in navbar/sidebar/sign-in,
+ * lg in the footer. Used across the app, the marketing site and the
+ * favicon (public/logo.svg, kept in sync manually).
  */
 export function Logo({
   compact = false,
   tagline = true,
   tone = "dark",
+  size = "md",
 }: {
   compact?: boolean;
   tagline?: boolean;
   tone?: "dark" | "light";
+  size?: "md" | "lg";
 }) {
   const word = tone === "light" ? "text-white" : "text-foreground";
   const sub = tone === "light" ? "text-white/60" : "text-muted-foreground";
+  const markCls = compact ? "h-8 w-8" : size === "lg" ? "h-12 w-12" : "h-10 w-10";
+  const wordCls = size === "lg" ? "text-[22px]" : "text-[18px]";
   return (
-    <span className="flex select-none items-center gap-2.5">
-      <span
-        className={`block shrink-0 overflow-hidden rounded-[10px] bg-white ${
-          tone === "light"
-            ? "ring-1 ring-white/30 shadow-[0_4px_14px_-4px_rgba(0,0,0,0.55)]"
-            : "ring-1 ring-black/[0.06] shadow-[0_4px_14px_-6px_rgba(15,23,42,0.35)]"
-        }`}
-      >
-        <img
-          src="/img/ridgeline-logo.png"
-          alt="RidgeLine logo"
-          width={compact ? 28 : 34}
-          height={compact ? 28 : 34}
-          className={`block object-cover ${compact ? "h-7 w-7" : "h-[34px] w-[34px]"}`}
-        />
-      </span>
+    <span className={`flex select-none items-center ${size === "lg" ? "gap-3.5" : "gap-2.5"}`}>
+      <LogoMark className={`block shrink-0 ${markCls} ${tone === "light" ? "text-white" : "text-primary"}`} />
       {!compact && (
-        <span className={`text-[15.5px] font-bold leading-none tracking-tight ${word}`}>
+        <span className={`font-bold leading-none tracking-tight ${wordCls} ${word}`}>
           RidgeLine
           {tagline && (
-            <span className={`mt-1 block text-[9px] font-semibold uppercase tracking-[0.14em] ${sub}`}>
+            <span className={`mt-1.5 block text-[9.5px] font-semibold uppercase tracking-[0.16em] ${sub}`}>
               Estimate desk for roofers
             </span>
           )}

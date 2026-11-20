@@ -402,6 +402,7 @@ function QueueRow({
   sub,
   due,
   dueCls,
+  className = "",
 }: {
   initials: string;
   avatarCls: string;
@@ -411,20 +412,23 @@ function QueueRow({
   sub: string;
   due: string;
   dueCls: string;
+  className?: string;
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-card px-2 py-1.5 transition-colors hover:border-primary/30 sm:gap-2.5 sm:px-2.5 sm:py-2">
-      <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[8px] font-bold ring-1 sm:h-7 sm:w-7 sm:text-[9px] ${avatarCls}`}>
+    <div
+      className={`flex items-center gap-2.5 rounded-xl border border-border/60 bg-card px-2.5 py-2 shadow-[0_8px_20px_-14px_rgba(15,23,42,0.35)] transition-colors hover:border-primary/30 ${className}`}
+    >
+      <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ring-1 sm:h-8 sm:w-8 sm:text-[10px] ${avatarCls}`}>
         {initials}
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
-          <span className="truncate text-[10.5px] font-semibold text-foreground sm:text-[12px]">{name}</span>
-          <span className={`shrink-0 rounded px-1 py-0.5 text-[7.5px] font-bold sm:text-[9px] ${tagCls}`}>{tag}</span>
+          <span className="truncate text-[11.5px] font-semibold text-foreground sm:text-[13px]">{name}</span>
+          <span className={`shrink-0 rounded px-1.5 py-0.5 text-[8px] font-bold sm:text-[9.5px] ${tagCls}`}>{tag}</span>
         </span>
-        <span className="mt-0.5 hidden truncate text-[9.5px] text-muted-foreground sm:block">{sub}</span>
+        <span className="mt-1 block truncate text-[10px] text-muted-foreground sm:text-[11px]">{sub}</span>
       </span>
-      <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[8px] font-semibold sm:text-[9.5px] ${dueCls}`}>{due}</span>
+      <span className={`shrink-0 rounded-md px-2 py-1 text-[8.5px] font-semibold sm:text-[10px] ${dueCls}`}>{due}</span>
     </div>
   );
 }
@@ -472,9 +476,9 @@ function PreviewHead({ title, chip }: { title: string; chip?: string }) {
 
 /** Page 1 — Today: KPI strip, the response queue, today's route, awaiting replies. */
 const TODAY_KPIS = [
-  { icon: Phone, label: "Need response", value: "3", sub: "2 overdue", tone: "text-amber-600" },
-  { icon: CalendarCheck2, label: "Inspections", value: "2", sub: "next 10:00 AM", tone: "text-emerald-600" },
-  { icon: Send, label: "Awaiting reply", value: "3", sub: "1 just opened", tone: "text-primary" },
+  { icon: Phone, label: "Need response", value: "3", sub: "2 overdue", tone: "text-amber-600", bar: "30%", barCls: "bg-amber-500" },
+  { icon: CalendarCheck2, label: "Inspections", value: "2", sub: "next 10:00 AM", tone: "text-emerald-600", bar: "45%", barCls: "bg-emerald-500" },
+  { icon: Send, label: "Awaiting reply", value: "3", sub: "1 just opened", tone: "text-primary", bar: "62%", barCls: "bg-primary" },
 ];
 
 function TodayMock() {
@@ -482,30 +486,34 @@ function TodayMock() {
     <div className="flex h-full flex-col bg-background">
       <PreviewHead title="Today" chip="Wednesday · June 12" />
       {/* KPI strip */}
-      <div className="grid grid-cols-3 gap-1.5 border-b border-border/60 bg-muted/25 px-3 py-2 sm:gap-2.5 sm:px-4 sm:py-2.5">
+      <div className="grid grid-cols-3 gap-2 border-b border-border/60 bg-muted/25 px-3 py-2.5 sm:px-4 sm:py-3">
         {TODAY_KPIS.map((k) => (
-          <div key={k.label} className="rounded-lg border border-border/60 bg-card px-2 py-1.5 sm:px-3 sm:py-2">
-            <p className="flex items-center gap-1 text-[8px] font-bold uppercase tracking-[0.1em] text-muted-foreground sm:text-[9px]">
-              <k.icon className="h-2.5 w-2.5" aria-hidden />
+          <div key={k.label} className="rounded-xl border border-border/60 bg-card px-3 py-2 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)]">
+            <p className="flex items-center gap-1.5 text-[8.5px] font-bold uppercase tracking-[0.12em] text-muted-foreground sm:text-[10px]">
+              <k.icon className="h-3 w-3" aria-hidden />
               {k.label}
             </p>
-            <p className="mt-0.5 flex flex-wrap items-baseline gap-x-1.5">
-              <span className="text-[13px] font-bold tracking-tight text-foreground sm:text-[17px]">{k.value}</span>
-              <span className={`text-[8px] font-semibold sm:text-[9.5px] ${k.tone}`}>{k.sub}</span>
-            </p>
+            <div className="mt-1 flex flex-wrap items-baseline justify-between gap-x-2">
+              <span className="text-[16px] font-bold tracking-tight text-foreground sm:text-[22px]">{k.value}</span>
+              <span className={`text-[8.5px] font-bold sm:text-[10.5px] ${k.tone}`}>{k.sub}</span>
+            </div>
+            <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted sm:mt-2">
+              <div className={`h-full rounded-full ${k.barCls}`} style={{ width: k.bar }} />
+            </div>
           </div>
         ))}
       </div>
 
-      <div className="grid min-h-0 flex-1 gap-2 px-3 py-2.5 sm:grid-cols-[1.18fr_1fr] sm:gap-2.5 sm:px-4 sm:py-3">
-        {/* needs a response */}
+      <div className="grid min-h-0 flex-1 gap-2 px-3 py-2.5 sm:grid-cols-[1.15fr_1fr] sm:gap-2.5 sm:px-4 sm:py-3">
+        {/* needs a response — rows stretch to fill the panel */}
         <div className="flex min-h-0 flex-col rounded-xl border border-border/60 bg-muted/25 p-2 sm:p-2.5">
           <div className="flex items-center justify-between px-0.5 pb-2">
             <PreviewLabel>Needs a response</PreviewLabel>
-            <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[8px] font-bold text-amber-700 sm:text-[9px]">3 open</span>
+            <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[8.5px] font-bold text-amber-700 sm:text-[9.5px]">3 open</span>
           </div>
-          <div className="space-y-1.5 sm:space-y-2">
+          <div className="flex min-h-0 flex-1 flex-col gap-2">
             <QueueRow
+              className="min-h-0 flex-1"
               initials="MW"
               avatarCls="bg-amber-500/15 text-amber-700 ring-amber-500/30"
               tag="Missed call"
@@ -516,6 +524,7 @@ function TodayMock() {
               dueCls="bg-amber-500/15 text-amber-700"
             />
             <QueueRow
+              className="min-h-0 flex-1"
               initials="MC"
               avatarCls="bg-primary/10 text-primary ring-primary/25"
               tag="New call"
@@ -526,6 +535,7 @@ function TodayMock() {
               dueCls="bg-primary/10 text-primary"
             />
             <QueueRow
+              className="min-h-0 flex-1"
               initials="GN"
               avatarCls="bg-emerald-500/15 text-emerald-700 ring-emerald-500/30"
               tag="Web form"
@@ -535,40 +545,67 @@ function TodayMock() {
               due="Assign now"
               dueCls="bg-emerald-500/15 text-emerald-700"
             />
+            <QueueRow
+              className="min-h-0 flex-1"
+              initials="DP"
+              avatarCls="bg-primary/10 text-primary ring-primary/25"
+              tag="Referral"
+              tagCls="bg-emerald-500/15 text-emerald-700"
+              name="Dana Park"
+              sub="Storm claim · 3 photos missing"
+              due="Today 4:00"
+              dueCls="bg-foreground/5 text-foreground/70"
+            />
           </div>
+          <p className="px-0.5 pt-2 text-[9px] font-medium text-muted-foreground sm:text-[10px]">
+            + 9 more today · every row has an owner and a deadline
+          </p>
         </div>
 
-        {/* right column — route + awaiting replies */}
-        <div className="flex min-h-0 flex-col gap-2 sm:gap-2.5">
-          <div className="min-h-0 flex-1 rounded-xl border border-border/60 bg-muted/25 p-2 sm:p-2.5">
+        {/* right column — route + awaiting replies (desktop preview only) */}
+        <div className="hidden min-h-0 flex-col gap-2 sm:flex sm:gap-2.5">
+          <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border/60 bg-muted/25 p-2 sm:p-2.5">
             <PreviewLabel>Inspections today</PreviewLabel>
-            <div className="relative space-y-1.5 pl-0.5">
-              <span className="absolute bottom-2 left-[9px] top-2 w-px bg-border" aria-hidden />
+            <div className="relative flex min-h-0 flex-1 flex-col justify-between gap-1.5 pl-0.5">
+              <span className="absolute bottom-3 left-[10px] top-3 w-px bg-border" aria-hidden />
               {[
-                { time: "10:00", name: "Rosa Alvarez", sub: "118 Alder Creek Rd · with Alex R." },
-                { time: "1:30", name: "Dwight Alderman", sub: "44 Summit Pass · with Marcus L." },
+                { time: "10:00", name: "Rosa Alvarez", sub: "118 Alder Creek Rd · with Alex R.", state: "En route" },
+                { time: "1:30", name: "Dwight Alderman", sub: "44 Summit Pass · with Marcus L.", state: "Booked" },
+                { time: "4:00", name: "Parker Lind", sub: "9 Cedar Falls Ln · walk-the-roof", state: "Confirmed" },
               ].map((r) => (
-                <div key={r.name} className="relative flex items-start gap-2">
-                  <span className="relative z-10 mt-[7px] h-[7px] w-[7px] shrink-0 rounded-full bg-primary ring-[3px] ring-primary/15" aria-hidden />
-                  <div className="min-w-0 flex-1 rounded-lg border border-border/60 bg-card px-2 py-1.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="truncate text-[10.5px] font-semibold text-foreground sm:text-[11.5px]">{r.name}</span>
-                      <span className="shrink-0 rounded bg-foreground/5 px-1.5 py-0.5 font-mono text-[8.5px] font-semibold text-foreground/70 sm:text-[9.5px]">{r.time}</span>
-                    </div>
-                    <span className="mt-0.5 block truncate text-[9px] text-muted-foreground sm:text-[10px]">{r.sub}</span>
+                <div key={r.name} className="relative flex flex-1 items-center gap-2">
+                  <span className="relative z-10 h-[8px] w-[8px] shrink-0 rounded-full bg-primary ring-[3px] ring-primary/15" aria-hidden />
+                  <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-border/60 bg-card px-2 py-1.5">
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="truncate text-[11px] font-semibold text-foreground sm:text-[12px]">{r.name}</span>
+                        <span className="shrink-0 rounded bg-foreground/5 px-1.5 py-0.5 font-mono text-[8.5px] font-semibold text-foreground/70 sm:text-[9.5px]">{r.time}</span>
+                      </span>
+                      <span className="mt-0.5 block truncate text-[9px] text-muted-foreground sm:text-[10px]">{r.sub}</span>
+                    </span>
+                    <span className="hidden shrink-0 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[8px] font-bold text-emerald-700 md:inline">{r.state}</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          <div className="rounded-xl border border-primary/25 bg-primary/[0.06] p-2 sm:p-2.5">
+          <div className="flex min-h-0 flex-[0.9] flex-col rounded-xl border border-primary/25 bg-primary/[0.06] p-2 sm:p-2.5">
             <PreviewLabel>Estimates awaiting a reply</PreviewLabel>
-            <div className="flex items-center justify-between gap-2 rounded-lg border border-primary/20 bg-card px-2 py-1.5">
-              <span className="min-w-0">
-                <span className="block truncate text-[10.5px] font-semibold text-foreground sm:text-[11.5px]">E-1043 · Grace Nolan</span>
-                <span className="mt-0.5 block truncate text-[9px] text-muted-foreground sm:text-[10px]">Viewed 11:47 AM · nudge tomorrow</span>
-              </span>
-              <span className="shrink-0 rounded-md bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary sm:text-[10.5px]">$8,500</span>
+            <div className="flex min-h-0 flex-1 flex-col justify-between gap-1.5">
+              <div className="flex flex-1 items-center justify-between gap-2 rounded-lg border border-primary/20 bg-card px-2 py-1.5">
+                <span className="min-w-0">
+                  <span className="block truncate text-[11px] font-semibold text-foreground sm:text-[12px]">E-1043 · Grace Nolan</span>
+                  <span className="mt-0.5 block truncate text-[9px] text-muted-foreground sm:text-[10px]">Viewed 11:47 AM · nudge tomorrow</span>
+                </span>
+                <span className="shrink-0 rounded-md bg-primary/10 px-2 py-1 text-[9.5px] font-bold text-primary sm:text-[11px]">$8,500</span>
+              </div>
+              <div className="flex flex-1 items-center justify-between gap-2 rounded-lg border border-border/60 bg-card px-2 py-1.5">
+                <span className="min-w-0">
+                  <span className="block truncate text-[11px] font-semibold text-foreground sm:text-[12px]">E-1044 · Webb Residence</span>
+                  <span className="mt-0.5 block truncate text-[9px] text-muted-foreground sm:text-[10px]">Sent 8:15 AM · opens tracked</span>
+                </span>
+                <span className="shrink-0 rounded-md bg-primary/10 px-2 py-1 text-[9.5px] font-bold text-primary sm:text-[11px]">$4,250</span>
+              </div>
             </div>
           </div>
         </div>
@@ -583,7 +620,9 @@ const INQUIRIES = [
   { name: "Marcus Webb", initials: "MW", av: "bg-amber-500/15 text-amber-700 ring-amber-500/30", src: "Missed call", srcTone: "bg-amber-500/15 text-amber-700", status: "Contacted", stTone: "bg-foreground/5 text-foreground/70", next: "Call back before noon", owner: "ML", age: "26m" },
   { name: "Rosa Alvarez", initials: "RA", av: "bg-emerald-500/15 text-emerald-700 ring-emerald-500/30", src: "Referral", srcTone: "bg-emerald-500/15 text-emerald-700", status: "Booked", stTone: "bg-emerald-500/15 text-emerald-700", next: "Inspection · Fri 10:00", owner: "AR", age: "1h" },
   { name: "Dwight Alderman", initials: "DA", av: "bg-rose-500/10 text-rose-700 ring-rose-500/25", src: "Walk-in", srcTone: "bg-foreground/5 text-foreground/70", status: "Booked", stTone: "bg-emerald-500/15 text-emerald-700", next: "Photo report · today", owner: "ML", age: "3h" },
-  { name: "Parker Lind", initials: "PL", av: "bg-primary/10 text-primary ring-primary/25", src: "Web form", srcTone: "bg-primary/10 text-primary", status: "New", stTone: "bg-amber-500/15 text-amber-700", next: "Assign an estimator", owner: "AR", age: "4h" },
+  { name: "Dana Park", initials: "DP", av: "bg-primary/10 text-primary ring-primary/25", src: "Missed call", srcTone: "bg-amber-500/15 text-amber-700", status: "New", stTone: "bg-amber-500/15 text-amber-700", next: "Call back 3:30 PM", owner: "PS", age: "12m" },
+  { name: "Parker Lind", initials: "PL", av: "bg-primary/10 text-primary ring-primary/25", src: "Web form", srcTone: "bg-primary/10 text-primary", status: "Contacted", stTone: "bg-foreground/5 text-foreground/70", next: "Walk-the-roof · 4:00", owner: "AR", age: "4h" },
+  { name: "Elliot Hayes", initials: "EH", av: "bg-emerald-500/15 text-emerald-700 ring-emerald-500/30", src: "Referral", srcTone: "bg-emerald-500/15 text-emerald-700", status: "Booked", stTone: "bg-emerald-500/15 text-emerald-700", next: "Inspection · Mon 9:00", owner: "ML", age: "5h" },
 ];
 
 function InquiriesMock() {
@@ -591,61 +630,61 @@ function InquiriesMock() {
     <div className="flex h-full flex-col bg-background">
       <PreviewHead title="Inquiries" chip="calls · forms · referrals" />
       {/* toolbar */}
-      <div className="flex items-center gap-1.5 border-b border-border/60 bg-muted/25 px-3 py-1.5 sm:gap-2 sm:px-4 sm:py-2">
+      <div className="flex items-center gap-1.5 border-b border-border/60 bg-muted/25 px-3 py-2 sm:gap-2 sm:px-4 sm:py-2.5">
         {["All · 12", "New · 2", "Booked · 4"].map((f, i) => (
           <span
             key={f}
-            className={`rounded-full px-2 py-1 text-[8.5px] font-semibold sm:text-[9.5px] ${
+            className={`rounded-full px-2.5 py-1 text-[9px] font-semibold sm:text-[10px] ${
               i === 0 ? "bg-foreground text-background" : "border border-border/70 bg-card text-muted-foreground"
             }`}
           >
             {f}
           </span>
         ))}
-        <span className="ml-auto flex items-center gap-1 rounded-lg bg-primary px-2 py-1 text-[8.5px] font-bold text-primary-foreground sm:text-[9.5px]">
-          <Plus className="h-2.5 w-2.5" aria-hidden /> New inquiry
+        <span className="ml-auto flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1 text-[9px] font-bold text-primary-foreground sm:text-[10px]">
+          <Plus className="h-3 w-3" aria-hidden /> New inquiry
         </span>
       </div>
       {/* table head */}
-      <div className="hidden grid-cols-[1.2fr_0.75fr_0.8fr_1.25fr_auto] gap-2 border-b border-border/60 bg-muted/40 px-4 py-1.5 text-[8.5px] font-bold uppercase tracking-[0.14em] text-muted-foreground sm:grid">
+      <div className="hidden grid-cols-[1.2fr_0.75fr_0.8fr_1.25fr_auto] gap-2 border-b border-border/60 bg-muted/40 px-4 py-2 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground sm:grid">
         <span>Homeowner</span>
         <span>Source</span>
         <span>Status</span>
         <span>Next step</span>
         <span className="text-right">Age</span>
       </div>
-      {/* rows */}
-      <div className="min-h-0 flex-1 overflow-hidden">
-        {INQUIRIES.map((r) => (
+      {/* rows — stretch to fill the page (last rows desktop-only on small screens) */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        {INQUIRIES.map((r, i) => (
           <div
             key={r.name}
-            className="flex items-center gap-2 border-b border-border/50 px-3 py-2 transition-colors last:border-0 hover:bg-muted/40 sm:grid sm:grid-cols-[1.2fr_0.75fr_0.8fr_1.25fr_auto] sm:gap-2 sm:px-4"
+            className={`${i >= 4 ? "hidden sm:flex" : "flex"} flex-1 items-center gap-2 border-b border-border/50 px-3 transition-colors last:border-0 hover:bg-muted/40 sm:grid sm:grid-cols-[1.2fr_0.75fr_0.8fr_1.25fr_auto] sm:gap-2 sm:px-4`}
           >
             <span className="flex min-w-0 items-center gap-2">
-              <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[8px] font-bold ring-1 sm:h-7 sm:w-7 sm:text-[9px] ${r.av}`}>
+              <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ring-1 sm:h-8 sm:w-8 sm:text-[10px] ${r.av}`}>
                 {r.initials}
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-[10.5px] font-semibold text-foreground sm:text-[12px]">{r.name}</span>
+                <span className="block truncate text-[11.5px] font-semibold text-foreground sm:text-[13px]">{r.name}</span>
                 <span className="block truncate text-[8.5px] text-muted-foreground sm:hidden">Owner {r.owner} · {r.age} ago</span>
               </span>
             </span>
             <span className="hidden sm:block">
-              <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold sm:text-[10px] ${r.srcTone}`}>{r.src}</span>
+              <span className={`rounded px-1.5 py-0.5 text-[9.5px] font-bold sm:text-[10.5px] ${r.srcTone}`}>{r.src}</span>
             </span>
             <span className="hidden sm:block">
-              <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold sm:text-[10px] ${r.stTone}`}>
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-bold sm:text-[10.5px] ${r.stTone}`}>
                 <span className="h-1 w-1 rounded-full bg-current" aria-hidden />
                 {r.status}
               </span>
             </span>
-            <span className="hidden truncate text-[10px] font-medium text-muted-foreground sm:block sm:text-[11px]">{r.next}</span>
-            <span className="hidden shrink-0 text-right text-[9.5px] font-medium text-muted-foreground sm:block sm:text-[10.5px]">{r.age} ago</span>
+            <span className="hidden truncate text-[10.5px] font-medium text-muted-foreground sm:block sm:text-[11.5px]">{r.next}</span>
+            <span className="hidden shrink-0 text-right text-[10px] font-medium text-muted-foreground sm:block sm:text-[11px]">{r.age} ago</span>
           </div>
         ))}
       </div>
       {/* footer strip */}
-      <div className="flex items-center justify-between border-t border-border/60 bg-muted/25 px-3 py-1.5 text-[9px] font-medium text-muted-foreground sm:px-4 sm:text-[10px]">
+      <div className="flex items-center justify-between border-t border-border/60 bg-muted/25 px-3 py-2 text-[9.5px] font-medium text-muted-foreground sm:px-4 sm:py-2.5 sm:text-[10.5px]">
         <span>12 open · 2 unassigned</span>
         <span className="flex items-center gap-1 font-semibold text-amber-700">Oldest lead 2d · assigned</span>
       </div>
@@ -660,23 +699,30 @@ const EST_COLS = [
     count: 4,
     total: "$27.4k",
     cards: [
-      { id: "E-1046", name: "Parker Lind", amt: "$6,900", sub: "sent 9:40 AM" },
-      { id: "E-1044", name: "Webb Residence", amt: "$4,250", sub: "sent 8:15 AM" },
+      { id: "E-1046", name: "Parker Lind", amt: "$6,900", sub: "sent 9:40 AM", bar: "18%", barCls: "bg-foreground/30" },
+      { id: "E-1044", name: "Webb Residence", amt: "$4,250", sub: "sent 8:15 AM", bar: "12%", barCls: "bg-foreground/30" },
+      { id: "E-1042", name: "Alderman Roof", amt: "$16,250", sub: "sent Yesterday", bar: "22%", barCls: "bg-foreground/30" },
     ],
   },
   {
     label: "Viewed",
     count: 3,
-    total: "$8.5k",
+    total: "$16.3k",
     live: true,
-    cards: [{ id: "E-1043", name: "Grace Nolan", amt: "$8,500", sub: "opened 11:47 AM · nudge day 3" }],
+    cards: [
+      { id: "E-1043", name: "Grace Nolan", amt: "$8,500", sub: "opened 11:47 AM · nudge day 3", bar: "55%", barCls: "bg-primary" },
+      { id: "E-1040", name: "Cedar Falls Duplex", amt: "$7,800", sub: "opened 9:12 AM · nudge day 2", bar: "48%", barCls: "bg-primary" },
+    ],
   },
   {
     label: "Accepted",
     count: 2,
-    total: "$12.4k",
+    total: "$31.4k",
     done: true,
-    cards: [{ id: "E-1039", name: "Rosa Alvarez", amt: "$12,480", sub: "deposit due Fri" }],
+    cards: [
+      { id: "E-1039", name: "Rosa Alvarez", amt: "$12,480", sub: "deposit due Fri", bar: "100%", barCls: "bg-emerald-500" },
+      { id: "E-1037", name: "Miller Residence", amt: "$18,900", sub: "crew scheduled · Jul 2", bar: "100%", barCls: "bg-emerald-500" },
+    ],
   },
 ];
 
@@ -684,11 +730,11 @@ function EstimatesMock() {
   return (
     <div className="flex h-full flex-col bg-background">
       <PreviewHead title="Estimates" chip="sent → viewed → accepted" />
-      <div className="grid min-h-0 flex-1 grid-cols-3 gap-1.5 px-3 pb-2.5 pt-2.5 sm:gap-2.5 sm:px-4 sm:pb-3.5 sm:pt-3">
+      <div className="grid min-h-0 flex-1 grid-cols-3 gap-2 px-3 pb-2.5 pt-3 sm:gap-2.5 sm:px-4 sm:pb-3.5 sm:pt-3.5">
         {EST_COLS.map((c) => (
           <div
             key={c.label}
-            className={`flex min-h-0 flex-col rounded-xl border p-1.5 sm:p-2 ${
+            className={`flex min-h-0 flex-col rounded-xl border p-2 sm:p-2.5 ${
               c.done
                 ? "border-emerald-500/25 bg-emerald-500/[0.05]"
                 : c.live
@@ -696,11 +742,11 @@ function EstimatesMock() {
                   : "border-border/60 bg-muted/25"
             }`}
           >
-            <div className="flex items-center justify-between px-0.5 pb-1.5">
-              <span className="flex items-center gap-1 text-[9px] font-bold text-foreground/85 sm:text-[10.5px]">
+            <div className="flex items-center justify-between px-0.5 pb-2">
+              <span className="flex items-center gap-1.5 text-[9.5px] font-bold text-foreground/85 sm:text-[11px]">
                 {c.done ? (
-                  <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500 text-white">
-                    <Check className="h-2 w-2" />
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-white">
+                    <Check className="h-2.5 w-2.5" />
                   </span>
                 ) : c.live ? (
                   <span className="relative flex h-1.5 w-1.5">
@@ -711,40 +757,54 @@ function EstimatesMock() {
                   <span className="h-1.5 w-1.5 rounded-full bg-foreground/25" aria-hidden />
                 )}
                 {c.label}
-                <span className="rounded bg-background/80 px-1 py-0.5 text-[7.5px] font-bold text-muted-foreground sm:text-[9px]">{c.count}</span>
+                <span className="rounded bg-background/80 px-1.5 py-0.5 text-[8px] font-bold text-muted-foreground sm:text-[9.5px]">{c.count}</span>
               </span>
-              <span className="text-[8px] font-bold text-foreground/60 sm:text-[9.5px]">{c.total}</span>
+              <span className="hidden text-[9px] font-bold text-foreground/60 sm:block sm:text-[10.5px]">{c.total}</span>
             </div>
-            <div className="min-h-0 flex-1 space-y-1.5">
+            <div className="flex min-h-0 flex-1 flex-col gap-2">
               {c.cards.map((k) => (
                 <div
                   key={k.id}
-                  className={`rounded-lg border bg-card p-1.5 shadow-[0_6px_16px_-10px_rgba(15,23,42,0.35)] sm:p-2 ${
+                  className={`flex min-h-0 flex-1 flex-col justify-center rounded-xl border bg-card p-2 shadow-[0_8px_20px_-14px_rgba(15,23,42,0.4)] sm:p-2.5 ${
                     c.live ? "border-primary/30" : "border-border/60"
                   }`}
                 >
-                  <p className="flex items-center justify-between text-[8.5px] font-semibold text-muted-foreground sm:text-[9.5px]">
+                  <p className="hidden items-center justify-between text-[9px] font-semibold text-muted-foreground sm:flex sm:text-[10px]">
                     <span className="font-mono">{k.id}</span>
-                    <span className="text-[9px] font-bold text-foreground sm:text-[11px]">{k.amt}</span>
+                    <span className="text-[11px] font-bold text-foreground sm:text-[14px]">{k.amt}</span>
                   </p>
-                  <p className="mt-0.5 truncate text-[10px] font-bold text-foreground sm:text-[11.5px]">{k.name}</p>
-                  <p className="mt-0.5 flex items-center gap-1 truncate text-[8px] text-muted-foreground sm:text-[9px]">
+                  <p className="flex items-center justify-between gap-1.5 sm:hidden">
+                    <span className="h-1 w-1 shrink-0 rounded-full bg-current opacity-30" aria-hidden />
+                    <span className="shrink-0 text-[11.5px] font-bold text-foreground">{k.amt}</span>
+                  </p>
+                  <p className="mt-1 hidden truncate text-[11px] font-bold text-foreground sm:block sm:text-[12.5px]">{k.name}</p>
+                  <p className="mt-0.5 hidden items-center gap-1 truncate text-[8.5px] text-muted-foreground sm:flex sm:text-[9.5px]">
                     {c.live && <span className="h-1 w-1 shrink-0 rounded-full bg-primary" aria-hidden />}
                     {k.sub}
                   </p>
+                  <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: k.bar }}
+                      transition={{ duration: 0.7, ease: EASE }}
+                      className={`h-full rounded-full ${k.barCls}`}
+                    />
+                  </div>
                 </div>
               ))}
-              {/* ghost card — the pipeline keeps going */}
-              <div className="rounded-lg border border-dashed border-border/50 p-1.5 opacity-50 sm:p-2">
-                <span className="block h-1.5 w-2/3 rounded bg-muted" />
-                <span className="mt-1 block h-1.5 w-1/2 rounded bg-muted" />
-              </div>
+              {/* ghost card — the pipeline keeps going (sent column only) */}
+              {c.cards.length < 3 && (
+                <div className="rounded-xl border border-dashed border-border/50 p-2 opacity-50 sm:p-2.5">
+                  <span className="block h-1.5 w-2/3 rounded bg-muted" />
+                  <span className="mt-1.5 block h-1.5 w-1/2 rounded bg-muted" />
+                </div>
+              )}
             </div>
           </div>
         ))}
       </div>
       {/* footer strip */}
-      <div className="flex items-center justify-between border-t border-border/60 bg-muted/25 px-3 py-1.5 text-[9px] font-medium text-muted-foreground sm:px-4 sm:text-[10px]">
+      <div className="flex items-center justify-between border-t border-border/60 bg-muted/25 px-3 py-2 text-[9.5px] font-medium text-muted-foreground sm:px-4 sm:py-2.5 sm:text-[10.5px]">
         <span>Median time to answer · 2d 4h</span>
         <span className="font-semibold text-emerald-600">2 accepted this week</span>
       </div>
@@ -754,9 +814,9 @@ function EstimatesMock() {
 
 /** Page 4 — Reports: KPI cards, the week's bookings, location leaderboard. */
 const REPORT_KPIS = [
-  { label: "Booked rate", value: "92%", delta: "+4.1 pt" },
-  { label: "Collected · 30d", value: "$148k", delta: "+12.2%" },
-  { label: "Median response", value: "6m", delta: "2m faster" },
+  { label: "Booked rate", value: "92%", delta: "+4.1 pt", bar: "92%", barCls: "bg-emerald-500" },
+  { label: "Collected · 30d", value: "$148k", delta: "+12.2%", bar: "68%", barCls: "bg-primary" },
+  { label: "Median response", value: "6m", delta: "2m faster", bar: "78%", barCls: "bg-primary" },
 ];
 const REPORT_BARS = [34, 52, 44, 66, 58, 78, 91];
 const REPORT_DAYS = ["M", "T", "W", "T", "F", "S", "S"];
@@ -764,6 +824,7 @@ const REPORT_LOCS = [
   { name: "Summit Roofing Co.", v: 92 },
   { name: "North Peak Exteriors", v: 78 },
   { name: "Cedarline Roofing", v: 96 },
+  { name: "Ironclad Exteriors", v: 71 },
 ];
 
 function ReportsMock() {
@@ -771,58 +832,61 @@ function ReportsMock() {
   return (
     <div className="flex h-full flex-col bg-background">
       <PreviewHead title="Reports" chip="every branch, side by side" />
-      <div className="grid grid-cols-3 gap-1.5 px-3 pt-2.5 sm:gap-2.5 sm:px-4 sm:pt-3">
+      <div className="grid grid-cols-3 gap-2 px-3 pt-3 sm:gap-2.5 sm:px-4 sm:pt-3.5">
         {REPORT_KPIS.map((k) => (
-          <div key={k.label} className="rounded-xl border border-border/60 bg-card px-2 py-1.5 sm:px-3 sm:py-2">
-            <p className="text-[8px] font-bold uppercase tracking-[0.12em] text-muted-foreground sm:text-[9px]">{k.label}</p>
-            <div className="mt-0.5 flex flex-wrap items-baseline gap-x-1.5">
-              <p className="text-[13px] font-bold tracking-tight text-foreground sm:text-[17px]">{k.value}</p>
-              <p className="flex items-center gap-0.5 text-[8px] font-semibold text-emerald-600 sm:text-[9.5px]">
-                <TrendingUp className="h-2.5 w-2.5" aria-hidden />
+          <div key={k.label} className="rounded-xl border border-border/60 bg-card px-3 py-2 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)]">
+            <p className="text-[8.5px] font-bold uppercase tracking-[0.12em] text-muted-foreground sm:text-[9.5px]">{k.label}</p>
+            <div className="mt-1 flex flex-wrap items-baseline justify-between gap-x-1.5">
+              <p className="text-[16px] font-bold tracking-tight text-foreground sm:text-[22px]">{k.value}</p>
+              <p className="flex items-center gap-0.5 text-[8.5px] font-semibold text-emerald-600 sm:text-[10px]">
+                <TrendingUp className="h-3 w-3" aria-hidden />
                 {k.delta}
               </p>
+            </div>
+            <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted sm:mt-2">
+              <div className={`h-full rounded-full ${k.barCls}`} style={{ width: k.bar }} />
             </div>
           </div>
         ))}
       </div>
-      <div className="mt-2 flex min-h-0 flex-1 gap-2 px-3 pb-2.5 sm:mt-2.5 sm:gap-2.5 sm:px-4 sm:pb-3">
+      <div className="mt-2.5 flex min-h-0 flex-1 gap-2 px-3 pb-2.5 sm:mt-3 sm:gap-2.5 sm:px-4 sm:pb-3">
         {/* the week's bars draw themselves in */}
-        <div className="flex min-h-0 flex-[1.5] flex-col rounded-xl border border-border/60 bg-muted/25 p-2 sm:p-3">
-          <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground sm:text-[9.5px]">Booked inquiries · this week</p>
-          <div className="flex min-h-0 flex-1 items-end gap-1.5 pt-2 sm:gap-2">
+        <div className="flex min-h-0 flex-[1.4] flex-col rounded-xl border border-border/60 bg-muted/25 p-2.5 sm:p-3">
+          <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground sm:text-[10px]">Booked inquiries · this week</p>
+          <div className="flex min-h-0 flex-1 items-end gap-1.5 pt-2 sm:gap-2.5">
             {REPORT_BARS.map((v, i) => (
               <div key={i} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
                 {v === max && (
-                  <span className="rounded bg-emerald-500 px-1 py-0.5 text-[7.5px] font-bold text-white sm:text-[8.5px]">92%</span>
+                  <span className="rounded bg-emerald-500 px-1.5 py-0.5 text-[8px] font-bold text-white sm:text-[9px]">92%</span>
                 )}
                 <motion.div
                   initial={{ scaleY: 0 }}
                   animate={{ scaleY: 1 }}
                   transition={{ duration: 0.6, delay: 0.06 * i, ease: EASE }}
                   style={{ height: `${v}%`, transformOrigin: "bottom" }}
-                  className={`w-full rounded-t-[4px] ${
+                  className={`w-full rounded-t-[5px] ${
                     v === max ? "bg-gradient-to-t from-emerald-500/80 to-emerald-400" : "bg-gradient-to-t from-primary/75 to-primary"
                   }`}
                 />
-                <span className={`text-[8px] font-medium sm:text-[9px] ${v === max ? "font-bold text-emerald-600" : "text-muted-foreground"}`}>
+                <span className={`text-[8.5px] font-medium sm:text-[9.5px] ${v === max ? "font-bold text-emerald-600" : "text-muted-foreground"}`}>
                   {REPORT_DAYS[i]}
                 </span>
               </div>
             ))}
           </div>
         </div>
-        {/* per-location leaderboard */}
-        <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border/60 bg-muted/25 p-2 sm:p-3">
-          <p className="flex items-center gap-1 pb-2 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground sm:text-[9.5px]">
-            <MapPin className="h-2.5 w-2.5" aria-hidden /> By location
+        {/* per-location leaderboard (desktop preview only) */}
+        <div className="hidden min-h-0 flex-1 flex-col rounded-xl border border-border/60 bg-muted/25 p-2.5 sm:flex sm:p-3">
+          <p className="flex items-center gap-1 pb-2 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground sm:text-[10px]">
+            <MapPin className="h-3 w-3" aria-hidden /> By location
           </p>
-          <div className="min-h-0 flex-1 space-y-2">
+          <div className="flex min-h-0 flex-1 flex-col justify-between gap-2">
             {REPORT_LOCS.map((loc, i) => (
-              <div key={loc.name}>
-                <div className="flex items-center justify-between gap-2 text-[8.5px] sm:text-[10px]">
+              <div key={loc.name} className="flex-1">
+                <div className="flex items-center justify-between gap-2 text-[9px] sm:text-[10.5px]">
                   <span className="flex min-w-0 items-center gap-1.5">
                     <span
-                      className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded text-[7px] font-bold ${
+                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded text-[8px] font-bold ${
                         i === 0 ? "bg-emerald-500 text-white" : "bg-foreground/5 text-foreground/60"
                       }`}
                     >
@@ -832,7 +896,7 @@ function ReportsMock() {
                   </span>
                   <span className="shrink-0 font-bold text-foreground/70">{loc.v}%</span>
                 </div>
-                <div className="mt-1 h-1 overflow-hidden rounded-full bg-muted">
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${loc.v}%` }}
@@ -843,11 +907,16 @@ function ReportsMock() {
               </div>
             ))}
           </div>
-          <div className="mt-2 flex items-center justify-between rounded-lg border border-amber-500/25 bg-amber-500/[0.08] px-2 py-1.5">
-            <span className="text-[8px] font-bold text-amber-700 sm:text-[9.5px]">Collectible overdue</span>
-            <span className="text-[8.5px] font-bold text-amber-700 sm:text-[10.5px]">$12.9k · 3 invoices</span>
+          <div className="mt-2 flex items-center justify-between rounded-lg border border-amber-500/25 bg-amber-500/[0.08] px-2 py-2">
+            <span className="text-[8.5px] font-bold text-amber-700 sm:text-[9.5px]">Collectible overdue</span>
+            <span className="text-[9px] font-bold text-amber-700 sm:text-[11px]">$12.9k · 3 invoices</span>
           </div>
         </div>
+      </div>
+      {/* footer strip */}
+      <div className="flex items-center justify-between border-t border-border/60 bg-muted/25 px-3 py-2 text-[9.5px] font-medium text-muted-foreground sm:px-4 sm:py-2.5 sm:text-[10.5px]">
+        <span>Quarter to date · all locations</span>
+        <span className="font-semibold text-primary">Export ready · CSV &amp; PDF</span>
       </div>
     </div>
   );
@@ -857,7 +926,7 @@ function ReportsMock() {
  * The interactive desk: a working miniature of the product rendered in
  * pure DOM — no screenshots. Clicking a page in the sidebar switches
  * the view (exactly like the real app); left alone, the desk tours
- * every page by itself every ~4 seconds. Hovering pauses the tour.
+ * every page by itself every 3 seconds. Hovering pauses the tour.
  */
 function AppPreview() {
   const [active, setActive] = useState(0);
@@ -874,7 +943,7 @@ function AppPreview() {
     const t = setTimeout(() => {
       setActive((a) => (a + 1) % APP_PAGES.length);
       setCycle((c) => c + 1);
-    }, 4200);
+    }, 3000);
     return () => clearTimeout(t);
   }, [hold, cycle]);
 
@@ -895,7 +964,7 @@ function AppPreview() {
       onPointerLeave={() => setHold(false)}
     >
       <BrowserFrame label={page.url}>
-        <div className="relative flex aspect-[4/3] w-full overflow-hidden bg-background sm:aspect-[16/10]">
+        <div className="relative flex h-[430px] w-full overflow-hidden bg-background sm:aspect-[16/10] sm:h-auto">
           {/* the sidebar — click a page to switch to it (desktop) */}
           <aside className="hidden w-[190px] shrink-0 flex-col border-r border-border/70 bg-muted/50 px-2.5 pb-2.5 pt-3 sm:flex">
             <div className="px-1.5 pb-3">
@@ -1003,25 +1072,17 @@ function Product() {
         >
           <motion.p
             variants={headItem}
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.07] px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.24em] text-primary shadow-[0_14px_35px_-18px_rgba(15,23,42,0.5)]"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.07] px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.24em] text-primary"
           >
             <MousePointerClick className="h-3.5 w-3.5" aria-hidden />
             The product
           </motion.p>
-          <motion.h2 variants={headItem} className="text-balance text-[38px] font-bold leading-[1.05] tracking-tight md:text-[54px]">
-            Your whole day,{" "}
-            <span className="bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent">on one screen.</span>
-          </motion.h2>
-          <motion.p
+          <motion.h2
             variants={headItem}
-            className="mx-auto mt-6 max-w-[580px] text-pretty text-[15px] leading-relaxed text-muted-foreground md:text-[16.5px]"
+            className="text-balance text-[40px] font-bold leading-[1.04] tracking-tight text-foreground md:text-[58px]"
           >
-            No spreadsheets, no group texts, no pocket notebook.{" "}
-            <span className="font-semibold text-foreground">
-              One queue tells you exactly what needs a response, a visit, or a decision
-            </span>{" "}
-            — and what happens if you don’t.
-          </motion.p>
+            One desk. <span className="text-primary">Every decision.</span>
+          </motion.h2>
         </motion.div>
 
         <div className="relative">
@@ -1392,8 +1453,8 @@ function Footer() {
         <div className="grid gap-10 py-14 md:grid-cols-[1.45fr_1fr_1fr] md:gap-14">
           {/* brand */}
           <div className="max-w-sm">
-            <Logo />
-            <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">
+            <Logo size="lg" />
+            <p className="mt-5 text-[13.5px] leading-relaxed text-muted-foreground">
               The estimate desk for roofing teams — inquiries to inspections, estimates to matched
               payments, all on one screen.
             </p>
