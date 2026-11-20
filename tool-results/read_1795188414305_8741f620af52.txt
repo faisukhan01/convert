@@ -1,0 +1,733 @@
+     1→"use client";
+     2→
+     3→
+     4→import { useEffect, useRef, useState } from "react";
+     5→import {
+     6→  ArrowRight,
+     7→  ArrowUpRight,
+     8→  BellRing,
+     9→  Building2,
+    10→  CalendarCheck2,
+    11→  Check,
+    12→  ClipboardList,
+    13→  FileCheck2,
+    14→  HardHat,
+    15→  PhoneMissed,
+    16→  Play,
+    17→  Quote,
+    18→} from "lucide-react";
+    19→import { navigate, useAppStore } from "@/store/app";
+    20→import { Logo } from "@/components/app/shell";
+    21→
+    22→/**
+    23→ * RidgeLine marketing landing — the front door of the product.
+    24→ * Built like a real SaaS marketing site: a live-action hero video (Coverr,
+    25→ * free license), real job-site photography, and actual screenshots of the
+    26→ * running product inside browser frames. Single sans typeface, flat layout,
+    27→ * no decorative effects — credibility over decoration.
+    28→ */
+    29→
+    30→const HERO = {
+    31→  video: "/media/roof-hero.mp4",
+    32→  poster: "/media/roof-hero-poster.jpg",
+    33→};
+    34→
+    35→const WORDMARKS = [
+    36→  "Summit Roofing Co.",
+    37→  "North Peak Exteriors",
+    38→  "Bluepine Roofing",
+    39→  "Ironclad Exteriors",
+    40→  "Cedarline Roofing",
+    41→  "Harvest Ridge",
+    42→];
+    43→
+    44→const MINI_FEATURES = [
+    45→  {
+    46→    icon: PhoneMissed,
+    47→    title: "Missed calls become booked inspections",
+    48→    copy: "Every call, website form and referral lands in one queue — deduplicated, time-stamped, owned by someone.",
+    49→  },
+    50→  {
+    51→    icon: BellRing,
+    52→    title: "Quotes chase themselves",
+    53→    copy: "RidgeLine notices when an estimate is opened and nudges the homeowner on schedule until you get an answer.",
+    54→  },
+    55→  {
+    56→    icon: FileCheck2,
+    57→    title: "Payments tie back to the quote",
+    58→    copy: "Accepted estimates flow to invoices and matched payments, so the books always agree with the roof.",
+    59→  },
+    60→];
+    61→
+    62→const FLOW = [
+    63→  {
+    64→    n: "01",
+    65→    img: "/img/roofing/storm-tarp.jpg",
+    66→    alt: "Crew securing a tarp over a storm-damaged roof",
+    67→    title: "Every inquiry, one desk",
+    68→    copy: "Phone calls, website forms, referrals and storm-season walk-ins land in a single queue — deduplicated, time-stamped and owned.",
+    69→    points: ["Never ask “who called whom?” again", "Duplicates flagged before they cost you", "Homeowners book inspections themselves"],
+    70→  },
+    71→  {
+    72→    n: "02",
+    73→    img: "/img/roofing/tearoff.jpg",
+    74→    alt: "Two roofers tearing off shingles ahead of a re-roof",
+    75→    title: "Inspections that leave a paper trail",
+    76→    copy: "Visit outcomes, photos and measurements are captured on the spot. The estimator’s phone view shows today’s route and nothing else.",
+    77→    points: ["Booked, completed, no-show — tracked", "Assignments balanced across the crew", "Follow-ups scheduled the moment you leave"],
+    78→  },
+    79→  {
+    80→    n: "03",
+    81→    img: "/img/app/estimates.png",
+    82→    alt: "RidgeLine estimates board with status badges",
+    83→    title: "Quotes that chase themselves",
+    84→    copy: "The desk sends the estimate, sees the moment it’s opened, and nudges the homeowner on your behalf until you get an answer.",
+    85→    points: ["Viewed / accepted / declined, visible", "Automatic nudges at smart intervals", "Revisions without losing history"],
+    86→    isShot: true,
+    87→  },
+    88→  {
+    89→    n: "04",
+    90→    img: "/img/roofing/finished-house.jpg",
+    91→    alt: "A finished craftsman home with a new roof",
+    92→    title: "From approval to paid invoice",
+    93→    copy: "Accepted quotes flow to invoices and matched payments. Aging views show exactly which jobs are stuck and for how long.",
+    94→    points: ["Payments matched to estimates", "Overdue stages flagged in red", "Reports your accountant will like"],
+    95→  },
+    96→];
+    97→
+    98→const STATS = [
+    99→  { to: 92, suffix: "%", label: "of quotes get automatic follow-ups" },
+   100→  { to: 6, suffix: " min", label: "from missed call to booked inspection" },
+   101→  { to: 4, suffix: "", label: "stages in one pipeline, zero spreadsheets" },
+   102→  { to: 100, suffix: "%", label: "of actions on the audit record" },
+   103→];
+   104→
+   105→const ROLES = [
+   106→  {
+   107→    icon: ClipboardList,
+   108→    title: "Owner",
+   109→    line: "One honest list, every morning",
+   110→    copy: "What’s overdue, what’s waiting on you, what money is stuck — before the first coffee.",
+   111→  },
+   112→  {
+   113→    icon: BellRing,
+   114→    title: "Office",
+   115→    line: "The queue does the chasing",
+   116→    copy: "Callbacks, assignment and payment matching in one tidy inbox instead of a pocket notebook.",
+   117→  },
+   118→  {
+   119→    icon: HardHat,
+   120→    title: "Estimator",
+   121→    line: "A phone built for the roof",
+   122→    copy: "Today’s visits, one-tap outcomes, and the next appointment always in view — even in gloves.",
+   123→  },
+   124→  {
+   125→    icon: Building2,
+   126→    title: "Agency",
+   127→    line: "Every location, one dashboard",
+   128→    copy: "Provision contractors, verify connections and compare performance across the whole group.",
+   129→  },
+   130→];
+   131→
+   132→const REVIEWS = [
+   133→  {
+   134→    quote:
+   135→      "The queue finally tells me the truth. I open one screen in the morning and I know exactly what the day owes me.",
+   136→    name: "Priya Shah",
+   137→    role: "Owner · Summit Roofing Co.",
+   138→    initials: "PS",
+   139→  },
+   140→  {
+   141→    quote:
+   142→      "Callbacks used to live in my pocket notebook. Now the desk chases the customer for me — I just approve it.",
+   143→    name: "Marcus Lee",
+   144→    role: "Office · Summit Roofing Co.",
+   145→    initials: "ML",
+   146→  },
+   147→  {
+   148→    quote:
+   149→      "Three locations, one dashboard. Provisioning a new contractor took minutes, not a week of spreadsheets.",
+   150→    name: "Dana Whitfield",
+   151→    role: "Agency admin · North Peak Exteriors",
+   152→    initials: "DW",
+   153→  },
+   154→];
+   155→
+   156→/* ────────────── helpers ────────────── */
+   157→
+   158→function useRevealOnScroll() {
+   159→  useEffect(() => {
+   160→    const els = Array.from(document.querySelectorAll(".rv"));
+   161→    if (!("IntersectionObserver" in window)) {
+   162→      els.forEach((el) => el.classList.add("is-in"));
+   163→      return;
+   164→    }
+   165→    const io = new IntersectionObserver(
+   166→      (entries) => {
+   167→        for (const e of entries) {
+   168→          if (e.isIntersecting) {
+   169→            e.target.classList.add("is-in");
+   170→            io.unobserve(e.target);
+   171→          }
+   172→        }
+   173→      },
+   174→      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
+   175→    );
+   176→    els.forEach((el) => io.observe(el));
+   177→    return () => io.disconnect();
+   178→  }, []);
+   179→}
+   180→
+   181→function CountUp({ to, suffix, duration = 1600 }: { to: number; suffix?: string; duration?: number }) {
+   182→  const ref = useRef<HTMLSpanElement>(null);
+   183→  const [val, setVal] = useState(0);
+   184→  const started = useRef(false);
+   185→  useEffect(() => {
+   186→    const el = ref.current;
+   187→    if (!el) return;
+   188→    const io = new IntersectionObserver(
+   189→      (entries) => {
+   190→        if (!entries[0].isIntersecting || started.current) return;
+   191→        started.current = true;
+   192→        const t0 = performance.now();
+   193→        const tick = (t: number) => {
+   194→          const p = Math.min(1, (t - t0) / duration);
+   195→          const eased = 1 - Math.pow(1 - p, 3);
+   196→          setVal(Math.round(to * eased));
+   197→          if (p < 1) requestAnimationFrame(tick);
+   198→        };
+   199→        requestAnimationFrame(tick);
+   200→      },
+   201→      { threshold: 0.4 },
+   202→    );
+   203→    io.observe(el);
+   204→    return () => io.disconnect();
+   205→  }, [to, duration]);
+   206→  return (
+   207→    <span ref={ref}>
+   208→      {val}
+   209→      {suffix}
+   210→    </span>
+   211→  );
+   212→}
+   213→
+   214→function scrollToSection(id: string) {
+   215→  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+   216→}
+   217→
+   218→/** CTAs: signed-in visitors go straight to the desk; everyone else goes to sign-in. */
+   219→function ctaNavigate() {
+   220→  const authed = !!useAppStore.getState().session?.user;
+   221→  navigate(authed ? "/today" : "/signin");
+   222→}
+   223→
+   224→/** A browser-chrome frame around a real product screenshot. */
+   225→function BrowserFrame({ src, alt, label, className = "" }: { src: string; alt: string; label: string; className?: string }) {
+   226→  return (
+   227→    <figure className={`overflow-hidden rounded-xl border border-border bg-card shadow-[0_30px_80px_-36px_rgba(15,23,42,0.45)] ${className}`}>
+   228→      <div className="flex items-center gap-2 border-b border-border/70 bg-muted/70 px-3.5 py-2.5">
+   229→        <span className="flex gap-1.5" aria-hidden>
+   230→          <span className="h-2.5 w-2.5 rounded-full bg-neutral-300" />
+   231→          <span className="h-2.5 w-2.5 rounded-full bg-neutral-300" />
+   232→          <span className="h-2.5 w-2.5 rounded-full bg-neutral-300" />
+   233→        </span>
+   234→        <span className="ml-2 truncate rounded-md border border-border/70 bg-background px-2.5 py-1 text-[10.5px] font-medium text-muted-foreground">
+   235→          {label}
+   236→        </span>
+   237→      </div>
+   238→      <img src={src} alt={alt} className="block w-full" loading="lazy" />
+   239→    </figure>
+   240→  );
+   241→}
+   242→
+   243→/* ────────────── sections ────────────── */
+   244→
+   245→function Nav() {
+   246→  const [scrolled, setScrolled] = useState(false);
+   247→  const [open, setOpen] = useState(false);
+   248→  const authed = !!useAppStore((s) => s.session)?.user;
+   249→  useEffect(() => {
+   250→    const onScroll = () => setScrolled(window.scrollY > 14);
+   251→    onScroll();
+   252→    window.addEventListener("scroll", onScroll, { passive: true });
+   253→    return () => window.removeEventListener("scroll", onScroll);
+   254→  }, []);
+   255→  const links = [
+   256→    { label: "Product", id: "product" },
+   257→    { label: "How it works", id: "how" },
+   258→    { label: "Who it's for", id: "roles" },
+   259→    { label: "Reviews", id: "reviews" },
+   260→  ];
+   261→  return (
+   262→    <header
+   263→      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+   264→        scrolled ? "border-b border-black/5 bg-background/85 backdrop-blur-md" : "bg-transparent"
+   265→      }`}
+   266→    >
+   267→      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 md:px-8">
+   268→        <div className={scrolled ? "" : "[&_svg]:shadow-lg [&_span]:text-white [&_span_span]:text-white/70"}>
+   269→          <span className={scrolled ? "" : "text-white"}>
+   270→            <Logo />
+   271→          </span>
+   272→        </div>
+   273→        <nav className="hidden items-center gap-7 md:flex" aria-label="Landing sections">
+   274→          {links.map((l) => (
+   275→            <button
+   276→              key={l.id}
+   277→              onClick={() => scrollToSection(l.id)}
+   278→              className={`text-[13px] font-medium transition-colors ${
+   279→                scrolled ? "text-foreground/70 hover:text-foreground" : "text-white/80 hover:text-white"
+   280→              }`}
+   281→            >
+   282→              {l.label}
+   283→            </button>
+   284→          ))}
+   285→        </nav>
+   286→        <div className="hidden items-center gap-2 md:flex">
+   287→          {!authed && (
+   288→            <button
+   289→              onClick={ctaNavigate}
+   290→              className={`rounded-full px-4 py-2 text-[13px] font-semibold transition-colors ${
+   291→                scrolled ? "text-foreground hover:bg-accent" : "text-white hover:bg-white/15"
+   292→              }`}
+   293→            >
+   294→              Sign in
+   295→            </button>
+   296→          )}
+   297→          <button
+   298→            onClick={ctaNavigate}
+   299→            className={`group inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-semibold shadow-lg transition-transform hover:scale-[1.03] ${
+   300→              scrolled ? "bg-primary text-primary-foreground" : "bg-white text-neutral-900"
+   301→            }`}
+   302→          >
+   303→            Open the app
+   304→            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+   305→          </button>
+   306→        </div>
+   307→        <button
+   308→          className={`rounded-lg p-2 md:hidden ${scrolled ? "text-foreground" : "text-white"}`}
+   309→          aria-label="Toggle menu"
+   310→          aria-expanded={open}
+   311→          onClick={() => setOpen((v) => !v)}
+   312→        >
+   313→          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+   314→            {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+   315→          </svg>
+   316→        </button>
+   317→      </div>
+   318→      {open && (
+   319→        <div className="border-t bg-background/95 px-5 py-4 backdrop-blur-md md:hidden">
+   320→          {links.map((l) => (
+   321→            <button
+   322→              key={l.id}
+   323→              onClick={() => {
+   324→                setOpen(false);
+   325→                scrollToSection(l.id);
+   326→              }}
+   327→              className="block w-full py-2.5 text-left text-sm font-medium text-foreground/80"
+   328→            >
+   329→              {l.label}
+   330→            </button>
+   331→          ))}
+   332→          <button
+   333→            onClick={ctaNavigate}
+   334→            className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"
+   335→          >
+   336→            Open the app <ArrowRight className="h-4 w-4" />
+   337→          </button>
+   338→        </div>
+   339→      )}
+   340→    </header>
+   341→  );
+   342→}
+   343→
+   344→function Hero() {
+   345→  return (
+   346→    <section className="relative flex min-h-[100svh] flex-col justify-end overflow-hidden bg-neutral-950">
+   347→      {/* live-action footage — real job site, real roofer */}
+   348→      <video
+   349→        className="absolute inset-0 h-full w-full object-cover"
+   350→        src={HERO.video}
+   351→        poster={HERO.poster}
+   352→        autoPlay
+   353→        muted
+   354→        loop
+   355→        playsInline
+   356→        preload="metadata"
+   357→        aria-hidden
+   358→      />
+   359→      {/* scrims */}
+   360→      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/92 via-neutral-950/30 to-neutral-950/55" aria-hidden />
+   361→      <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/60 via-neutral-950/10 to-transparent" aria-hidden />
+   362→
+   363→      {/* copy */}
+   364→      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-24 pt-40 md:px-8 md:pb-28">
+   365→        <p className="rv is-in mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/90 backdrop-blur-sm">
+   366→          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+   367→          Estimate desk for roofing teams
+   368→        </p>
+   369→        <h1 className="rv is-in max-w-3xl text-[42px] font-bold leading-[1.05] tracking-tight text-white sm:text-6xl md:text-[72px]">
+   370→          Every roofing job, on one desk.
+   371→        </h1>
+   372→        <p className="rv is-in mt-6 max-w-xl text-[15px] leading-relaxed text-white/75 md:text-lg">
+   373→          RidgeLine tracks the inquiries, books the inspections, chases every quote and matches every
+   374→          payment — so your crew builds roofs, not paperwork.
+   375→        </p>
+   376→        <div className="rv is-in mt-9 flex flex-wrap items-center gap-3.5">
+   377→          <button
+   378→            onClick={ctaNavigate}
+   379→            className="group inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-6 text-[15px] font-semibold text-neutral-900 shadow-2xl transition-transform hover:scale-[1.03]"
+   380→          >
+   381→            <Play className="h-4 w-4 fill-neutral-900" />
+   382→            Open the live demo
+   383→          </button>
+   384→          <button
+   385→            onClick={() => scrollToSection("how")}
+   386→            className="inline-flex min-h-[48px] items-center gap-2 rounded-full border border-white/30 bg-white/10 px-6 text-[15px] font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+   387→          >
+   388→            See how it works
+   389→            <ArrowUpRight className="h-4 w-4" />
+   390→          </button>
+   391→          <span className="text-[12.5px] font-medium text-white/55">Free demo · four roles · zero setup</span>
+   392→        </div>
+   393→      </div>
+   394→    </section>
+   395→  );
+   396→}
+   397→
+   398→function Wordmarks() {
+   399→  return (
+   400→    <section aria-label="Teams using RidgeLine" className="border-b border-border/70 bg-background py-9">
+   401→      <div className="mx-auto max-w-6xl px-5 md:px-8">
+   402→        <p className="mb-6 text-center text-[11px] font-semibold uppercase tracking-[0.3em] text-muted-foreground/70">
+   403→          Demo teams running their desk on RidgeLine
+   404→        </p>
+   405→        <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+   406→          {WORDMARKS.map((w) => (
+   407→            <span key={w} className="text-[16px] font-semibold tracking-tight text-foreground/30">
+   408→              {w}
+   409→            </span>
+   410→          ))}
+   411→        </div>
+   412→      </div>
+   413→    </section>
+   414→  );
+   415→}
+   416→
+   417→function Product() {
+   418→  return (
+   419→    <section id="product" className="bg-background py-24 md:py-28">
+   420→      <div className="mx-auto max-w-6xl px-5 md:px-8">
+   421→        <div className="mx-auto mb-14 max-w-2xl text-center">
+   422→          <p className="rv mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">The product</p>
+   423→          <h2 className="rv text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]" style={{ ["--rv-delay" as string]: "60ms" }}>
+   424→            Your whole day, on one screen.
+   425→          </h2>
+   426→          <p className="rv mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground" style={{ ["--rv-delay" as string]: "120ms" }}>
+   427→            No spreadsheets, no group texts, no pocket notebook. One queue tells you exactly what needs
+   428→            a response, a visit, or a decision — and what happens if you don’t.
+   429→          </p>
+   430→        </div>
+   431→
+   432→        {/* the real desk */}
+   433→        <div className="rv" style={{ ["--rv-delay" as string]: "80ms" }}>
+   434→          <BrowserFrame
+   435→            src="/img/app/today.png"
+   436→            alt="RidgeLine Today view: needs a response, inspections today, estimates awaiting a reply"
+   437→            label="app.ridgeline.dev/#/today"
+   438→          />
+   439→        </div>
+   440→
+   441→        {/* three mini features under the shot */}
+   442→        <div className="mt-14 grid gap-10 md:grid-cols-3 md:gap-8">
+   443→          {MINI_FEATURES.map((f, i) => (
+   444→            <div key={f.title} className="rv" style={{ ["--rv-delay" as string]: `${i * 90}ms` }}>
+   445→              <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+   446→                <f.icon className="h-5 w-5" />
+   447→              </span>
+   448→              <h3 className="text-[16.5px] font-bold tracking-tight">{f.title}</h3>
+   449→              <p className="mt-2.5 text-[13.5px] leading-relaxed text-muted-foreground">{f.copy}</p>
+   450→            </div>
+   451→          ))}
+   452→        </div>
+   453→
+   454→        {/* more of the real product */}
+   455→        <div className="mt-16 grid gap-6 md:grid-cols-2">
+   456→          <div className="rv" style={{ ["--rv-delay" as string]: "60ms" }}>
+   457→            <BrowserFrame
+   458→              src="/img/app/inquiries.png"
+   459→              alt="RidgeLine inquiries list with statuses and owners"
+   460→              label="app.ridgeline.dev/#/inquiries"
+   461→            />
+   462→          </div>
+   463→          <div className="rv md:mt-12" style={{ ["--rv-delay" as string]: "140ms" }}>
+   464→            <BrowserFrame
+   465→              src="/img/app/reports.png"
+   466→              alt="RidgeLine reports: conversion, aging and revenue views"
+   467→              label="app.ridgeline.dev/#/reports"
+   468→            />
+   469→          </div>
+   470→        </div>
+   471→      </div>
+   472→    </section>
+   473→  );
+   474→}
+   475→
+   476→function How() {
+   477→  return (
+   478→    <section id="how" className="border-y border-border/70 bg-muted/40 py-24 md:py-28">
+   479→      <div className="mx-auto max-w-6xl px-5 md:px-8">
+   480→        <div className="mb-16 max-w-2xl">
+   481→          <p className="rv mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">How it works</p>
+   482→          <h2 className="rv text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]" style={{ ["--rv-delay" as string]: "60ms" }}>
+   483→            From first call to final payment.
+   484→          </h2>
+   485→        </div>
+   486→        <div className="space-y-16 md:space-y-20">
+   487→          {FLOW.map((s, i) => (
+   488→            <div
+   489→              key={s.n}
+   490→              className={`rv flex flex-col gap-8 md:items-center md:gap-14 ${i % 2 === 1 ? "md:flex-row-reverse" : "md:flex-row"}`}
+   491→            >
+   492→              <div className="md:w-[46%]">
+   493→                <div className="overflow-hidden rounded-xl border border-border/70 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.4)]">
+   494→                  <img
+   495→                    src={s.img}
+   496→                    alt={s.alt}
+   497→                    className={`block w-full object-cover ${s.isShot ? "" : "aspect-[4/3]"}`}
+   498→                    loading="lazy"
+   499→                  />
+   500→                </div>
+   501→              </div>
+   502→              <div className="md:w-[54%]">
+   503→                <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary/80">Step {s.n}</p>
+   504→                <h3 className="text-[24px] font-bold tracking-tight md:text-[28px]">{s.title}</h3>
+   505→                <p className="mt-4 max-w-md text-[14.5px] leading-relaxed text-muted-foreground">{s.copy}</p>
+   506→                <ul className="mt-6 space-y-2.5">
+   507→                  {s.points.map((p) => (
+   508→                    <li key={p} className="flex items-start gap-2.5 text-[13.5px] text-foreground/80">
+   509→                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+   510→                      {p}
+   511→                    </li>
+   512→                  ))}
+   513→                </ul>
+   514→              </div>
+   515→            </div>
+   516→          ))}
+   517→        </div>
+   518→      </div>
+   519→    </section>
+   520→  );
+   521→}
+   522→
+   523→function Stats() {
+   524→  return (
+   525→    <section className="relative overflow-hidden bg-neutral-950 py-20 md:py-24">
+   526→      <img
+   527→        src="/img/roofing/shingles-texture.jpg"
+   528→        alt=""
+   529→        aria-hidden
+   530→        className="absolute inset-0 h-full w-full object-cover opacity-[0.14]"
+   531→        loading="lazy"
+   532→      />
+   533→      <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/85 via-neutral-950/60 to-neutral-950/85" aria-hidden />
+   534→      <div className="relative mx-auto grid max-w-6xl gap-10 px-5 sm:grid-cols-2 md:grid-cols-4 md:px-8">
+   535→        {STATS.map((s, i) => (
+   536→          <div key={s.label} className="rv text-center md:text-left" style={{ ["--rv-delay" as string]: `${i * 90}ms` }}>
+   537→            <p className="text-5xl font-bold tracking-tight text-white md:text-[56px]">
+   538→              <CountUp to={s.to} suffix={s.suffix} />
+   539→            </p>
+   540→            <p className="mt-2.5 text-[12.5px] leading-snug text-white/65">{s.label}</p>
+   541→          </div>
+   542→        ))}
+   543→      </div>
+   544→    </section>
+   545→  );
+   546→}
+   547→
+   548→function Roles() {
+   549→  return (
+   550→    <section id="roles" className="bg-background py-24 md:py-28">
+   551→      <div className="mx-auto max-w-6xl px-5 md:px-8">
+   552→        <div className="mb-14 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+   553→          <div className="max-w-xl">
+   554→            <p className="rv mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">Who it's for</p>
+   555→            <h2 className="rv text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]" style={{ ["--rv-delay" as string]: "60ms" }}>
+   556→              Built for every seat on the crew.
+   557→            </h2>
+   558→          </div>
+   559→          <p className="rv max-w-sm text-[14px] leading-relaxed text-muted-foreground" style={{ ["--rv-delay" as string]: "120ms" }}>
+   560→            Four roles, four tailored views, one shared truth. Nobody sees more than they need;
+   561→            everybody sees what matters.
+   562→          </p>
+   563→        </div>
+   564→        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+   565→          {ROLES.map((r, i) => (
+   566→            <div
+   567→              key={r.title}
+   568→              className="rv group rounded-xl border border-border/70 bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_-20px_rgba(15,23,42,0.3)]"
+   569→              style={{ ["--rv-delay" as string]: `${i * 80}ms` }}
+   570→            >
+   571→              <span className="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+   572→                <r.icon className="h-5 w-5" />
+   573→              </span>
+   574→              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">{r.title}</p>
+   575→              <h3 className="mt-1.5 text-[17px] font-bold tracking-tight">{r.line}</h3>
+   576→              <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">{r.copy}</p>
+   577→            </div>
+   578→          ))}
+   579→        </div>
+   580→      </div>
+   581→    </section>
+   582→  );
+   583→}
+   584→
+   585→function Reviews() {
+   586→  return (
+   587→    <section id="reviews" className="border-y border-border/70 bg-muted/40 py-24 md:py-28">
+   588→      <div className="mx-auto max-w-6xl px-5 md:px-8">
+   589→        <div className="mb-14 max-w-2xl">
+   590→          <p className="rv mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">From the desk</p>
+   591→          <h2 className="rv text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]" style={{ ["--rv-delay" as string]: "60ms" }}>
+   592→            The people who live in it daily.
+   593→          </h2>
+   594→        </div>
+   595→        <div className="grid gap-5 md:grid-cols-3">
+   596→          {REVIEWS.map((r, i) => (
+   597→            <figure
+   598→              key={r.name}
+   599→              className="rv flex flex-col rounded-xl border border-border/70 bg-card p-7"
+   600→              style={{ ["--rv-delay" as string]: `${i * 90}ms` }}
+   601→            >
+   602→              <Quote className="h-5 w-5 text-primary/40" />
+   603→              <blockquote className="mt-4 flex-1 text-[15px] leading-relaxed text-foreground/90">
+   604→                “{r.quote}”
+   605→              </blockquote>
+   606→              <figcaption className="mt-6 flex items-center gap-3 border-t border-border/60 pt-5">
+   607→                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-[12px] font-bold text-primary">
+   608→                  {r.initials}
+   609→                </span>
+   610→                <span>
+   611→                  <span className="block text-[13.5px] font-semibold text-foreground">{r.name}</span>
+   612→                  <span className="block text-[11.5px] text-muted-foreground">{r.role}</span>
+   613→                </span>
+   614→              </figcaption>
+   615→            </figure>
+   616→          ))}
+   617→        </div>
+   618→      </div>
+   619→    </section>
+   620→  );
+   621→}
+   622→
+   623→function FinalCta() {
+   624→  return (
+   625→    <section className="relative overflow-hidden py-28 md:py-32">
+   626→      <img
+   627→        src="/img/roofing/crew-roofline.jpg"
+   628→        alt=""
+   629→        aria-hidden
+   630→        className="absolute inset-0 h-full w-full object-cover"
+   631→        loading="lazy"
+   632→      />
+   633→      <div className="absolute inset-0 bg-neutral-950/60" aria-hidden />
+   634→      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/75 via-transparent to-neutral-950/45" aria-hidden />
+   635→      <div className="relative mx-auto max-w-3xl px-5 text-center md:px-8">
+   636→        <h2 className="rv text-4xl font-bold leading-[1.06] tracking-tight text-white md:text-[56px]">
+   637→          Open the demo. Run a full day.
+   638→        </h2>
+   639→        <p className="rv mx-auto mt-5 max-w-lg text-[15px] leading-relaxed text-white/75" style={{ ["--rv-delay" as string]: "90ms" }}>
+   640→          Four seeded roles and a full pipeline of demo data — inquiries, inspections, quotes,
+   641→          payments. See the desk your crew would run tomorrow.
+   642→        </p>
+   643→        <div className="rv mt-9 flex flex-wrap items-center justify-center gap-3.5" style={{ ["--rv-delay" as string]: "160ms" }}>
+   644→          <button
+   645→            onClick={ctaNavigate}
+   646→            className="group inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-7 text-[15px] font-semibold text-neutral-900 shadow-2xl transition-transform hover:scale-[1.03]"
+   647→          >
+   648→            Open the app
+   649→            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+   650→          </button>
+   651→          <button
+   652→            onClick={() => (window.location.hash = "#/public/intake")}
+   653→            className="inline-flex min-h-[48px] items-center gap-2 rounded-full border border-white/30 bg-white/10 px-7 text-[15px] font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+   654→          >
+   655→            <CalendarCheck2 className="h-4 w-4" />
+   656→            Book as a homeowner
+   657→          </button>
+   658→        </div>
+   659→      </div>
+   660→    </section>
+   661→  );
+   662→}
+   663→
+   664→function Footer() {
+   665→  return (
+   666→    <footer className="border-t border-border/70 bg-background pb-10 pt-14">
+   667→      <div className="mx-auto max-w-6xl px-5 md:px-8">
+   668→        <div className="flex flex-col justify-between gap-10 md:flex-row md:items-start">
+   669→          <div className="max-w-xs">
+   670→            <Logo />
+   671→            <p className="mt-4 text-[12.5px] leading-relaxed text-muted-foreground">
+   672→              The estimate desk for roofing teams — inquiries to inspections, estimates to matched
+   673→              payments.
+   674→            </p>
+   675→          </div>
+   676→          <div className="grid grid-cols-2 gap-12 sm:gap-20">
+   677→            <div>
+   678→              <p className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">Product</p>
+   679→              <ul className="space-y-2.5 text-[13.5px]">
+   680→                <li><button onClick={() => scrollToSection("product")} className="text-muted-foreground transition-colors hover:text-foreground">Product tour</button></li>
+   681→                <li><button onClick={() => scrollToSection("how")} className="text-muted-foreground transition-colors hover:text-foreground">How it works</button></li>
+   682→                <li><button onClick={() => scrollToSection("roles")} className="text-muted-foreground transition-colors hover:text-foreground">Who it’s for</button></li>
+   683→                <li><button onClick={() => scrollToSection("reviews")} className="text-muted-foreground transition-colors hover:text-foreground">Reviews</button></li>
+   684→              </ul>
+   685→            </div>
+   686→            <div>
+   687→              <p className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">Get started</p>
+   688→              <ul className="space-y-2.5 text-[13.5px]">
+   689→                <li><button onClick={ctaNavigate} className="text-muted-foreground transition-colors hover:text-foreground">Open the app</button></li>
+   690→                <li><button onClick={() => (window.location.hash = "#/public/intake")} className="text-muted-foreground transition-colors hover:text-foreground">Homeowner booking</button></li>
+   691→                <li>
+   692→                  <a
+   693→                    href="https://github.com/faisukhan01/convert"
+   694→                    target="_blank"
+   695→                    rel="noreferrer"
+   696→                    className="inline-flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
+   697→                  >
+   698→                    GitHub <ArrowUpRight className="h-3.5 w-3.5" />
+   699→                  </a>
+   700→                </li>
+   701→              </ul>
+   702→            </div>
+   703→          </div>
+   704→        </div>
+   705→        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-border/60 pt-6 text-[11.5px] text-muted-foreground/80 sm:flex-row sm:items-center">
+   706→          <p>© {new Date().getFullYear()} RidgeLine · demo build — all data is synthetic</p>
+   707→          <p>Go automation engine · Postgres · GHL-ready · footage &amp; imagery for demo use</p>
+   708→        </div>
+   709→      </div>
+   710→    </footer>
+   711→  );
+   712→}
+   713→
+   714→export function LandingView() {
+   715→  useRevealOnScroll();
+   716→  return (
+   717→    <div className="grain flex min-h-screen flex-col bg-background">
+   718→      <Nav />
+   719→      <main className="flex-1">
+   720→        <Hero />
+   721→        <Wordmarks />
+   722→        <Product />
+   723→        <How />
+   724→        <Stats />
+   725→        <Roles />
+   726→        <Reviews />
+   727→        <FinalCta />
+   728→      </main>
+   729→      <footer className="mt-auto"><Footer /></footer>
+   730→    </div>
+   731→  );
+   732→}
+   733→
