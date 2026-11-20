@@ -1,30 +1,37 @@
 "use client";
 
-
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ArrowRight,
   ArrowUpRight,
-  BellRing,
-  Building2,
+  BarChart3,
   CalendarCheck2,
   Check,
-  ClipboardList,
-  FileCheck2,
-  HardHat,
-  PhoneMissed,
+  Eye,
+  FileText,
+  Inbox,
+  LayoutDashboard,
   Play,
-  Quote,
+  Wallet,
 } from "lucide-react";
+import {
+  AnimatePresence,
+  motion,
+  useScroll,
+  useSpring,
+  useTransform,
+  type Variants,
+} from "framer-motion";
 import { navigate, useAppStore } from "@/store/app";
 import { Logo } from "@/components/app/shell";
 
 /**
  * RidgeLine marketing landing — the front door of the product.
- * Built like a real SaaS marketing site: a live-action hero video (Coverr,
- * free license), real job-site photography, and actual screenshots of the
- * running product inside browser frames. Single sans typeface, flat layout,
- * no decorative effects — credibility over decoration.
+ * Real live-action hero footage (Coverr, free license), real job-site
+ * photography, actual screenshots of the running product inside browser
+ * frames, and scroll-driven motion (framer-motion): the desk morphs flat
+ * as it enters, live events pop over it, screens auto-tour, and the
+ * how-it-works rail draws itself as you read.
  */
 
 const HERO = {
@@ -41,21 +48,47 @@ const WORDMARKS = [
   "Harvest Ridge",
 ];
 
-const MINI_FEATURES = [
+/** The real product screens used in the auto-touring showcase. */
+const SCREENS = [
   {
-    icon: PhoneMissed,
-    title: "Missed calls become booked inspections",
-    copy: "Every call, website form and referral lands in one queue — deduplicated, time-stamped, owned by someone.",
+    key: "today",
+    icon: LayoutDashboard,
+    tab: "Today",
+    title: "The morning queue",
+    desc: "Needs-a-response, today's inspections and quotes awaiting a reply — the whole day on one list.",
+    shot: "/img/app/today.png",
+    label: "app.ridgeline.dev/#/today",
+    alt: "RidgeLine Today view: needs a response, inspections today, estimates awaiting a reply",
   },
   {
-    icon: BellRing,
-    title: "Quotes chase themselves",
-    copy: "RidgeLine notices when an estimate is opened and nudges the homeowner on schedule until you get an answer.",
+    key: "inquiries",
+    icon: Inbox,
+    tab: "Inquiries",
+    title: "Every lead, owned",
+    desc: "Calls, web forms and referrals deduplicated, time-stamped and assigned before they slip.",
+    shot: "/img/app/inquiries.png",
+    label: "app.ridgeline.dev/#/inquiries",
+    alt: "RidgeLine inquiries list with statuses and owners",
   },
   {
-    icon: FileCheck2,
-    title: "Payments tie back to the quote",
-    copy: "Accepted estimates flow to invoices and matched payments, so the books always agree with the roof.",
+    key: "estimates",
+    icon: FileText,
+    tab: "Estimates",
+    title: "Quotes that chase",
+    desc: "Viewed, nudged and accepted — the pipeline moves without a single game of phone tag.",
+    shot: "/img/app/estimates.png",
+    label: "app.ridgeline.dev/#/estimates",
+    alt: "RidgeLine estimates board with status badges",
+  },
+  {
+    key: "reports",
+    icon: BarChart3,
+    tab: "Reports",
+    title: "The honest numbers",
+    desc: "Conversion, aging and collectible revenue across every location — exportable in one click.",
+    shot: "/img/app/reports.png",
+    label: "app.ridgeline.dev/#/reports",
+    alt: "RidgeLine reports: conversion, aging and revenue views",
   },
 ];
 
@@ -102,56 +135,19 @@ const STATS = [
   { to: 100, suffix: "%", label: "of actions on the audit record" },
 ];
 
-const ROLES = [
-  {
-    icon: ClipboardList,
-    title: "Owner",
-    line: "One honest list, every morning",
-    copy: "What’s overdue, what’s waiting on you, what money is stuck — before the first coffee.",
-  },
-  {
-    icon: BellRing,
-    title: "Office",
-    line: "The queue does the chasing",
-    copy: "Callbacks, assignment and payment matching in one tidy inbox instead of a pocket notebook.",
-  },
-  {
-    icon: HardHat,
-    title: "Estimator",
-    line: "A phone built for the roof",
-    copy: "Today’s visits, one-tap outcomes, and the next appointment always in view — even in gloves.",
-  },
-  {
-    icon: Building2,
-    title: "Agency",
-    line: "Every location, one dashboard",
-    copy: "Provision contractors, verify connections and compare performance across the whole group.",
-  },
-];
+/* ────────────── motion presets ────────────── */
 
-const REVIEWS = [
-  {
-    quote:
-      "The queue finally tells me the truth. I open one screen in the morning and I know exactly what the day owes me.",
-    name: "Priya Shah",
-    role: "Owner · Summit Roofing Co.",
-    initials: "PS",
-  },
-  {
-    quote:
-      "Callbacks used to live in my pocket notebook. Now the desk chases the customer for me — I just approve it.",
-    name: "Marcus Lee",
-    role: "Office · Summit Roofing Co.",
-    initials: "ML",
-  },
-  {
-    quote:
-      "Three locations, one dashboard. Provisioning a new contractor took minutes, not a week of spreadsheets.",
-    name: "Dana Whitfield",
-    role: "Agency admin · North Peak Exteriors",
-    initials: "DW",
-  },
-];
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+const headWrap: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.11, delayChildren: 0.04 } },
+};
+
+const headItem: Variants = {
+  hidden: { opacity: 0, y: 26 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE } },
+};
 
 /* ────────────── helpers ────────────── */
 
@@ -224,7 +220,7 @@ function ctaNavigate() {
 /** A browser-chrome frame around a real product screenshot. */
 function BrowserFrame({ src, alt, label, className = "" }: { src: string; alt: string; label: string; className?: string }) {
   return (
-    <figure className={`overflow-hidden rounded-xl border border-border bg-card shadow-[0_30px_80px_-36px_rgba(15,23,42,0.45)] ${className}`}>
+    <figure className={`overflow-hidden rounded-xl border border-border bg-card shadow-[0_40px_90px_-40px_rgba(15,23,42,0.5)] ${className}`}>
       <div className="flex items-center gap-2 border-b border-border/70 bg-muted/70 px-3.5 py-2.5">
         <span className="flex gap-1.5" aria-hidden>
           <span className="h-2.5 w-2.5 rounded-full bg-neutral-300" />
@@ -240,12 +236,43 @@ function BrowserFrame({ src, alt, label, className = "" }: { src: string; alt: s
   );
 }
 
+/** A small “live event” card that pops in and then floats gently forever. */
+function FloatCard({
+  className = "",
+  delay = 0,
+  floatDelay = 0,
+  children,
+}: {
+  className?: string;
+  delay?: number;
+  floatDelay?: number;
+  children: ReactNode;
+}) {
+  return (
+    <motion.div
+      className={`absolute z-20 ${className}`}
+      initial={{ opacity: 0, scale: 0.7, y: 22 }}
+      whileInView={{ opacity: 1, scale: 1, y: 0 }}
+      viewport={{ once: true, margin: "-10%" }}
+      transition={{ type: "spring", stiffness: 240, damping: 19, delay }}
+    >
+      <motion.div
+        animate={{ y: [0, -7, 0] }}
+        transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: floatDelay }}
+        className="flex items-center gap-3 rounded-xl border border-border/70 bg-card/95 py-2.5 pl-3 pr-4 shadow-[0_18px_44px_-18px_rgba(15,23,42,0.45)] backdrop-blur-sm"
+      >
+        {children}
+      </motion.div>
+    </motion.div>
+  );
+}
+
 /* ────────────── sections ────────────── */
 
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const authed = !!useAppStore((s) => s.session)?.user;
+  const authed = !!useAppStore((s) => s.session?.user);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 14);
     onScroll();
@@ -254,41 +281,53 @@ function Nav() {
   }, []);
   const links = [
     { label: "Product", id: "product" },
+    { label: "Screens", id: "screens" },
     { label: "How it works", id: "how" },
-    { label: "Who it's for", id: "roles" },
-    { label: "Reviews", id: "reviews" },
   ];
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-        scrolled ? "border-b border-black/5 bg-background/85 backdrop-blur-md" : "bg-transparent"
+    <motion.header
+      initial={{ y: -72, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.7, ease: EASE }}
+      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,box-shadow] duration-300 ${
+        scrolled
+          ? "border-b border-border/60 bg-background/85 shadow-[0_10px_36px_-22px_rgba(15,23,42,0.35)] backdrop-blur-xl"
+          : "border-b border-transparent bg-transparent"
       }`}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 md:px-8">
-        <div className={scrolled ? "" : "[&_svg]:shadow-lg [&_span]:text-white [&_span_span]:text-white/70"}>
-          <span className={scrolled ? "" : "text-white"}>
-            <Logo />
-          </span>
-        </div>
-        <nav className="hidden items-center gap-7 md:flex" aria-label="Landing sections">
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          aria-label="RidgeLine — back to top"
+          className="rounded-md outline-offset-4"
+        >
+          <Logo tagline={false} tone={scrolled ? "dark" : "light"} />
+        </button>
+
+        <nav className="hidden items-center gap-1 md:flex" aria-label="Landing sections">
           {links.map((l) => (
             <button
               key={l.id}
               onClick={() => scrollToSection(l.id)}
-              className={`text-[13px] font-medium transition-colors ${
-                scrolled ? "text-foreground/70 hover:text-foreground" : "text-white/80 hover:text-white"
+              className={`rounded-full px-3.5 py-1.5 text-[13.5px] font-medium transition-colors ${
+                scrolled
+                  ? "text-foreground/70 hover:bg-foreground/5 hover:text-foreground"
+                  : "text-white/85 hover:bg-white/10 hover:text-white"
               }`}
             >
               {l.label}
             </button>
           ))}
         </nav>
-        <div className="hidden items-center gap-2 md:flex">
+
+        <div className="hidden items-center gap-1.5 md:flex">
           {!authed && (
             <button
               onClick={ctaNavigate}
-              className={`rounded-full px-4 py-2 text-[13px] font-semibold transition-colors ${
-                scrolled ? "text-foreground hover:bg-accent" : "text-white hover:bg-white/15"
+              className={`rounded-full px-4 py-2 text-[13.5px] font-semibold transition-colors ${
+                scrolled
+                  ? "text-foreground/80 hover:bg-accent hover:text-foreground"
+                  : "text-white/90 hover:bg-white/15 hover:text-white"
               }`}
             >
               Sign in
@@ -296,14 +335,13 @@ function Nav() {
           )}
           <button
             onClick={ctaNavigate}
-            className={`group inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-semibold shadow-lg transition-transform hover:scale-[1.03] ${
-              scrolled ? "bg-primary text-primary-foreground" : "bg-white text-neutral-900"
-            }`}
+            className="group inline-flex items-center gap-1.5 rounded-full bg-primary px-[18px] py-2 text-[13.5px] font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:brightness-110 hover:shadow-primary/40"
           >
             Open the app
             <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </button>
         </div>
+
         <button
           className={`rounded-lg p-2 md:hidden ${scrolled ? "text-foreground" : "text-white"}`}
           aria-label="Toggle menu"
@@ -315,29 +353,54 @@ function Nav() {
           </svg>
         </button>
       </div>
-      {open && (
-        <div className="border-t bg-background/95 px-5 py-4 backdrop-blur-md md:hidden">
-          {links.map((l) => (
-            <button
-              key={l.id}
-              onClick={() => {
-                setOpen(false);
-                scrollToSection(l.id);
-              }}
-              className="block w-full py-2.5 text-left text-sm font-medium text-foreground/80"
-            >
-              {l.label}
-            </button>
-          ))}
-          <button
-            onClick={ctaNavigate}
-            className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.35, ease: EASE }}
+            className="overflow-hidden border-b border-border/60 bg-background/95 backdrop-blur-xl md:hidden"
           >
-            Open the app <ArrowRight className="h-4 w-4" />
-          </button>
-        </div>
-      )}
-    </header>
+            <div className="px-5 py-4">
+              {links.map((l) => (
+                <button
+                  key={l.id}
+                  onClick={() => {
+                    setOpen(false);
+                    scrollToSection(l.id);
+                  }}
+                  className="block w-full rounded-lg px-2 py-2.5 text-left text-sm font-medium text-foreground/80 hover:bg-accent"
+                >
+                  {l.label}
+                </button>
+              ))}
+              {!authed && (
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    ctaNavigate();
+                  }}
+                  className="mt-1 block w-full rounded-lg px-2 py-2.5 text-left text-sm font-medium text-foreground/80 hover:bg-accent"
+                >
+                  Sign in
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  ctaNavigate();
+                }}
+                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
+              >
+                Open the app <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.header>
   );
 }
 
@@ -414,58 +477,231 @@ function Wordmarks() {
   );
 }
 
+/**
+ * The product desk: the headline reveals in staggered lines, the real
+ * Today screenshot morphs from a tilted card to flat as it scrolls into
+ * view, and live events pop over it and float — the page feels alive.
+ */
 function Product() {
+  const shotRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: shotRef, offset: ["start end", "center center"] });
+  const rotateX = useTransform(scrollYProgress, [0, 1], [14, 0]);
+  const scale = useTransform(scrollYProgress, [0, 1], [0.94, 1]);
+  const lift = useTransform(scrollYProgress, [0, 1], [56, 0]);
+  const glow = useTransform(scrollYProgress, [0, 0.55, 1], [0.15, 0.85, 1]);
+
   return (
-    <section id="product" className="bg-background py-24 md:py-28">
+    <section id="product" className="scroll-mt-16 bg-background py-24 md:py-28">
       <div className="mx-auto max-w-6xl px-5 md:px-8">
-        <div className="mx-auto mb-14 max-w-2xl text-center">
-          <p className="rv mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">The product</p>
-          <h2 className="rv text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]" style={{ ["--rv-delay" as string]: "60ms" }}>
+        <motion.div
+          variants={headWrap}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-15%" }}
+          className="mx-auto mb-16 max-w-2xl text-center"
+        >
+          <motion.p variants={headItem} className="mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">
+            The product
+          </motion.p>
+          <motion.h2 variants={headItem} className="text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]">
             Your whole day, on one screen.
-          </h2>
-          <p className="rv mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground" style={{ ["--rv-delay" as string]: "120ms" }}>
+          </motion.h2>
+          <motion.p variants={headItem} className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
             No spreadsheets, no group texts, no pocket notebook. One queue tells you exactly what needs
             a response, a visit, or a decision — and what happens if you don’t.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
-        {/* the real desk */}
-        <div className="rv" style={{ ["--rv-delay" as string]: "80ms" }}>
-          <BrowserFrame
-            src="/img/app/today.png"
-            alt="RidgeLine Today view: needs a response, inspections today, estimates awaiting a reply"
-            label="app.ridgeline.dev/#/today"
+        <div ref={shotRef} className="relative">
+          {/* ambient glow that intensifies as the desk arrives */}
+          <motion.div
+            aria-hidden
+            style={{
+              opacity: glow,
+              background:
+                "radial-gradient(58% 58% at 50% 42%, oklch(0.43 0.095 243 / 0.16), transparent 72%)",
+            }}
+            className="absolute -inset-x-10 bottom-0 -top-14 rounded-[64px] blur-2xl md:-inset-x-16"
           />
-        </div>
 
-        {/* three mini features under the shot */}
-        <div className="mt-14 grid gap-10 md:grid-cols-3 md:gap-8">
-          {MINI_FEATURES.map((f, i) => (
-            <div key={f.title} className="rv" style={{ ["--rv-delay" as string]: `${i * 90}ms` }}>
-              <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <f.icon className="h-5 w-5" />
-              </span>
-              <h3 className="text-[16.5px] font-bold tracking-tight">{f.title}</h3>
-              <p className="mt-2.5 text-[13.5px] leading-relaxed text-muted-foreground">{f.copy}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* more of the real product */}
-        <div className="mt-16 grid gap-6 md:grid-cols-2">
-          <div className="rv" style={{ ["--rv-delay" as string]: "60ms" }}>
+          {/* the desk — starts tilted in perspective, lands flat */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: "-10%" }}
+            transition={{ duration: 0.6 }}
+            style={{ rotateX, scale, y: lift, transformPerspective: 1400 }}
+          >
             <BrowserFrame
-              src="/img/app/inquiries.png"
-              alt="RidgeLine inquiries list with statuses and owners"
-              label="app.ridgeline.dev/#/inquiries"
+              src="/img/app/today.png"
+              alt="RidgeLine Today view: needs a response, inspections today, estimates awaiting a reply"
+              label="app.ridgeline.dev/#/today"
             />
+          </motion.div>
+
+          {/* live events popping over the desk */}
+          <FloatCard className="-right-2 top-8 sm:-right-6 md:-right-12 lg:-right-16" delay={0.4} floatDelay={0.5}>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600">
+              <CalendarCheck2 className="h-[18px] w-[18px]" />
+            </span>
+            <span>
+              <span className="block text-[12.5px] font-bold tracking-tight text-foreground">Inspection booked</span>
+              <span className="block text-[11px] text-muted-foreground">Rosa Alvarez · today 10:00 AM</span>
+            </span>
+          </FloatCard>
+
+          <FloatCard className="-left-2 bottom-24 sm:-left-6 md:-left-12 lg:-left-16" delay={0.65} floatDelay={1.7}>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Eye className="h-[18px] w-[18px]" />
+            </span>
+            <span>
+              <span className="block text-[12.5px] font-bold tracking-tight text-foreground">Estimate viewed</span>
+              <span className="block text-[11px] text-muted-foreground">Grace Nolan · E-1043 · $8,500</span>
+            </span>
+          </FloatCard>
+
+          <FloatCard className="-right-2 bottom-4 hidden sm:block sm:-right-6 md:-right-10" delay={0.9} floatDelay={2.9}>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600">
+              <Wallet className="h-[18px] w-[18px]" />
+            </span>
+            <span>
+              <span className="block text-[12.5px] font-bold tracking-tight text-foreground">Payment matched</span>
+              <span className="block text-[11px] text-muted-foreground">$12,480 · Alderman Residence</span>
+            </span>
+          </FloatCard>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Screens showcase: four real screens, auto-touring with an animated
+ * pill indicator; hovering pauses, clicking jumps and holds the tour.
+ */
+function Screens() {
+  const [active, setActive] = useState(0);
+  const [hold, setHold] = useState(false);
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (hold) return;
+    const t = setInterval(() => setActive((a) => (a + 1) % SCREENS.length), 6500);
+    return () => clearInterval(t);
+  }, [hold]);
+
+  useEffect(() => () => {
+    if (holdTimer.current) clearTimeout(holdTimer.current);
+  }, []);
+
+  const pick = (i: number) => {
+    setActive(i);
+    setHold(true);
+    if (holdTimer.current) clearTimeout(holdTimer.current);
+    holdTimer.current = setTimeout(() => setHold(false), 12000);
+  };
+
+  const s = SCREENS[active];
+
+  return (
+    <section id="screens" className="scroll-mt-16 border-y border-border/70 bg-muted/40 py-24 md:py-28">
+      <div className="mx-auto max-w-6xl px-5 md:px-8">
+        <motion.div
+          variants={headWrap}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-15%" }}
+          className="mx-auto mb-14 max-w-2xl text-center"
+        >
+          <motion.p variants={headItem} className="mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">
+            Inside the desk
+          </motion.p>
+          <motion.h2 variants={headItem} className="text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]">
+            Four screens. Zero guesswork.
+          </motion.h2>
+          <motion.p variants={headItem} className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+            Real screens from the running app — the same views your owner, office and estimators get.
+          </motion.p>
+        </motion.div>
+
+        <div
+          className="grid items-start gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,8fr)] lg:gap-14"
+          onPointerEnter={() => setHold(true)}
+          onPointerLeave={() => setHold(false)}
+        >
+          {/* tab list — vertical on desktop, scrollable pills on mobile */}
+          <div
+            role="tablist"
+            aria-label="Product screens"
+            className="flex gap-3 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0"
+          >
+            {SCREENS.map((item, i) => {
+              const on = i === active;
+              return (
+                <button
+                  key={item.key}
+                  role="tab"
+                  aria-selected={on}
+                  onClick={() => pick(i)}
+                  className={`relative shrink-0 rounded-xl p-4 text-left transition-colors lg:w-full ${
+                    on ? "" : "hover:bg-foreground/[0.035]"
+                  }`}
+                >
+                  {on && (
+                    <motion.span
+                      layoutId="screens-active-pill"
+                      transition={{ type: "spring", stiffness: 340, damping: 32 }}
+                      className="absolute inset-0 rounded-xl border border-primary/25 bg-card shadow-[0_14px_34px_-18px_rgba(15,23,42,0.35)]"
+                    />
+                  )}
+                  <span className="relative flex items-start gap-3">
+                    <span
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                        on ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      <item.icon className="h-[18px] w-[18px]" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className={`block text-[14px] font-bold tracking-tight ${on ? "text-foreground" : "text-foreground/80"}`}>
+                        {item.tab}
+                      </span>
+                      <span className="mt-1 hidden text-[12.5px] leading-snug text-muted-foreground lg:block">
+                        {item.desc}
+                      </span>
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
-          <div className="rv md:mt-12" style={{ ["--rv-delay" as string]: "140ms" }}>
-            <BrowserFrame
-              src="/img/app/reports.png"
-              alt="RidgeLine reports: conversion, aging and revenue views"
-              label="app.ridgeline.dev/#/reports"
-            />
+
+          {/* the active screen, animated in */}
+          <div className="relative">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={s.key}
+                initial={{ opacity: 0, x: 40, scale: 0.985 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: -28, scale: 0.99 }}
+                transition={{ duration: 0.45, ease: EASE }}
+              >
+                <BrowserFrame src={s.shot} alt={s.alt} label={s.label} />
+                <p className="mt-5 text-center text-[12.5px] leading-relaxed text-muted-foreground">
+                  <span className="font-semibold text-foreground/80">{s.title}</span> — {s.desc}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* tour progress */}
+            <div className="mt-6 flex items-center justify-center gap-2" aria-hidden>
+              {SCREENS.map((item, i) => (
+                <span
+                  key={item.key}
+                  className={`h-1.5 rounded-full transition-all duration-500 ${i === active ? "w-7 bg-primary" : "w-2.5 bg-border"}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -473,47 +709,93 @@ function Product() {
   );
 }
 
+/**
+ * How it works: a timeline rail that draws itself with scroll progress,
+ * numbered badges springing in, and each step sliding up as you read.
+ */
 function How() {
+  const railRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: railRef, offset: ["start 78%", "end 62%"] });
+  const lineScale = useSpring(scrollYProgress, { stiffness: 90, damping: 26, mass: 0.6 });
+
   return (
-    <section id="how" className="border-y border-border/70 bg-muted/40 py-24 md:py-28">
+    <section id="how" className="scroll-mt-16 bg-background py-24 md:py-28">
       <div className="mx-auto max-w-6xl px-5 md:px-8">
-        <div className="mb-16 max-w-2xl">
-          <p className="rv mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">How it works</p>
-          <h2 className="rv text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]" style={{ ["--rv-delay" as string]: "60ms" }}>
+        <motion.div variants={headWrap} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-15%" }} className="mb-16 max-w-2xl">
+          <motion.p variants={headItem} className="mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">
+            How it works
+          </motion.p>
+          <motion.h2 variants={headItem} className="text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]">
             From first call to final payment.
-          </h2>
-        </div>
-        <div className="space-y-16 md:space-y-20">
-          {FLOW.map((s, i) => (
-            <div
-              key={s.n}
-              className={`rv flex flex-col gap-8 md:items-center md:gap-14 ${i % 2 === 1 ? "md:flex-row-reverse" : "md:flex-row"}`}
-            >
-              <div className="md:w-[46%]">
-                <div className="overflow-hidden rounded-xl border border-border/70 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.4)]">
-                  <img
-                    src={s.img}
-                    alt={s.alt}
-                    className={`block w-full object-cover ${s.isShot ? "" : "aspect-[4/3]"}`}
-                    loading="lazy"
-                  />
-                </div>
-              </div>
-              <div className="md:w-[54%]">
-                <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary/80">Step {s.n}</p>
-                <h3 className="text-[24px] font-bold tracking-tight md:text-[28px]">{s.title}</h3>
-                <p className="mt-4 max-w-md text-[14.5px] leading-relaxed text-muted-foreground">{s.copy}</p>
-                <ul className="mt-6 space-y-2.5">
-                  {s.points.map((p) => (
-                    <li key={p} className="flex items-start gap-2.5 text-[13.5px] text-foreground/80">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                      {p}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ))}
+          </motion.h2>
+        </motion.div>
+
+        <div ref={railRef} className="relative mt-4">
+          {/* static rail */}
+          <div className="absolute bottom-3 left-[20px] top-3 w-px bg-border md:left-1/2" aria-hidden />
+          {/* progress rail — draws with scroll */}
+          <motion.div
+            style={{ scaleY: lineScale }}
+            className="absolute bottom-3 left-[20px] top-3 w-[2px] origin-top rounded-full bg-gradient-to-b from-primary via-primary to-emerald-500 md:-ml-px md:left-1/2"
+            aria-hidden
+          />
+
+          <ol className="space-y-16 md:space-y-24">
+            {FLOW.map((step, i) => (
+              <li key={step.n} className="relative grid gap-6 pl-14 md:grid-cols-2 md:items-center md:gap-14 md:pl-0">
+                {/* numbered badge on the rail */}
+                <motion.span
+                  initial={{ scale: 0, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  viewport={{ once: true, margin: "-25%" }}
+                  transition={{ type: "spring", stiffness: 320, damping: 17, delay: 0.08 }}
+                  className="absolute left-0 top-0 z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-[12.5px] font-bold text-primary shadow-[0_8px_20px_-8px_rgba(15,23,42,0.35)] md:left-[calc(50%-20px)] md:top-1/2 md:-translate-y-1/2"
+                  aria-hidden
+                >
+                  {step.n}
+                </motion.span>
+
+                {/* image half */}
+                <motion.div
+                  initial={{ opacity: 0, y: 44 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-15%" }}
+                  transition={{ duration: 0.8, ease: EASE }}
+                  className={i % 2 === 0 ? "md:order-1" : "md:order-2"}
+                >
+                  <div className="group overflow-hidden rounded-xl border border-border/70 shadow-[0_26px_60px_-30px_rgba(15,23,42,0.45)]">
+                    <img
+                      src={step.img}
+                      alt={step.alt}
+                      className={`block w-full object-cover transition-transform duration-700 group-hover:scale-[1.04] ${step.isShot ? "" : "aspect-[4/3]"}`}
+                      loading="lazy"
+                    />
+                  </div>
+                </motion.div>
+
+                {/* text half */}
+                <motion.div
+                  initial={{ opacity: 0, y: 44 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-15%" }}
+                  transition={{ duration: 0.8, ease: EASE, delay: 0.12 }}
+                  className={i % 2 === 0 ? "md:order-2" : "md:order-1"}
+                >
+                  <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary/80">Step {step.n}</p>
+                  <h3 className="text-[24px] font-bold tracking-tight md:text-[28px]">{step.title}</h3>
+                  <p className="mt-4 max-w-md text-[14.5px] leading-relaxed text-muted-foreground">{step.copy}</p>
+                  <ul className="mt-6 space-y-2.5">
+                    {step.points.map((p) => (
+                      <li key={p} className="flex items-start gap-2.5 text-[13.5px] text-foreground/80">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              </li>
+            ))}
+          </ol>
         </div>
       </div>
     </section>
@@ -540,81 +822,6 @@ function Stats() {
             <p className="mt-2.5 text-[12.5px] leading-snug text-white/65">{s.label}</p>
           </div>
         ))}
-      </div>
-    </section>
-  );
-}
-
-function Roles() {
-  return (
-    <section id="roles" className="bg-background py-24 md:py-28">
-      <div className="mx-auto max-w-6xl px-5 md:px-8">
-        <div className="mb-14 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
-          <div className="max-w-xl">
-            <p className="rv mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">Who it's for</p>
-            <h2 className="rv text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]" style={{ ["--rv-delay" as string]: "60ms" }}>
-              Built for every seat on the crew.
-            </h2>
-          </div>
-          <p className="rv max-w-sm text-[14px] leading-relaxed text-muted-foreground" style={{ ["--rv-delay" as string]: "120ms" }}>
-            Four roles, four tailored views, one shared truth. Nobody sees more than they need;
-            everybody sees what matters.
-          </p>
-        </div>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {ROLES.map((r, i) => (
-            <div
-              key={r.title}
-              className="rv group rounded-xl border border-border/70 bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_-20px_rgba(15,23,42,0.3)]"
-              style={{ ["--rv-delay" as string]: `${i * 80}ms` }}
-            >
-              <span className="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                <r.icon className="h-5 w-5" />
-              </span>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">{r.title}</p>
-              <h3 className="mt-1.5 text-[17px] font-bold tracking-tight">{r.line}</h3>
-              <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">{r.copy}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Reviews() {
-  return (
-    <section id="reviews" className="border-y border-border/70 bg-muted/40 py-24 md:py-28">
-      <div className="mx-auto max-w-6xl px-5 md:px-8">
-        <div className="mb-14 max-w-2xl">
-          <p className="rv mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">From the desk</p>
-          <h2 className="rv text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]" style={{ ["--rv-delay" as string]: "60ms" }}>
-            The people who live in it daily.
-          </h2>
-        </div>
-        <div className="grid gap-5 md:grid-cols-3">
-          {REVIEWS.map((r, i) => (
-            <figure
-              key={r.name}
-              className="rv flex flex-col rounded-xl border border-border/70 bg-card p-7"
-              style={{ ["--rv-delay" as string]: `${i * 90}ms` }}
-            >
-              <Quote className="h-5 w-5 text-primary/40" />
-              <blockquote className="mt-4 flex-1 text-[15px] leading-relaxed text-foreground/90">
-                “{r.quote}”
-              </blockquote>
-              <figcaption className="mt-6 flex items-center gap-3 border-t border-border/60 pt-5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-[12px] font-bold text-primary">
-                  {r.initials}
-                </span>
-                <span>
-                  <span className="block text-[13.5px] font-semibold text-foreground">{r.name}</span>
-                  <span className="block text-[11.5px] text-muted-foreground">{r.role}</span>
-                </span>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
       </div>
     </section>
   );
@@ -678,9 +885,8 @@ function Footer() {
               <p className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">Product</p>
               <ul className="space-y-2.5 text-[13.5px]">
                 <li><button onClick={() => scrollToSection("product")} className="text-muted-foreground transition-colors hover:text-foreground">Product tour</button></li>
+                <li><button onClick={() => scrollToSection("screens")} className="text-muted-foreground transition-colors hover:text-foreground">Inside the app</button></li>
                 <li><button onClick={() => scrollToSection("how")} className="text-muted-foreground transition-colors hover:text-foreground">How it works</button></li>
-                <li><button onClick={() => scrollToSection("roles")} className="text-muted-foreground transition-colors hover:text-foreground">Who it’s for</button></li>
-                <li><button onClick={() => scrollToSection("reviews")} className="text-muted-foreground transition-colors hover:text-foreground">Reviews</button></li>
               </ul>
             </div>
             <div>
@@ -720,10 +926,9 @@ export function LandingView() {
         <Hero />
         <Wordmarks />
         <Product />
+        <Screens />
         <How />
         <Stats />
-        <Roles />
-        <Reviews />
         <FinalCta />
       </main>
       <footer className="mt-auto"><Footer /></footer>

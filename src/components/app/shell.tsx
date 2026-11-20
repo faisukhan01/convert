@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useId } from "react";
 import { parseHash, navigate, roleAt, useAppStore } from "@/store/app";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -29,18 +29,52 @@ const NAV_MORE = [
   { key: "agency", label: "Agency", icon: Building2, adminOnly: true },
 ];
 
-export function Logo({ compact = false }: { compact?: boolean }) {
+/**
+ * RidgeLine brand mark — an ascending ridge line with a summit point,
+ * on a deep-slate tile. Used in the app sidebar, the marketing navbar,
+ * the footer and the favicon (kept in sync manually).
+ */
+export function Logo({
+  compact = false,
+  tagline = true,
+  tone = "dark",
+}: {
+  compact?: boolean;
+  tagline?: boolean;
+  tone?: "dark" | "light";
+}) {
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const word = tone === "light" ? "text-white" : "text-foreground";
+  const sub = tone === "light" ? "text-white/60" : "text-muted-foreground";
   return (
-    <span className="flex items-center gap-2 select-none">
-      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
-        <rect width="32" height="32" rx="7" fill="var(--primary)" />
-        <path d="M6 20 16 9l10 11" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M12 20v4M20 20v4" stroke="white" strokeWidth="3" strokeLinecap="round" />
+    <span className="flex select-none items-center gap-2.5">
+      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true" className="shrink-0">
+        <defs>
+          <linearGradient id={`rl-g-${uid}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="oklch(0.50 0.098 243)" />
+            <stop offset="1" stopColor="oklch(0.37 0.085 243)" />
+          </linearGradient>
+        </defs>
+        <rect width="32" height="32" rx="8.5" fill={`url(#rl-g-${uid})`} />
+        <path
+          d="M6.5 21.5 13.5 11.5l4.6 5.4 7.4-8.9"
+          fill="none"
+          stroke="white"
+          strokeWidth="2.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <circle cx="25.5" cy="8" r="2.05" fill="white" />
+        <path d="M6.5 25.75h6.5" stroke="white" strokeOpacity="0.45" strokeWidth="2.4" strokeLinecap="round" />
       </svg>
       {!compact && (
-        <span className="font-bold tracking-tight text-[15px]">
+        <span className={`text-[15.5px] font-bold leading-none tracking-tight ${word}`}>
           RidgeLine
-          <span className="block text-[10px] font-medium text-muted-foreground -mt-0.5 leading-none">estimate desk for roofers</span>
+          {tagline && (
+            <span className={`mt-1 block text-[9px] font-semibold uppercase tracking-[0.14em] ${sub}`}>
+              Estimate desk for roofers
+            </span>
+          )}
         </span>
       )}
     </span>
