@@ -3,16 +3,23 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ArrowRight,
+  ArrowUp,
   ArrowUpRight,
   BarChart3,
+  Bell,
   CalendarCheck2,
   Check,
   FileText,
   Inbox,
   LayoutDashboard,
+  MapPin,
   MousePointerClick,
+  Phone,
   Play,
+  Plus,
+  Search,
   Send,
+  TrendingUp,
 } from "lucide-react";
 import {
   AnimatePresence,
@@ -376,83 +383,193 @@ function Wordmarks() {
 
 /* ────────────── the living product preview — pure DOM, zero screenshots ────────────── */
 
-/** One list row inside a preview screen. */
-function PreviewRow({ tag, tone, name, meta }: { tag: string; tone: string; name: string; meta: string }) {
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-card px-2.5 py-1.5 sm:px-3.5 sm:py-2">
-      <span className="flex min-w-0 items-center gap-2">
-        <span className={`shrink-0 rounded px-1.5 py-0.5 text-[8.5px] font-bold sm:text-[10px] ${tone}`}>{tag}</span>
-        <span className="truncate text-[10.5px] font-semibold text-foreground sm:text-[12.5px]">{name}</span>
-      </span>
-      <span className="shrink-0 text-[9px] font-medium text-muted-foreground sm:text-[11px]">{meta}</span>
-    </div>
-  );
-}
-
 /** A small section label inside a preview screen. */
 function PreviewLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="px-0.5 pb-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-[10px]">
+    <p className="px-0.5 pb-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-muted-foreground sm:text-[10px]">
       {children}
     </p>
   );
 }
 
-/** A preview screen header bar. */
+/** One queue row inside a preview screen — avatar, tag pill, context, deadline chip. */
+function QueueRow({
+  initials,
+  avatarCls,
+  tag,
+  tagCls,
+  name,
+  sub,
+  due,
+  dueCls,
+}: {
+  initials: string;
+  avatarCls: string;
+  tag: string;
+  tagCls: string;
+  name: string;
+  sub: string;
+  due: string;
+  dueCls: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-card px-2 py-1.5 transition-colors hover:border-primary/30 sm:gap-2.5 sm:px-2.5 sm:py-2">
+      <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[8px] font-bold ring-1 sm:h-7 sm:w-7 sm:text-[9px] ${avatarCls}`}>
+        {initials}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-1.5">
+          <span className="truncate text-[10.5px] font-semibold text-foreground sm:text-[12px]">{name}</span>
+          <span className={`shrink-0 rounded px-1 py-0.5 text-[7.5px] font-bold sm:text-[9px] ${tagCls}`}>{tag}</span>
+        </span>
+        <span className="mt-0.5 hidden truncate text-[9.5px] text-muted-foreground sm:block">{sub}</span>
+      </span>
+      <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[8px] font-semibold sm:text-[9.5px] ${dueCls}`}>{due}</span>
+    </div>
+  );
+}
+
+/** A preview screen header bar — page title, search, notifications, crew avatars. */
 function PreviewHead({ title, chip }: { title: string; chip?: string }) {
   return (
-    <div className="flex items-center justify-between border-b border-border/70 px-3 py-2 sm:px-5 sm:py-2.5">
-      <span className="flex items-center gap-2">
-        <span className="text-[12px] font-bold tracking-tight text-foreground sm:text-[14px]">{title}</span>
+    <div className="flex items-center gap-2 border-b border-border/70 bg-gradient-to-r from-muted/70 via-muted/30 to-transparent px-3 py-2 sm:gap-3 sm:px-4 sm:py-2.5">
+      <span className="flex min-w-0 items-center gap-2">
+        <span className="text-[12.5px] font-bold tracking-tight text-foreground sm:text-[14.5px]">{title}</span>
         {chip && (
-          <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[8.5px] font-semibold text-muted-foreground sm:text-[9.5px]">
+          <span className="hidden rounded-full border border-border bg-background px-2 py-0.5 text-[9px] font-semibold text-muted-foreground md:inline">
             {chip}
           </span>
         )}
       </span>
-      <span className="flex items-center gap-1.5 text-[8.5px] font-semibold uppercase tracking-[0.14em] text-emerald-600 sm:text-[9.5px]">
-        <span className="relative flex h-1.5 w-1.5" aria-hidden>
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+      <span className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <span className="hidden items-center gap-1.5 rounded-full border border-border/70 bg-background px-2.5 py-1 text-[9.5px] font-medium text-muted-foreground lg:flex">
+          <Search className="h-2.5 w-2.5" aria-hidden />
+          Search jobs…
+          <span className="rounded border border-border/70 bg-muted px-1 font-mono text-[7.5px] text-muted-foreground/70">⌘K</span>
         </span>
-        live
+        <span className="relative flex h-6 w-6 items-center justify-center rounded-full border border-border/70 bg-background text-muted-foreground">
+          <Bell className="h-3 w-3" aria-hidden />
+          <span className="absolute -right-px -top-px h-1.5 w-1.5 rounded-full bg-rose-500 ring-2 ring-background" aria-hidden />
+        </span>
+        <span className="hidden -space-x-1.5 sm:flex" aria-hidden>
+          {["PS", "ML", "AR"].map((i) => (
+            <span key={i} className="flex h-6 w-6 items-center justify-center rounded-full bg-foreground/85 text-[7.5px] font-bold text-background ring-2 ring-background">
+              {i}
+            </span>
+          ))}
+        </span>
+        <span className="flex items-center gap-1 text-[8.5px] font-bold uppercase tracking-[0.14em] text-emerald-600 sm:text-[9.5px]">
+          <span className="relative flex h-1.5 w-1.5" aria-hidden>
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          </span>
+          live
+        </span>
       </span>
     </div>
   );
 }
 
-/** Page 1 — Today: the whole day on one list. */
+/** Page 1 — Today: KPI strip, the response queue, today's route, awaiting replies. */
+const TODAY_KPIS = [
+  { icon: Phone, label: "Need response", value: "3", sub: "2 overdue", tone: "text-amber-600" },
+  { icon: CalendarCheck2, label: "Inspections", value: "2", sub: "next 10:00 AM", tone: "text-emerald-600" },
+  { icon: Send, label: "Awaiting reply", value: "3", sub: "1 just opened", tone: "text-primary" },
+];
+
 function TodayMock() {
   return (
     <div className="flex h-full flex-col bg-background">
-      <PreviewHead title="Today" chip="the whole day, one list" />
-      <div className="hidden gap-2 border-b border-border/60 bg-muted/40 px-5 py-2 sm:flex">
-        {["3 need a response", "2 inspections booked", "3 awaiting a reply"].map((c) => (
-          <span key={c} className="rounded-full border border-border/70 bg-card px-2.5 py-1 text-[10px] font-semibold text-foreground/75">
-            {c}
-          </span>
+      <PreviewHead title="Today" chip="Wednesday · June 12" />
+      {/* KPI strip */}
+      <div className="grid grid-cols-3 gap-1.5 border-b border-border/60 bg-muted/25 px-3 py-2 sm:gap-2.5 sm:px-4 sm:py-2.5">
+        {TODAY_KPIS.map((k) => (
+          <div key={k.label} className="rounded-lg border border-border/60 bg-card px-2 py-1.5 sm:px-3 sm:py-2">
+            <p className="flex items-center gap-1 text-[8px] font-bold uppercase tracking-[0.1em] text-muted-foreground sm:text-[9px]">
+              <k.icon className="h-2.5 w-2.5" aria-hidden />
+              {k.label}
+            </p>
+            <p className="mt-0.5 flex flex-wrap items-baseline gap-x-1.5">
+              <span className="text-[13px] font-bold tracking-tight text-foreground sm:text-[17px]">{k.value}</span>
+              <span className={`text-[8px] font-semibold sm:text-[9.5px] ${k.tone}`}>{k.sub}</span>
+            </p>
+          </div>
         ))}
       </div>
-      <div className="min-h-0 flex-1 space-y-3 overflow-hidden px-3 pt-2.5 sm:px-5 sm:pt-3.5">
-        <div>
-          <PreviewLabel>Needs a response</PreviewLabel>
+
+      <div className="grid min-h-0 flex-1 gap-2 px-3 py-2.5 sm:grid-cols-[1.18fr_1fr] sm:gap-2.5 sm:px-4 sm:py-3">
+        {/* needs a response */}
+        <div className="flex min-h-0 flex-col rounded-xl border border-border/60 bg-muted/25 p-2 sm:p-2.5">
+          <div className="flex items-center justify-between px-0.5 pb-2">
+            <PreviewLabel>Needs a response</PreviewLabel>
+            <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[8px] font-bold text-amber-700 sm:text-[9px]">3 open</span>
+          </div>
           <div className="space-y-1.5 sm:space-y-2">
-            <PreviewRow tag="Missed call" tone="bg-amber-500/15 text-amber-700" name="Marcus Webb" meta="call back before noon" />
-            <PreviewRow tag="New call" tone="bg-primary/10 text-primary" name="McAllister Residence" meta="respond by 2:00 PM" />
-            <PreviewRow tag="Web form" tone="bg-emerald-500/15 text-emerald-700" name="Quote request · Berry Lane" meta="assign an estimator" />
+            <QueueRow
+              initials="MW"
+              avatarCls="bg-amber-500/15 text-amber-700 ring-amber-500/30"
+              tag="Missed call"
+              tagCls="bg-amber-500/15 text-amber-700"
+              name="Marcus Webb"
+              sub="Loose shingles after Tuesday's storm"
+              due="Call by 12:00"
+              dueCls="bg-amber-500/15 text-amber-700"
+            />
+            <QueueRow
+              initials="MC"
+              avatarCls="bg-primary/10 text-primary ring-primary/25"
+              tag="New call"
+              tagCls="bg-primary/10 text-primary"
+              name="McAllister Residence"
+              sub="Roof replacement quote · Berry Lane"
+              due="Respond 2:00"
+              dueCls="bg-primary/10 text-primary"
+            />
+            <QueueRow
+              initials="GN"
+              avatarCls="bg-emerald-500/15 text-emerald-700 ring-emerald-500/30"
+              tag="Web form"
+              tagCls="bg-emerald-500/15 text-emerald-700"
+              name="Grace Nolan"
+              sub="Requested estimate · attach report"
+              due="Assign now"
+              dueCls="bg-emerald-500/15 text-emerald-700"
+            />
           </div>
         </div>
-        <div className="hidden sm:block">
-          <PreviewLabel>Inspections today</PreviewLabel>
-          <div className="space-y-1.5 sm:space-y-2">
-            <PreviewRow tag="10:00 AM" tone="bg-foreground/5 text-foreground/70" name="Rosa Alvarez · 118 Alder Creek Rd" meta="with Alex R." />
-            <PreviewRow tag="1:30 PM" tone="bg-foreground/5 text-foreground/70" name="Dwight Alderman · 44 Summit Pass" meta="with Marcus L." />
+
+        {/* right column — route + awaiting replies */}
+        <div className="flex min-h-0 flex-col gap-2 sm:gap-2.5">
+          <div className="min-h-0 flex-1 rounded-xl border border-border/60 bg-muted/25 p-2 sm:p-2.5">
+            <PreviewLabel>Inspections today</PreviewLabel>
+            <div className="relative space-y-1.5 pl-0.5">
+              <span className="absolute bottom-2 left-[9px] top-2 w-px bg-border" aria-hidden />
+              {[
+                { time: "10:00", name: "Rosa Alvarez", sub: "118 Alder Creek Rd · with Alex R." },
+                { time: "1:30", name: "Dwight Alderman", sub: "44 Summit Pass · with Marcus L." },
+              ].map((r) => (
+                <div key={r.name} className="relative flex items-start gap-2">
+                  <span className="relative z-10 mt-[7px] h-[7px] w-[7px] shrink-0 rounded-full bg-primary ring-[3px] ring-primary/15" aria-hidden />
+                  <div className="min-w-0 flex-1 rounded-lg border border-border/60 bg-card px-2 py-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-[10.5px] font-semibold text-foreground sm:text-[11.5px]">{r.name}</span>
+                      <span className="shrink-0 rounded bg-foreground/5 px-1.5 py-0.5 font-mono text-[8.5px] font-semibold text-foreground/70 sm:text-[9.5px]">{r.time}</span>
+                    </div>
+                    <span className="mt-0.5 block truncate text-[9px] text-muted-foreground sm:text-[10px]">{r.sub}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="hidden sm:block">
-          <PreviewLabel>Estimates awaiting a reply</PreviewLabel>
-          <div className="space-y-2">
-            <PreviewRow tag="Viewed" tone="bg-primary/10 text-primary" name="E-1043 · Grace Nolan · $8,500" meta="nudge goes out tomorrow" />
+          <div className="rounded-xl border border-primary/25 bg-primary/[0.06] p-2 sm:p-2.5">
+            <PreviewLabel>Estimates awaiting a reply</PreviewLabel>
+            <div className="flex items-center justify-between gap-2 rounded-lg border border-primary/20 bg-card px-2 py-1.5">
+              <span className="min-w-0">
+                <span className="block truncate text-[10.5px] font-semibold text-foreground sm:text-[11.5px]">E-1043 · Grace Nolan</span>
+                <span className="mt-0.5 block truncate text-[9px] text-muted-foreground sm:text-[10px]">Viewed 11:47 AM · nudge tomorrow</span>
+              </span>
+              <span className="shrink-0 rounded-md bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary sm:text-[10.5px]">$8,500</span>
+            </div>
           </div>
         </div>
       </div>
@@ -460,93 +577,165 @@ function TodayMock() {
   );
 }
 
-/** Page 2 — Inquiries: every lead, owned. */
+/** Page 2 — Inquiries: a real pipeline table — owner, source, status, next step. */
 const INQUIRIES = [
-  { name: "Grace Nolan", src: "Web form", srcTone: "bg-primary/10 text-primary", status: "New", stTone: "bg-amber-500/15 text-amber-700", next: "Assign an estimator", owner: "PS", age: "4m ago" },
-  { name: "Marcus Webb", src: "Missed call", srcTone: "bg-amber-500/15 text-amber-700", status: "Contacted", stTone: "bg-foreground/5 text-foreground/70", next: "Call back before noon", owner: "ML", age: "26m ago" },
-  { name: "Rosa Alvarez", src: "Referral", srcTone: "bg-emerald-500/15 text-emerald-700", status: "Booked", stTone: "bg-emerald-500/15 text-emerald-700", next: "Inspection Fri 10:00", owner: "AR", age: "1h ago" },
-  { name: "Dwight Alderman", src: "Walk-in", srcTone: "bg-foreground/5 text-foreground/70", status: "Booked", stTone: "bg-emerald-500/15 text-emerald-700", next: "Photo report due", owner: "ML", age: "3h ago" },
-  { name: "Parker Lind", src: "Web form", srcTone: "bg-primary/10 text-primary", status: "New", stTone: "bg-amber-500/15 text-amber-700", next: "Assign an estimator", owner: "AR", age: "4h ago" },
+  { name: "Grace Nolan", initials: "GN", av: "bg-primary/10 text-primary ring-primary/25", src: "Web form", srcTone: "bg-primary/10 text-primary", status: "New", stTone: "bg-amber-500/15 text-amber-700", next: "Assign an estimator", owner: "PS", age: "4m" },
+  { name: "Marcus Webb", initials: "MW", av: "bg-amber-500/15 text-amber-700 ring-amber-500/30", src: "Missed call", srcTone: "bg-amber-500/15 text-amber-700", status: "Contacted", stTone: "bg-foreground/5 text-foreground/70", next: "Call back before noon", owner: "ML", age: "26m" },
+  { name: "Rosa Alvarez", initials: "RA", av: "bg-emerald-500/15 text-emerald-700 ring-emerald-500/30", src: "Referral", srcTone: "bg-emerald-500/15 text-emerald-700", status: "Booked", stTone: "bg-emerald-500/15 text-emerald-700", next: "Inspection · Fri 10:00", owner: "AR", age: "1h" },
+  { name: "Dwight Alderman", initials: "DA", av: "bg-rose-500/10 text-rose-700 ring-rose-500/25", src: "Walk-in", srcTone: "bg-foreground/5 text-foreground/70", status: "Booked", stTone: "bg-emerald-500/15 text-emerald-700", next: "Photo report · today", owner: "ML", age: "3h" },
+  { name: "Parker Lind", initials: "PL", av: "bg-primary/10 text-primary ring-primary/25", src: "Web form", srcTone: "bg-primary/10 text-primary", status: "New", stTone: "bg-amber-500/15 text-amber-700", next: "Assign an estimator", owner: "AR", age: "4h" },
 ];
 
 function InquiriesMock() {
   return (
     <div className="flex h-full flex-col bg-background">
       <PreviewHead title="Inquiries" chip="calls · forms · referrals" />
-      <div className="hidden grid-cols-[1.3fr_0.8fr_0.8fr_1.2fr_auto] gap-2 border-b border-border/60 bg-muted/40 px-5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:grid">
+      {/* toolbar */}
+      <div className="flex items-center gap-1.5 border-b border-border/60 bg-muted/25 px-3 py-1.5 sm:gap-2 sm:px-4 sm:py-2">
+        {["All · 12", "New · 2", "Booked · 4"].map((f, i) => (
+          <span
+            key={f}
+            className={`rounded-full px-2 py-1 text-[8.5px] font-semibold sm:text-[9.5px] ${
+              i === 0 ? "bg-foreground text-background" : "border border-border/70 bg-card text-muted-foreground"
+            }`}
+          >
+            {f}
+          </span>
+        ))}
+        <span className="ml-auto flex items-center gap-1 rounded-lg bg-primary px-2 py-1 text-[8.5px] font-bold text-primary-foreground sm:text-[9.5px]">
+          <Plus className="h-2.5 w-2.5" aria-hidden /> New inquiry
+        </span>
+      </div>
+      {/* table head */}
+      <div className="hidden grid-cols-[1.2fr_0.75fr_0.8fr_1.25fr_auto] gap-2 border-b border-border/60 bg-muted/40 px-4 py-1.5 text-[8.5px] font-bold uppercase tracking-[0.14em] text-muted-foreground sm:grid">
         <span>Homeowner</span>
         <span>Source</span>
         <span>Status</span>
         <span>Next step</span>
-        <span>Age</span>
+        <span className="text-right">Age</span>
       </div>
+      {/* rows */}
       <div className="min-h-0 flex-1 overflow-hidden">
         {INQUIRIES.map((r) => (
           <div
             key={r.name}
-            className="flex items-center justify-between gap-2 border-b border-border/50 px-3 py-[7px] sm:grid sm:grid-cols-[1.3fr_0.8fr_0.8fr_1.2fr_auto] sm:gap-2 sm:px-5 sm:py-2"
+            className="flex items-center gap-2 border-b border-border/50 px-3 py-2 transition-colors last:border-0 hover:bg-muted/40 sm:grid sm:grid-cols-[1.2fr_0.75fr_0.8fr_1.25fr_auto] sm:gap-2 sm:px-4"
           >
             <span className="flex min-w-0 items-center gap-2">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[8px] font-bold text-muted-foreground sm:h-6 sm:w-6 sm:text-[9px]">
-                {r.owner}
+              <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[8px] font-bold ring-1 sm:h-7 sm:w-7 sm:text-[9px] ${r.av}`}>
+                {r.initials}
               </span>
-              <span className="truncate text-[10.5px] font-semibold text-foreground sm:text-[12.5px]">{r.name}</span>
+              <span className="min-w-0">
+                <span className="block truncate text-[10.5px] font-semibold text-foreground sm:text-[12px]">{r.name}</span>
+                <span className="block truncate text-[8.5px] text-muted-foreground sm:hidden">Owner {r.owner} · {r.age} ago</span>
+              </span>
             </span>
             <span className="hidden sm:block">
-              <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${r.srcTone}`}>{r.src}</span>
+              <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold sm:text-[10px] ${r.srcTone}`}>{r.src}</span>
             </span>
             <span className="hidden sm:block">
-              <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${r.stTone}`}>{r.status}</span>
+              <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold sm:text-[10px] ${r.stTone}`}>
+                <span className="h-1 w-1 rounded-full bg-current" aria-hidden />
+                {r.status}
+              </span>
             </span>
-            <span className="hidden truncate text-[10.5px] text-muted-foreground sm:block">{r.next}</span>
-            <span className="shrink-0 text-[9px] font-medium text-muted-foreground sm:text-[11px]">{r.age}</span>
+            <span className="hidden truncate text-[10px] font-medium text-muted-foreground sm:block sm:text-[11px]">{r.next}</span>
+            <span className="hidden shrink-0 text-right text-[9.5px] font-medium text-muted-foreground sm:block sm:text-[10.5px]">{r.age} ago</span>
           </div>
         ))}
+      </div>
+      {/* footer strip */}
+      <div className="flex items-center justify-between border-t border-border/60 bg-muted/25 px-3 py-1.5 text-[9px] font-medium text-muted-foreground sm:px-4 sm:text-[10px]">
+        <span>12 open · 2 unassigned</span>
+        <span className="flex items-center gap-1 font-semibold text-amber-700">Oldest lead 2d · assigned</span>
       </div>
     </div>
   );
 }
 
-/** Page 3 — Estimates: the pipeline that moves without phone tag. */
+/** Page 3 — Estimates: sent → viewed → accepted, with live nudges. */
 const EST_COLS = [
-  { label: "Sent", count: 4, cards: [{ id: "E-1046", name: "Parker Lind", amt: "$6,900", sub: "sent 9:40 AM" }] },
-  { label: "Viewed", count: 3, live: true, cards: [{ id: "E-1043", name: "Grace Nolan", amt: "$8,500", sub: "opened 11:47 AM" }] },
-  { label: "Accepted", count: 2, done: true, cards: [{ id: "E-1039", name: "Rosa Alvarez", amt: "$12,480", sub: "deposit due Fri" }] },
+  {
+    label: "Sent",
+    count: 4,
+    total: "$27.4k",
+    cards: [
+      { id: "E-1046", name: "Parker Lind", amt: "$6,900", sub: "sent 9:40 AM" },
+      { id: "E-1044", name: "Webb Residence", amt: "$4,250", sub: "sent 8:15 AM" },
+    ],
+  },
+  {
+    label: "Viewed",
+    count: 3,
+    total: "$8.5k",
+    live: true,
+    cards: [{ id: "E-1043", name: "Grace Nolan", amt: "$8,500", sub: "opened 11:47 AM · nudge day 3" }],
+  },
+  {
+    label: "Accepted",
+    count: 2,
+    total: "$12.4k",
+    done: true,
+    cards: [{ id: "E-1039", name: "Rosa Alvarez", amt: "$12,480", sub: "deposit due Fri" }],
+  },
 ];
 
 function EstimatesMock() {
   return (
     <div className="flex h-full flex-col bg-background">
       <PreviewHead title="Estimates" chip="sent → viewed → accepted" />
-      <div className="grid min-h-0 flex-1 grid-cols-3 gap-2 px-3 pb-3 pt-2.5 sm:gap-3 sm:px-5 sm:pb-4 sm:pt-3">
+      <div className="grid min-h-0 flex-1 grid-cols-3 gap-1.5 px-3 pb-2.5 pt-2.5 sm:gap-2.5 sm:px-4 sm:pb-3.5 sm:pt-3">
         {EST_COLS.map((c) => (
-          <div key={c.label} className="flex min-h-0 flex-col rounded-lg border border-border/60 bg-muted/30">
-            <div className="flex items-center justify-between border-b border-border/60 px-2 py-1.5 sm:px-2.5">
-              <span className="flex items-center gap-1.5 text-[9.5px] font-bold text-foreground/85 sm:text-[11px]">
+          <div
+            key={c.label}
+            className={`flex min-h-0 flex-col rounded-xl border p-1.5 sm:p-2 ${
+              c.done
+                ? "border-emerald-500/25 bg-emerald-500/[0.05]"
+                : c.live
+                  ? "border-primary/25 bg-primary/[0.05]"
+                  : "border-border/60 bg-muted/25"
+            }`}
+          >
+            <div className="flex items-center justify-between px-0.5 pb-1.5">
+              <span className="flex items-center gap-1 text-[9px] font-bold text-foreground/85 sm:text-[10.5px]">
                 {c.done ? (
                   <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500 text-white">
                     <Check className="h-2 w-2" />
                   </span>
                 ) : c.live ? (
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
-                ) : null}
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute h-full w-full animate-ping rounded-full bg-primary opacity-50" />
+                    <span className="relative h-1.5 w-1.5 rounded-full bg-primary" />
+                  </span>
+                ) : (
+                  <span className="h-1.5 w-1.5 rounded-full bg-foreground/25" aria-hidden />
+                )}
                 {c.label}
+                <span className="rounded bg-background/80 px-1 py-0.5 text-[7.5px] font-bold text-muted-foreground sm:text-[9px]">{c.count}</span>
               </span>
-              <span className="text-[9px] font-semibold text-muted-foreground">{c.count}</span>
+              <span className="text-[8px] font-bold text-foreground/60 sm:text-[9.5px]">{c.total}</span>
             </div>
-            <div className="space-y-1.5 p-1.5 sm:p-2">
+            <div className="min-h-0 flex-1 space-y-1.5">
               {c.cards.map((k) => (
-                <div key={k.id} className="rounded-md border border-border/60 bg-card p-1.5 sm:p-2">
-                  <p className="flex items-center justify-between text-[9px] font-semibold text-muted-foreground sm:text-[10px]">
-                    <span>{k.id}</span>
-                    <span>{k.amt}</span>
+                <div
+                  key={k.id}
+                  className={`rounded-lg border bg-card p-1.5 shadow-[0_6px_16px_-10px_rgba(15,23,42,0.35)] sm:p-2 ${
+                    c.live ? "border-primary/30" : "border-border/60"
+                  }`}
+                >
+                  <p className="flex items-center justify-between text-[8.5px] font-semibold text-muted-foreground sm:text-[9.5px]">
+                    <span className="font-mono">{k.id}</span>
+                    <span className="text-[9px] font-bold text-foreground sm:text-[11px]">{k.amt}</span>
                   </p>
                   <p className="mt-0.5 truncate text-[10px] font-bold text-foreground sm:text-[11.5px]">{k.name}</p>
-                  <p className="truncate text-[8.5px] text-muted-foreground sm:text-[9.5px]">{k.sub}</p>
+                  <p className="mt-0.5 flex items-center gap-1 truncate text-[8px] text-muted-foreground sm:text-[9px]">
+                    {c.live && <span className="h-1 w-1 shrink-0 rounded-full bg-primary" aria-hidden />}
+                    {k.sub}
+                  </p>
                 </div>
               ))}
               {/* ghost card — the pipeline keeps going */}
-              <div className="rounded-md border border-dashed border-border/50 p-1.5 opacity-50 sm:p-2">
+              <div className="rounded-lg border border-dashed border-border/50 p-1.5 opacity-50 sm:p-2">
                 <span className="block h-1.5 w-2/3 rounded bg-muted" />
                 <span className="mt-1 block h-1.5 w-1/2 rounded bg-muted" />
               </div>
@@ -554,15 +743,20 @@ function EstimatesMock() {
           </div>
         ))}
       </div>
+      {/* footer strip */}
+      <div className="flex items-center justify-between border-t border-border/60 bg-muted/25 px-3 py-1.5 text-[9px] font-medium text-muted-foreground sm:px-4 sm:text-[10px]">
+        <span>Median time to answer · 2d 4h</span>
+        <span className="font-semibold text-emerald-600">2 accepted this week</span>
+      </div>
     </div>
   );
 }
 
-/** Page 4 — Reports: the honest numbers, per location. */
+/** Page 4 — Reports: KPI cards, the week's bookings, location leaderboard. */
 const REPORT_KPIS = [
-  { label: "Booked", value: "92%", delta: "+4.1 pt" },
-  { label: "Collected", value: "$148k", delta: "30 days" },
-  { label: "Response", value: "6m", delta: "median" },
+  { label: "Booked rate", value: "92%", delta: "+4.1 pt" },
+  { label: "Collected · 30d", value: "$148k", delta: "+12.2%" },
+  { label: "Median response", value: "6m", delta: "2m faster" },
 ];
 const REPORT_BARS = [34, 52, 44, 66, 58, 78, 91];
 const REPORT_DAYS = ["M", "T", "W", "T", "F", "S", "S"];
@@ -573,57 +767,85 @@ const REPORT_LOCS = [
 ];
 
 function ReportsMock() {
+  const max = Math.max(...REPORT_BARS);
   return (
     <div className="flex h-full flex-col bg-background">
       <PreviewHead title="Reports" chip="every branch, side by side" />
-      <div className="grid grid-cols-3 gap-1.5 px-3 pt-2.5 sm:gap-2.5 sm:px-5 sm:pt-3">
+      <div className="grid grid-cols-3 gap-1.5 px-3 pt-2.5 sm:gap-2.5 sm:px-4 sm:pt-3">
         {REPORT_KPIS.map((k) => (
-          <div key={k.label} className="rounded-lg border border-border/60 bg-card px-2 py-1.5 sm:px-3 sm:py-2">
-            <p className="text-[8.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:text-[9.5px]">{k.label}</p>
-            <p className="text-[13px] font-bold tracking-tight text-foreground sm:text-[16px]">{k.value}</p>
-            <p className="text-[8px] font-medium text-emerald-600 sm:text-[9px]">{k.delta}</p>
+          <div key={k.label} className="rounded-xl border border-border/60 bg-card px-2 py-1.5 sm:px-3 sm:py-2">
+            <p className="text-[8px] font-bold uppercase tracking-[0.12em] text-muted-foreground sm:text-[9px]">{k.label}</p>
+            <div className="mt-0.5 flex flex-wrap items-baseline gap-x-1.5">
+              <p className="text-[13px] font-bold tracking-tight text-foreground sm:text-[17px]">{k.value}</p>
+              <p className="flex items-center gap-0.5 text-[8px] font-semibold text-emerald-600 sm:text-[9.5px]">
+                <TrendingUp className="h-2.5 w-2.5" aria-hidden />
+                {k.delta}
+              </p>
+            </div>
           </div>
         ))}
       </div>
-      <div className="mt-2 flex min-h-0 flex-1 gap-2 px-3 pb-3 sm:mt-3 sm:gap-3 sm:px-5 sm:pb-4">
+      <div className="mt-2 flex min-h-0 flex-1 gap-2 px-3 pb-2.5 sm:mt-2.5 sm:gap-2.5 sm:px-4 sm:pb-3">
         {/* the week's bars draw themselves in */}
-        <div className="flex min-h-0 flex-[1.5] flex-col rounded-lg border border-border/60 bg-muted/30 p-2 sm:p-3">
-          <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Booked inquiries · this week</p>
+        <div className="flex min-h-0 flex-[1.5] flex-col rounded-xl border border-border/60 bg-muted/25 p-2 sm:p-3">
+          <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground sm:text-[9.5px]">Booked inquiries · this week</p>
           <div className="flex min-h-0 flex-1 items-end gap-1.5 pt-2 sm:gap-2">
             {REPORT_BARS.map((v, i) => (
               <div key={i} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
+                {v === max && (
+                  <span className="rounded bg-emerald-500 px-1 py-0.5 text-[7.5px] font-bold text-white sm:text-[8.5px]">92%</span>
+                )}
                 <motion.div
                   initial={{ scaleY: 0 }}
                   animate={{ scaleY: 1 }}
                   transition={{ duration: 0.6, delay: 0.06 * i, ease: EASE }}
                   style={{ height: `${v}%`, transformOrigin: "bottom" }}
-                  className="w-full rounded-t-sm bg-primary/80 sm:bg-primary"
+                  className={`w-full rounded-t-[4px] ${
+                    v === max ? "bg-gradient-to-t from-emerald-500/80 to-emerald-400" : "bg-gradient-to-t from-primary/75 to-primary"
+                  }`}
                 />
-                <span className="text-[8px] font-medium text-muted-foreground">{REPORT_DAYS[i]}</span>
+                <span className={`text-[8px] font-medium sm:text-[9px] ${v === max ? "font-bold text-emerald-600" : "text-muted-foreground"}`}>
+                  {REPORT_DAYS[i]}
+                </span>
               </div>
             ))}
           </div>
         </div>
-        {/* per-location bars */}
-        <div className="flex min-h-0 flex-1 flex-col justify-center rounded-lg border border-border/60 bg-muted/30 p-2 sm:p-3">
-          <p className="pb-1.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">By location</p>
-          <div className="space-y-2">
+        {/* per-location leaderboard */}
+        <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border/60 bg-muted/25 p-2 sm:p-3">
+          <p className="flex items-center gap-1 pb-2 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground sm:text-[9.5px]">
+            <MapPin className="h-2.5 w-2.5" aria-hidden /> By location
+          </p>
+          <div className="min-h-0 flex-1 space-y-2">
             {REPORT_LOCS.map((loc, i) => (
               <div key={loc.name}>
-                <div className="flex items-center justify-between text-[8.5px] sm:text-[10px]">
-                  <span className="truncate font-semibold text-foreground/85">{loc.name}</span>
-                  <span className="font-medium text-muted-foreground">{loc.v}%</span>
+                <div className="flex items-center justify-between gap-2 text-[8.5px] sm:text-[10px]">
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <span
+                      className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded text-[7px] font-bold ${
+                        i === 0 ? "bg-emerald-500 text-white" : "bg-foreground/5 text-foreground/60"
+                      }`}
+                    >
+                      {i + 1}
+                    </span>
+                    <span className="truncate font-semibold text-foreground/85">{loc.name}</span>
+                  </span>
+                  <span className="shrink-0 font-bold text-foreground/70">{loc.v}%</span>
                 </div>
                 <div className="mt-1 h-1 overflow-hidden rounded-full bg-muted">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${loc.v}%` }}
                     transition={{ duration: 0.8, delay: 0.15 + i * 0.12, ease: EASE }}
-                    className="h-full rounded-full bg-primary"
+                    className={`h-full rounded-full ${i === 0 ? "bg-emerald-500" : "bg-primary"}`}
                   />
                 </div>
               </div>
             ))}
+          </div>
+          <div className="mt-2 flex items-center justify-between rounded-lg border border-amber-500/25 bg-amber-500/[0.08] px-2 py-1.5">
+            <span className="text-[8px] font-bold text-amber-700 sm:text-[9.5px]">Collectible overdue</span>
+            <span className="text-[8.5px] font-bold text-amber-700 sm:text-[10.5px]">$12.9k · 3 invoices</span>
           </div>
         </div>
       </div>
@@ -635,7 +857,7 @@ function ReportsMock() {
  * The interactive desk: a working miniature of the product rendered in
  * pure DOM — no screenshots. Clicking a page in the sidebar switches
  * the view (exactly like the real app); left alone, the desk tours
- * every page by itself every ~4.6 seconds. Hovering pauses the tour.
+ * every page by itself every ~4 seconds. Hovering pauses the tour.
  */
 function AppPreview() {
   const [active, setActive] = useState(0);
@@ -652,7 +874,7 @@ function AppPreview() {
     const t = setTimeout(() => {
       setActive((a) => (a + 1) % APP_PAGES.length);
       setCycle((c) => c + 1);
-    }, 4600);
+    }, 4200);
     return () => clearTimeout(t);
   }, [hold, cycle]);
 
@@ -764,18 +986,11 @@ function AppPreview() {
 }
 
 /**
- * The product section: the headline reveals in staggered lines, the
- * desk morphs flat as it scrolls into view — and inside it is the
- * living, clickable preview above.
+ * The product section: the headline reveals in staggered lines and the
+ * desk arrives flat and still — a stable stage for the living preview
+ * inside (which tours itself and switches on sidebar clicks).
  */
 function Product() {
-  const shotRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: shotRef, offset: ["start end", "center center"] });
-  const rotateX = useTransform(scrollYProgress, [0, 1], [14, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], [0.94, 1]);
-  const lift = useTransform(scrollYProgress, [0, 1], [56, 0]);
-  const glow = useTransform(scrollYProgress, [0, 0.55, 1], [0.15, 0.85, 1]);
-
   return (
     <section id="product" className="scroll-mt-16 bg-background py-24 md:py-28">
       <div className="mx-auto max-w-6xl px-5 md:px-8">
@@ -784,39 +999,48 @@ function Product() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-15%" }}
-          className="mx-auto mb-16 max-w-2xl text-center"
+          className="mx-auto mb-14 max-w-2xl text-center md:mb-16"
         >
-          <motion.p variants={headItem} className="mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">
+          <motion.p
+            variants={headItem}
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.07] px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.24em] text-primary shadow-[0_14px_35px_-18px_rgba(15,23,42,0.5)]"
+          >
+            <MousePointerClick className="h-3.5 w-3.5" aria-hidden />
             The product
           </motion.p>
-          <motion.h2 variants={headItem} className="text-4xl font-bold leading-[1.08] tracking-tight md:text-[48px]">
-            Your whole day, on one screen.
+          <motion.h2 variants={headItem} className="text-balance text-[38px] font-bold leading-[1.05] tracking-tight md:text-[54px]">
+            Your whole day,{" "}
+            <span className="bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent">on one screen.</span>
           </motion.h2>
-          <motion.p variants={headItem} className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-            No spreadsheets, no group texts, no pocket notebook. One queue tells you exactly what needs
-            a response, a visit, or a decision — and what happens if you don’t.
+          <motion.p
+            variants={headItem}
+            className="mx-auto mt-6 max-w-[580px] text-pretty text-[15px] leading-relaxed text-muted-foreground md:text-[16.5px]"
+          >
+            No spreadsheets, no group texts, no pocket notebook.{" "}
+            <span className="font-semibold text-foreground">
+              One queue tells you exactly what needs a response, a visit, or a decision
+            </span>{" "}
+            — and what happens if you don’t.
           </motion.p>
         </motion.div>
 
-        <div ref={shotRef} className="relative">
-          {/* ambient glow that intensifies as the desk arrives */}
-          <motion.div
+        <div className="relative">
+          {/* ambient glow behind the desk */}
+          <div
             aria-hidden
             style={{
-              opacity: glow,
               background:
-                "radial-gradient(58% 58% at 50% 42%, oklch(0.43 0.095 243 / 0.16), transparent 72%)",
+                "radial-gradient(58% 58% at 50% 42%, oklch(0.43 0.095 243 / 0.13), transparent 72%)",
             }}
-            className="absolute -inset-x-10 bottom-0 -top-14 rounded-[64px] blur-2xl md:-inset-x-16"
+            className="absolute -inset-x-10 -top-12 bottom-0 rounded-[64px] blur-2xl md:-inset-x-16"
           />
 
-          {/* the desk — starts tilted in perspective, lands flat, then tours itself */}
+          {/* the desk — perfectly still, lands flat, then tours itself */}
           <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 34 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-10%" }}
-            transition={{ duration: 0.6 }}
-            style={{ rotateX, scale, y: lift, transformPerspective: 1400 }}
+            transition={{ duration: 0.75, ease: EASE }}
           >
             <AppPreview />
           </motion.div>
@@ -1154,49 +1378,112 @@ function FinalCta() {
   );
 }
 
+/**
+ * Marketing footer — brand block with badges, two link columns, and a
+ * clean legal bar with a back-to-top control. Professional and quiet.
+ */
 function Footer() {
+  const year = new Date().getFullYear();
+  const dot = <span className="h-1 w-1 rounded-full bg-border transition-colors group-hover:bg-primary" aria-hidden />;
   return (
-    <footer className="border-t border-border/70 bg-background pb-10 pt-14">
+    <footer className="mt-auto border-t border-border/70 bg-muted/40">
+      <div aria-hidden className="h-px w-full bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
       <div className="mx-auto max-w-6xl px-5 md:px-8">
-        <div className="flex flex-col justify-between gap-10 md:flex-row md:items-start">
-          <div className="max-w-xs">
+        <div className="grid gap-10 py-14 md:grid-cols-[1.45fr_1fr_1fr] md:gap-14">
+          {/* brand */}
+          <div className="max-w-sm">
             <Logo />
-            <p className="mt-4 text-[12.5px] leading-relaxed text-muted-foreground">
+            <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">
               The estimate desk for roofing teams — inquiries to inspections, estimates to matched
-              payments.
+              payments, all on one screen.
             </p>
-          </div>
-          <div className="grid grid-cols-2 gap-12 sm:gap-20">
-            <div>
-              <p className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">Product</p>
-              <ul className="space-y-2.5 text-[13.5px]">
-                <li><button onClick={() => scrollToSection("product")} className="text-muted-foreground transition-colors hover:text-foreground">Product tour</button></li>
-                <li><button onClick={() => scrollToSection("features")} className="text-muted-foreground transition-colors hover:text-foreground">Why RidgeLine</button></li>
-                <li><button onClick={() => scrollToSection("how")} className="text-muted-foreground transition-colors hover:text-foreground">How it works</button></li>
-              </ul>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {["Demo build", "Synthetic data", "GHL-ready"].map((b) => (
+                <span
+                  key={b}
+                  className="rounded-full border border-border/70 bg-background px-3 py-1 text-[10.5px] font-semibold text-muted-foreground"
+                >
+                  {b}
+                </span>
+              ))}
             </div>
-            <div>
-              <p className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/60">Get started</p>
-              <ul className="space-y-2.5 text-[13.5px]">
-                <li><button onClick={ctaNavigate} className="text-muted-foreground transition-colors hover:text-foreground">Open the app</button></li>
-                <li><button onClick={() => (window.location.hash = "#/public/intake")} className="text-muted-foreground transition-colors hover:text-foreground">Homeowner booking</button></li>
-                <li>
-                  <a
-                    href="https://github.com/faisukhan01/convert"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
+          </div>
+
+          {/* product */}
+          <nav aria-label="Product">
+            <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.22em] text-foreground/70">Product</p>
+            <ul className="space-y-3 text-[13.5px]">
+              {[
+                { label: "Product tour", go: () => scrollToSection("product") },
+                { label: "Why RidgeLine", go: () => scrollToSection("features") },
+                { label: "How it works", go: () => scrollToSection("how") },
+              ].map((l) => (
+                <li key={l.label}>
+                  <button
+                    onClick={l.go}
+                    className="group inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    GitHub <ArrowUpRight className="h-3.5 w-3.5" />
-                  </a>
+                    {dot}
+                    {l.label}
+                  </button>
                 </li>
-              </ul>
-            </div>
-          </div>
+              ))}
+            </ul>
+          </nav>
+
+          {/* get started */}
+          <nav aria-label="Get started">
+            <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.22em] text-foreground/70">Get started</p>
+            <ul className="space-y-3 text-[13.5px]">
+              <li>
+                <button
+                  onClick={ctaNavigate}
+                  className="group inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {dot}
+                  Open the app
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => (window.location.hash = "#/public/intake")}
+                  className="group inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {dot}
+                  Homeowner booking
+                </button>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/faisukhan01/convert"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {dot}
+                  GitHub
+                  <ArrowUpRight className="h-3 w-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </a>
+              </li>
+            </ul>
+          </nav>
         </div>
-        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-border/60 pt-6 text-[11.5px] text-muted-foreground/80 sm:flex-row sm:items-center">
-          <p>© {new Date().getFullYear()} RidgeLine · demo build — all data is synthetic</p>
-          <p>Go automation engine · Postgres · GHL-ready · footage &amp; imagery for demo use</p>
+
+        <div className="flex flex-col items-start justify-between gap-4 border-t border-border/60 py-6 sm:flex-row sm:items-center">
+          <p className="text-[11.5px] text-muted-foreground/80">
+            © {year} RidgeLine · demo build — all data is synthetic
+          </p>
+          <div className="flex items-center gap-5">
+            <p className="hidden text-[11.5px] text-muted-foreground/70 lg:block">
+              Postgres-ready · GHL connector simulated · footage &amp; imagery for demo use
+            </p>
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-3.5 py-1.5 text-[11.5px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Back to top <ArrowUp className="h-3 w-3" aria-hidden />
+            </button>
+          </div>
         </div>
       </div>
     </footer>
@@ -1216,7 +1503,7 @@ export function LandingView() {
         <Features />
         <FinalCta />
       </main>
-      <footer className="mt-auto"><Footer /></footer>
+      <Footer />
     </div>
   );
 }
