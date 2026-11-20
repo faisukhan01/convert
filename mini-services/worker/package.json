@@ -1,0 +1,10 @@
+{
+  "name": "ridgeline-worker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RidgeLine background worker — durable job queue processor (AI qualification, retries, dead-letter). Independent TypeScript service.",
+  "scripts": {
+    "dev": "bun --hot index.ts"
+  },
+  "dependencies": {}
+}

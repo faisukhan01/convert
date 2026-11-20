@@ -31,13 +31,17 @@ export const SERVICE_TYPE_LABELS: Record<string, string> = {
   INSPECTION: "Inspection only",
 };
 
-export const SOURCES = ["WEBSITE", "PHONE_MISSED", "OFFICE", "REFERRAL", "LANDING_PAGE", "UNKNOWN"] as const;
+export const SOURCES = ["WEBSITE", "PHONE_MISSED", "OFFICE", "REFERRAL", "LANDING_PAGE", "WEBHOOK", "FACEBOOK", "WHATSAPP", "GMAIL", "UNKNOWN"] as const;
 export const SOURCE_LABELS: Record<string, string> = {
   WEBSITE: "Website form",
   PHONE_MISSED: "Missed call",
   OFFICE: "Office entered",
   REFERRAL: "Referral",
   LANDING_PAGE: "Landing page tag",
+  WEBHOOK: "Partner webhook",
+  FACEBOOK: "Facebook Lead Ads",
+  WHATSAPP: "WhatsApp Business",
+  GMAIL: "Email inbox",
   UNKNOWN: "Unknown",
 };
 

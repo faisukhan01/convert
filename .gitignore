@@ -68,3 +68,6 @@ tests/
 # sandbox scratch
 download/
 tool-results/
+
+# embedded PostgreSQL data (local dev only)
+db/pgdata/
