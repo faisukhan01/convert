@@ -14,7 +14,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -518,6 +518,21 @@ model DemoState {
   clockOffsetMs Int      @default(0)
   seededAt      DateTime?
   version       Int      @default(0)
+  /// When false, bootstrap does NOT auto-seed an empty database — set by the
+  /// "Remove demo data" control so a wiped install stays intentionally empty.
+  autoSeed      Boolean  @default(true)
+}
+
+/// Fixed-window rate-limit counters, persisted so the limit holds across serverless
+/// instances (the in-memory map only ever saw one instance). One row per (key, minute).
+model RateLimitBucket {
+  id          String   @id @default(cuid())
+  key         String
+  windowStart DateTime
+  count       Int      @default(0)
+
+  @@unique([key, windowStart])
+  @@index([windowStart])
 }
 
 // ─────────────────────── Ingestion credentials (org API keys) ───────────────────────

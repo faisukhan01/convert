@@ -1,24 +1,26 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useApi } from "@/hooks/use-api";
+import { useEffect, useMemo, useState } from "react";
+import { api } from "@/hooks/use-api";
 import { navigate, useAppStore } from "@/store/app";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { api } from "@/hooks/use-api";
 import { toast } from "sonner";
 import { SectionCard, SkeletonRows, Row, StageBadge, EmptyState } from "@/components/app/ui-bits";
 import { fmtDate, tzAbbr } from "@/lib/time";
 import { SERVICE_TYPE_LABELS, SOURCE_LABELS, STAGES, STAGE_LABELS, SOURCES } from "@/lib/constants";
 import type { InquiryRow, TaskRow } from "@/lib/client-types";
-import { Search, Plus, X } from "lucide-react";
+import { Search, Plus, X, Loader2 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
-type ListResponse = { inquiries: (InquiryRow & { tasks: TaskRow[] })[] };
+type ListResponse = { inquiries: (InquiryRow & { tasks: TaskRow[] })[]; nextCursor: string | null; hasMore: boolean };
+type InquiryListItem = InquiryRow & { tasks: TaskRow[] };
+
+const PAGE_SIZE = 50;
 
 export function NewLeadDialog() {
   const session = useAppStore((s) => s.session);
@@ -107,9 +109,56 @@ export function InquiriesView({ query }: { query: URLSearchParams }) {
     }
   }, [q, stage, source]);
 
-  const { data, loading, error } = useApi<ListResponse>(
-    contractorId ? `/api/inquiries?contractorId=${contractorId}&stage=${stage}&source=${source}&q=${encodeURIComponent(debouncedQ)}` : null
+  // Cursor pagination: first page loads with the filter change, "Load more"
+  // appends subsequent pages. Accumulated rows reset on every filter change.
+  const [rows, setRows] = useState<InquiryListItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const listPath = useMemo(
+    () =>
+      `/api/inquiries?contractorId=${contractorId}&stage=${stage}&source=${source}&q=${encodeURIComponent(debouncedQ)}&limit=${PAGE_SIZE}`,
+    [contractorId, stage, source, debouncedQ],
   );
+
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    setError(null);
+    api
+      .get<ListResponse>(listPath)
+      .then((d) => {
+        if (!alive) return;
+        setRows(d.inquiries ?? []);
+        setNextCursor(d.nextCursor ?? null);
+      })
+      .catch((e) => {
+        if (!alive) return;
+        setError(e instanceof Error ? e.message : "Failed to load inquiries");
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [listPath]);
+
+  const loadMore = async () => {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const d = await api.get<ListResponse>(`${listPath}&cursor=${encodeURIComponent(nextCursor)}`);
+      setRows((r) => [...r, ...(d.inquiries ?? [])]);
+      setNextCursor(d.nextCursor ?? null);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load more");
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -147,14 +196,14 @@ export function InquiriesView({ query }: { query: URLSearchParams }) {
         </Select>
       </div>
 
-      <SectionCard title="Inquiries" count={data?.inquiries?.length}>
+      <SectionCard title="Inquiries" count={rows.length}>
         {loading ? <SkeletonRows rows={6} /> : error ? (
           <EmptyState title="Couldn't load inquiries" hint={error} />
-        ) : (data?.inquiries?.length ?? 0) === 0 ? (
+        ) : rows.length === 0 ? (
           <EmptyState title="No inquiries match" hint="Try clearing filters, or create a lead with the button above." />
         ) : (
           <div className="space-y-2">
-            {data!.inquiries.map((inq) => {
+            {rows.map((inq) => {
               const openTask = inq.tasks?.[0];
               return (
                 <Row key={inq.id} onClick={() => navigate(`/inquiries/${inq.id}`)}>
@@ -169,13 +218,26 @@ export function InquiriesView({ query }: { query: URLSearchParams }) {
                       {inq.contact?.addressLine1 ? ` · ${inq.contact.addressLine1}` : ""}
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-0.5">
+                  <div className="flex shrink-0 flex-col items-end gap-0.5">
                     <span className="text-xs text-muted-foreground" suppressHydrationWarning>{fmtDate(inq.createdAt, session?.contractors?.find((c) => c.id === contractorId)?.timezone ?? "UTC")} {tzAbbr(new Date(inq.createdAt), session?.contractors?.find((c) => c.id === contractorId)?.timezone ?? "UTC")}</span>
-                    {openTask && <span className="text-[11px] text-muted-foreground truncate max-w-[220px]">{openTask.title}</span>}
+                    {openTask && <span className="text-[11px] text-muted-foreground truncate max-w-[160px] sm:max-w-[220px]">{openTask.title}</span>}
                   </div>
                 </Row>
               );
             })}
+            {nextCursor && (
+              <div className="flex justify-center pt-2">
+                <Button variant="outline" size="sm" onClick={() => void loadMore()} disabled={loadingMore}>
+                  {loadingMore ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading…
+                    </>
+                  ) : (
+                    "Load more"
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </SectionCard>

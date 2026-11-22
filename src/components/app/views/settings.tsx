@@ -1,17 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useApi, api } from "@/hooks/use-api";
-import { useAppStore, roleAt } from "@/store/app";
+import { useApi, api, setStoredToken } from "@/hooks/use-api";
+import { useAppStore, roleAt, navigate } from "@/store/app";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { SectionCard, SkeletonRows, EmptyState } from "@/components/app/ui-bits";
 import { PLAYBOOKS, BILLING_STATUSES } from "@/lib/constants";
-import { Save, PlugZap, Unplug, ShieldCheck, ShieldAlert } from "lucide-react";
+import { Save, PlugZap, Unplug, ShieldCheck, ShieldAlert, DatabaseZap, Trash2, Loader2 } from "lucide-react";
 
 type SettingsData = {
   contractor: {
@@ -35,6 +39,11 @@ type ConnectionsData = {
   allPrerequisitesMet: boolean;
 };
 
+type DemoCensus = {
+  empty: boolean; autoSeed: boolean; seededAt: string | null;
+  counts: { users: number; agencies: number; contractors: number; contacts: number; inquiries: number; appointments: number; estimates: number; payments: number; tasks: number };
+};
+
 const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 
 export function SettingsView() {
@@ -43,8 +52,10 @@ export function SettingsView() {
   const role = roleAt(session, contractorId);
   const { data, loading, refresh } = useApi<SettingsData>(contractorId ? `/api/contractors/${contractorId}` : null);
   const connQ = useApi<ConnectionsData>(contractorId ? `/api/connections?contractorId=${contractorId}` : null);
+  const demoQ = useApi<DemoCensus>("/api/demo-data");
   const [form, setForm] = useState<SettingsData["contractor"] | null>(null);
   const [busy, setBusy] = useState(false);
+  const [demoBusy, setDemoBusy] = useState<"load" | "remove" | null>(null);
 
   useEffect(() => {
     if (data?.contractor && !form) setForm(data.contractor);
@@ -68,6 +79,39 @@ export function SettingsView() {
     }
   };
 
+  const loadDemoData = async () => {
+    setDemoBusy("load");
+    try {
+      const res = await api.post<{ ok: boolean; message: string }>('/api/demo-data');
+      toast(res.message ?? "Demo data installed");
+      // Full reload: the seeded dataset changes every view and the session roster.
+      setTimeout(() => window.location.reload(), 600);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load demo data");
+      setDemoBusy(null);
+      demoQ.refresh();
+    }
+  };
+
+  const removeDemoData = async () => {
+    setDemoBusy("remove");
+    try {
+      const res = await api.del<{ ok: boolean; message: string }>("/api/demo-data");
+      toast(res.message ?? "All demo data removed");
+      // Every record — including this session's user — is gone: drop the local
+      // credential and land on the (empty) sign-in screen.
+      setStoredToken(null);
+      setTimeout(() => {
+        navigate("#/signin");
+        window.location.reload();
+      }, 700);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to remove demo data");
+      setDemoBusy(null);
+      demoQ.refresh();
+    }
+  };
+
   const working = (() => {
     try { return JSON.parse(form.workingHours) as Record<string, [string, string] | null>; } catch { return {}; }
   })();
@@ -81,6 +125,78 @@ export function SettingsView() {
         <h1 className="text-xl font-bold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">Business profile, hours, playbooks, connection status, team and billing. Only settings your role can operate are revealed.</p>
       </header>
+
+      {/* Demo data — add / remove the deterministic fixtures */}
+      <SectionCard
+        title="Demo data"
+        subtitle="install or remove the synthetic demo dataset — live record counts below"
+        action={
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Button
+              size="sm"
+              className="gap-1.5"
+              disabled={demoBusy !== null || (demoQ.data ? !demoQ.data.empty : false)}
+              title={demoQ.data && !demoQ.data.empty ? "Data already present — remove it first" : "Install the demo fixtures"}
+              onClick={() => void loadDemoData()}
+            >
+              {demoBusy === "load" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <DatabaseZap className="h-3.5 w-3.5" />}
+              Load demo data
+            </Button>
+            {(role === "OWNER" || role === "AGENCY_ADMIN") && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive" className="gap-1.5" disabled={demoBusy !== null || (demoQ.data?.empty ?? true)}>
+                    {demoBusy === "remove" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                    Remove demo data
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Remove all demo data?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This permanently deletes every record in this workspace — {demoQ.data ? `${demoQ.data.counts.inquiries} inquiries, ${demoQ.data.counts.contacts} contacts, ${demoQ.data.counts.appointments} appointments, ${demoQ.data.counts.estimates} estimates, ${demoQ.data.counts.payments} payments` : "all records"} — including your own sign-in. The app stays empty until you load demo data again. This cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={() => void removeDemoData()}
+                    >
+                      Remove everything
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
+        }
+      >
+        {demoQ.loading || !demoQ.data ? <SkeletonRows rows={2} /> : (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+              {([
+                ["Users", demoQ.data.counts.users],
+                ["Businesses", demoQ.data.counts.contractors],
+                ["Inquiries", demoQ.data.counts.inquiries],
+                ["Appointments", demoQ.data.counts.appointments],
+                ["Estimates", demoQ.data.counts.estimates],
+              ] as const).map(([label, n]) => (
+                <div key={label} className="rounded-lg border px-3 py-2">
+                  <div className="text-lg font-bold tabular-nums">{n}</div>
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              {demoQ.data.empty
+                ? "The workspace is empty. Load demo data to install the deterministic fixtures (2 businesses, sample pipeline, payments and experiments)."
+                : "Loading is disabled while data exists — records are never replaced silently. Remove first if you want a fresh install."}
+              {demoQ.data.autoSeed ? " Auto-seed is on: an empty database is re-seeded automatically on restart." : " Auto-seed is off: the workspace stays empty until you load demo data."}
+            </p>
+          </div>
+        )}
+      </SectionCard>
 
       {/* Business */}
       <SectionCard title="Business profile" action={

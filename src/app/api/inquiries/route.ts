@@ -4,7 +4,7 @@ import { ensureBootstrap } from "@/lib/bootstrap";
 import { onInquiryCreated, onCustomerReply, setAutomationPaused } from "@/lib/engine";
 import { STAGES, SOURCES, SERVICE_TYPES } from "@/lib/constants";
 
-/** GET /api/inquiries — filterable list (owner, source, stage, q, due) */
+/** GET /api/inquiries — filterable list (owner, source, stage, q, due) with cursor pagination */
 export const GET = route(async (req) => {
   await ensureBootstrap();
   const url = new URL(req.url);
@@ -15,6 +15,8 @@ export const GET = route(async (req) => {
   const source = url.searchParams.get("source");
   const owner = url.searchParams.get("owner");
   const due = url.searchParams.get("due"); // overdue | today | week
+  const cursor = url.searchParams.get("cursor"); // id of the last row of the previous page
+  const limit = Math.min(Math.max(parseInt(url.searchParams.get("limit") ?? "50", 10) || 50, 1), 100);
 
   const where = {
     contractorId: contractor.id,
@@ -38,6 +40,8 @@ export const GET = route(async (req) => {
       : {}),
   };
 
+  // Stable cursor pagination: createdAt desc + id desc tiebreaker, cursor = last id.
+  // One extra row is fetched to detect "has more" without a separate count query.
   const rows = await db.inquiry.findMany({
     where,
     include: {
@@ -46,10 +50,15 @@ export const GET = route(async (req) => {
       estimates: { orderBy: { createdAt: "desc" }, take: 1 },
       tasks: { where: { status: "OPEN" }, orderBy: { dueAt: "asc" }, take: 1 },
     },
-    orderBy: { createdAt: "desc" },
-    take: 200,
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    take: limit + 1,
   });
-  return json({ inquiries: rows });
+
+  const hasMore = rows.length > limit;
+  const inquiries = hasMore ? rows.slice(0, limit) : rows;
+  const nextCursor = hasMore ? inquiries[inquiries.length - 1].id : null;
+  return json({ inquiries, nextCursor, hasMore });
 });
 
 /** POST /api/inquiries — office-entered lead or missed call intake */

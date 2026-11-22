@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createHash } from "node:crypto";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { json, route, ApiError } from "@/lib/api";
 import { ensureBootstrap } from "@/lib/bootstrap";
@@ -77,9 +78,12 @@ export const POST = route(async (req) => {
   await ensureBootstrap();
   const key = await requireApiKey(req);
 
-  const rl = rateLimit(`apikey:${key.id}`, key.rateLimitPerMin);
+  const rl = await rateLimit(`apikey:${key.id}`, key.rateLimitPerMin);
   if (!rl.ok) {
-    return json({ error: "Rate limit exceeded", retryAfterSec: rl.retryAfterSec }, 429);
+    return NextResponse.json(
+      { error: "Rate limit exceeded", retryAfterSec: rl.retryAfterSec, limit: rl.limit },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec), "X-RateLimit-Limit": String(rl.limit), "X-RateLimit-Remaining": String(rl.remaining) } },
+    );
   }
 
   let bodyRaw: unknown;

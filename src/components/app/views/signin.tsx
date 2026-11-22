@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { api } from "@/hooks/use-api";
+import { api, useApi } from "@/hooks/use-api";
 import { useAppStore } from "@/store/app";
 import { toast } from "sonner";
 import { Logo } from "@/components/app/shell";
-import { ArrowRight, Eye, EyeOff, Home, Loader2, Lock, Mail } from "lucide-react";
+import { ArrowRight, DatabaseZap, Eye, EyeOff, Home, Loader2, Lock, Mail } from "lucide-react";
 
 /**
  * Staff sign-in — the same stage as the landing page: live-action
@@ -39,6 +39,8 @@ const DEMO_ACCOUNTS = [
   { email: "agency@ridgeline.demo", name: "Dana Whitfield", role: "Agency admin" },
 ];
 
+type DemoCensus = { empty: boolean; counts: { inquiries: number; contractors: number } };
+
 export function SignInView() {
   const { loadSession } = useAppStore();
   const [email, setEmail] = useState("owner@ridgeline.demo");
@@ -46,6 +48,29 @@ export function SignInView() {
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
+  const [seeding, setSeeding] = useState(false);
+  // Public census: when the database is intentionally empty (demo data removed from
+  // Settings) nobody can sign in — offer the one-click fixtures install right here.
+  const censusQ = useApi<DemoCensus>("/api/demo-data");
+  const isEmpty = censusQ.data?.empty === true;
+
+  useEffect(() => {
+    if (!isEmpty) return;
+    document.title = "RidgeLine — empty workspace";
+  }, [isEmpty]);
+
+  const loadDemoData = async () => {
+    setSeeding(true);
+    try {
+      await api.post("/api/demo-data");
+      toast("Demo data installed — pick a role to sign in");
+      await censusQ.refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load demo data");
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   const signIn = async (em: string, pw: string) => {
     setBusy(true);
@@ -214,6 +239,23 @@ export function SignInView() {
                   <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/55">
                     Pick a seat and you’re in — the workspace is fully seeded.
                   </p>
+                  {isEmpty && (
+                    <div className="mt-3 rounded-2xl border border-white/20 bg-white/[0.06] p-3">
+                      <p className="text-[12.5px] font-semibold text-white/90">Workspace is empty</p>
+                      <p className="mt-1 text-[11.5px] leading-relaxed text-white/55">
+                        All demo data was removed. Install the fixtures to enable sign-in.
+                      </p>
+                      <Button
+                        size="sm"
+                        className="mt-2.5 w-full gap-1.5"
+                        disabled={seeding}
+                        onClick={() => void loadDemoData()}
+                      >
+                        {seeding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <DatabaseZap className="h-3.5 w-3.5" />}
+                        Load demo data
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="relative mt-5 flex flex-1 flex-col justify-center gap-2.5">

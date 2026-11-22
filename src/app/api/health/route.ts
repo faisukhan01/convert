@@ -7,6 +7,15 @@ import { ensureBootstrap } from "@/lib/bootstrap";
  * Every integration reports its REAL state: "configured" only when the
  * required credentials are present, never simulated.
  */
+
+/** Classify the configured DATABASE_URL so health reports the REAL engine. */
+function dbEngine(url: string): { name: string; provider: "sqlite" | "postgresql"; host: string } {
+  if (url.startsWith("file:")) return { name: "SQLite", provider: "sqlite", host: "local (demo)" };
+  if (url.includes("neon.tech")) return { name: "PostgreSQL", provider: "postgresql", host: "remote/neon" };
+  if (url.includes("localhost") || url.includes("127.0.0.1")) return { name: "PostgreSQL", provider: "postgresql", host: "local (dev)" };
+  return { name: "PostgreSQL", provider: "postgresql", host: "remote" };
+}
+
 export const GET = route(async () => {
   // No DATABASE_URL configured (e.g. before the first production deploy):
   // report it clearly instead of crashing — the app boots, DB routes wait for config.
@@ -21,6 +30,7 @@ export const GET = route(async () => {
   }
   await ensureBootstrap();
   const now = new Date();
+  const engine = dbEngine(process.env.DATABASE_URL!);
   const [pending, failed, dbOk] = await Promise.all([
     db.backgroundJob.count({ where: { status: "PENDING" } }),
     db.backgroundJob.count({ where: { status: "FAILED" } }),
@@ -28,7 +38,7 @@ export const GET = route(async () => {
   ]);
 
   const integrations = {
-    database: { name: "PostgreSQL", status: dbOk ? "configured" : "unavailable", engine: dbOk ? (process.env.DATABASE_URL?.includes("localhost") || process.env.DATABASE_URL?.includes("127.0.0.1") ? "local (dev)" : "remote/neon") : null },
+    database: { name: engine.name, status: dbOk ? "configured" : "unavailable", engine: dbOk ? engine.host : null },
     ai: {
       name: "AI lead qualification",
       provider: (process.env.AI_PROVIDER ?? "zai").toLowerCase() === "openai" && process.env.OPENAI_API_KEY ? "openai" : "zai",
@@ -45,7 +55,7 @@ export const GET = route(async () => {
   return json({
     ok: dbOk,
     service: "ridgeline",
-    database: dbOk ? "postgresql" : "unreachable",
+    database: dbOk ? engine.provider : "unreachable",
     queue: { pending, failed },
     integrations,
     time: now.toISOString(),

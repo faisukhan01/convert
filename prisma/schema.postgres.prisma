@@ -1,0 +1,609 @@
+// RidgeLine — roofing estimate booking & follow-up SaaS
+// Multi-tenant data model: Agency > Contractor (location) > staff / contacts / inquiries /
+// appointments / estimates / tasks / automation / connector state / payments / experiments / audit.
+//
+// NOTE ON PORTABILITY: this is the PostgreSQL-ready copy of the data model ( Neon /
+// any Postgres). The working copy in `prisma/schema.prisma` flips its datasource
+// provider between sqlite (local demo) and postgresql with `bun run db:use-sqlite` /
+// `bun run db:use-postgres`; this file always stays postgresql and exists so the
+// production model can be diffed/reviewed without touching the working schema.
+// Types are chosen to be identical on both engines:
+// no native enums (String + app-level validation), JSON payloads stored as String,
+// Decimal for money (supported by both engines), UTC instants everywhere.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────── Tenancy ───────────────────────────────
+
+model Agency {
+  id          String       @id @default(cuid())
+  name        String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  contractors Contractor[]
+  users       User[]
+}
+
+/// A contractor = one roofing business = one GHL location.
+model Contractor {
+  id                    String    @id @default(cuid())
+  agencyId              String
+  agency                Agency    @relation(fields: [agencyId], references: [id])
+  name                  String
+  slug                  String    @unique
+  timezone              String    @default("America/Chicago") // IANA name, display only
+  addressLine1          String?
+  city                  String?
+  state                 String?
+  serviceZips           String    @default("") // comma-separated served ZIPs
+  preferredChannels     String    @default("sms,email")
+  billingStatus         String    @default("trial") // trial | active | past_due | canceled
+  runMode               String    @default("demo") // demo | configured | live (operator-visible mode)
+  activatedAt           DateTime?
+  ghlLocationId         String?
+  apiKeys               ApiKey[]
+  backgroundJobs        BackgroundJob[]
+  // Booking calendar
+  calendarStartHour     Int       @default(8)
+  calendarEndHour       Int       @default(17)
+  slotMinutes           Int       @default(60)
+  bookingLeadHours      Int       @default(24)
+  bookingWindowDays     Int       @default(14)
+  // Playbook knobs
+  estimateFollowUpDays  String    @default("1,3,7")
+  callbackDueHours      Int       @default(2)
+  reminderHoursBefore   Int       @default(24)
+  pbNewInquiry          Boolean   @default(true)
+  pbMissedCall          Boolean   @default(true)
+  pbReminder            Boolean   @default(true)
+  pbNoShow              Boolean   @default(true)
+  pbEstimateFollowUp    Boolean   @default(true)
+  pbMorningDigest       Boolean   @default(true)
+  workingHours          String    @default("{}") // {"mon":["08:00","17:00"],...} in local wall time
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  memberships        Membership[]
+  contacts           Contact[]
+  inquiries          Inquiry[]
+  appointments       Appointment[]
+  estimates          Estimate[]
+  tasks              Task[]
+  activities         Activity[]
+  touchpoints        Touchpoint[]
+  consentEvents      ConsentEvent[]
+  outbox             OutboxMessage[]
+  payments           Payment[]
+  installs           ProviderInstall[]
+  providerEvents     ProviderEvent[]
+  syncCursors        SyncCursor[]
+  providerLinks      ProviderLink[]
+  experiments        Experiment[]
+  auditEvents        AuditEvent[]
+
+  @@index([agencyId])
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  name         String
+  password     String       @default("demo") // local demo sign-in path; OIDC replaces this when configured
+  role         String       @default("OFFICE") // AGENCY_ADMIN | OWNER | OFFICE | ESTIMATOR
+  agencyId     String?
+  agency       Agency?      @relation(fields: [agencyId], references: [id])
+  memberships  Membership[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+/// Per-location membership; role can differ from the global role. Estimators only see
+/// inquiries/appointments assigned to them (enforced server-side).
+model Membership {
+  id           String     @id @default(cuid())
+  userId       String
+  contractorId String
+  role         String     // OWNER | OFFICE | ESTIMATOR
+  isActive     Boolean    @default(true)
+  user         User       @relation(fields: [userId], references: [id])
+  contractor   Contractor @relation(fields: [contractorId], references: [id])
+  createdAt    DateTime   @default(now())
+
+  @@unique([userId, contractorId])
+  @@index([contractorId])
+}
+
+// ─────────────────────────── Contacts & inquiries ───────────────────────────
+
+model Contact {
+  id               String    @id @default(cuid())
+  contractorId     String
+  contractor       Contractor @relation(fields: [contractorId], references: [id])
+  firstName        String
+  lastName         String
+  email            String?
+  phone            String? // normalized E.164-ish
+  addressLine1     String?
+  city             String?
+  state            String?
+  zip              String?
+  preferredChannel String? // sms | email | phone
+  smsConsent       Boolean   @default(false)
+  emailConsent     Boolean   @default(false)
+  optedOut         Boolean   @default(false)
+  ghlContactId     String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  inquiries   Inquiry[]
+  outbox      OutboxMessage[]
+  consent     ConsentEvent[]
+  assignments ExperimentAssignment[]
+
+  @@unique([contractorId, phone])
+  @@index([contractorId, lastName])
+}
+
+model Inquiry {
+  id               String    @id @default(cuid())
+  contractorId     String
+  contractor       Contractor @relation(fields: [contractorId], references: [id])
+  contactId        String
+  contact          Contact   @relation(fields: [contactId], references: [id])
+  serviceType      String    // REPAIR | REPLACEMENT | INSPECTION
+  serviceZip       String
+  source           String    // WEBSITE | PHONE_MISSED | OFFICE | REFERRAL | LANDING_PAGE | UNKNOWN
+  firstSource      String    // immutable — the first known source for this inquiry
+  stage            String    @default("NEW") // NEW|RESPONDING|BOOKED|INSPECTED|QUOTED|WON|LOST|PAUSED
+  ownerUserId      String?
+  publicToken      String    @unique @default(cuid())
+  isTest           Boolean   @default(false)
+  isDuplicate      Boolean   @default(false)
+  ghlOpportunityId String?
+  lostReason       String?
+  pausedAt         DateTime? // manual automation pause
+  automationPaused Boolean   @default(false)
+  quotedValue      Decimal?
+  acceptedValue    Decimal?
+  // AI lead qualification (see src/lib/ai.ts) — machine-assigned, staff-overridable
+  aiCategory        String?   // HOT | WARM | COLD | SPAM | NEEDS_REVIEW
+  aiScore           Int?      // 0–100 intent score
+  aiConfidence      Decimal?  // 0–1 model confidence
+  aiService         String?   // detected service
+  aiUrgency         String?   // LOW | MEDIUM | HIGH
+  aiReason          String?   // why this classification
+  aiNextAction      String?   // recommended next action
+  aiSuggestedReply  String?   // draft reply (never auto-sent without approval rules)
+  aiMissingInfo     String?   // JSON string[] — what would sharpen the score
+  aiClassifiedAt    DateTime?
+  aiModel           String?   // provider/model that produced the machine result
+  aiOverrideCategory String?  // staff correction, kept alongside the machine result
+  aiOverrideByUserId String?
+  aiOverrideAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  appointments Appointment[]
+  estimates    Estimate[]
+  tasks        Task[]
+  activities   Activity[]
+  touchpoints  Touchpoint[]
+  outbox       OutboxMessage[]
+  payments     Payment[]
+
+  @@index([contractorId, stage])
+  @@index([contractorId, createdAt])
+  @@index([contractorId, aiCategory])
+  @@index([contactId])
+}
+
+/// Later touchpoints (tracking number verified, referral named, replies) are recorded here
+/// without ever mutating the inquiry's first known source.
+model Touchpoint {
+  id           String     @id @default(cuid())
+  contractorId String
+  contractor   Contractor @relation(fields: [contractorId], references: [id])
+  inquiryId    String
+  inquiry      Inquiry    @relation(fields: [inquiryId], references: [id])
+  kind         String   // SOURCE | CONSENT | REPLY | STATUS | NOTE | PAYMENT
+  label        String
+  meta         String?
+  occurredAt   DateTime @default(now())
+
+  @@index([inquiryId, occurredAt])
+}
+
+// ─────────────────────────── Appointments & estimates ───────────────────────────
+
+model Appointment {
+  id               String    @id @default(cuid())
+  contractorId     String
+  contractor       Contractor @relation(fields: [contractorId], references: [id])
+  inquiryId        String
+  inquiry          Inquiry   @relation(fields: [inquiryId], references: [id])
+  startAt          DateTime
+  endAt            DateTime
+  timezone         String
+  estimatorId      String?
+  status           String    @default("BOOKED") // BOOKED | COMPLETED | NO_SHOW | CANCELED
+  ghlAppointmentId String?
+  bookedBy         String    @default("CUSTOMER") // CUSTOMER | OFFICE
+  manageToken      String    @unique @default(cuid())
+  manageExpiresAt  DateTime
+  outcomeNote      String?
+  createdAt        DateTime  @default(now()) // the instant the booking was confirmed
+  updatedAt        DateTime  @updatedAt
+
+  @@index([contractorId, startAt])
+  @@index([inquiryId])
+  @@index([contractorId, status])
+}
+
+model Estimate {
+  id               String    @id @default(cuid())
+  contractorId     String
+  contractor       Contractor @relation(fields: [contractorId], references: [id])
+  inquiryId        String
+  inquiry          Inquiry   @relation(fields: [inquiryId], references: [id])
+  number           String
+  amount           Decimal
+  currency         String    @default("USD")
+  status           String    @default("DRAFT") // DRAFT|SENT|VIEWED|ACCEPTED|DECLINED|INVOICED
+  revision         Int       @default(1)
+  rootEstimateId   String?
+  sentAt           DateTime?
+  viewedAt         DateTime?
+  acceptedAt       DateTime? // preserved even after invoicing — acceptance evidence
+  decidedAt        DateTime?
+  invoicedAt       DateTime?
+  followUpPausedAt DateTime?
+  ghlEstimateId    String?
+  ownerUserId      String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  payments Payment[]
+
+  @@unique([contractorId, number])
+  @@index([contractorId, status])
+  @@index([inquiryId])
+}
+
+// ─────────────────────────── Work management ───────────────────────────
+
+model Task {
+  id             String    @id @default(cuid())
+  contractorId   String
+  contractor     Contractor @relation(fields: [contractorId], references: [id])
+  inquiryId      String?
+  inquiry        Inquiry?  @relation(fields: [inquiryId], references: [id])
+  kind           String    // CALLBACK | RESPOND | FOLLOW_UP | REVIEW_MATCH | PREPARE_QUOTE | OTHER
+  title          String
+  detail         String?
+  dueAt          DateTime
+  status         String    @default("OPEN") // OPEN | DONE | CANCELED
+  assignedUserId String?
+  createdBy      String    @default("STAFF") // STAFF | AUTOMATION
+  snoozedUntil   DateTime?
+  dedupeKey      String?
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([contractorId, status, dueAt])
+  @@index([inquiryId])
+  @@index([assignedUserId])
+}
+
+model Activity {
+  id           String     @id @default(cuid())
+  contractorId String
+  contractor   Contractor @relation(fields: [contractorId], references: [id])
+  inquiryId    String
+  inquiry      Inquiry    @relation(fields: [inquiryId], references: [id])
+  actorType    String   // STAFF | AUTOMATION | PROVIDER | CUSTOMER | SYSTEM
+  actorLabel   String
+  kind         String   // STAGE | MESSAGE | NOTE | TASK | APPOINTMENT | ESTIMATE | PAYMENT | CONSENT
+  message      String
+  meta         String?
+  createdAt    DateTime @default(now())
+
+  @@index([inquiryId, createdAt])
+}
+
+model ConsentEvent {
+  id             String   @id @default(cuid())
+  contractorId   String
+  contractor     Contractor @relation(fields: [contractorId], references: [id])
+  contactId      String
+  contact        Contact  @relation(fields: [contactId], references: [id])
+  channel        String   // SMS | EMAIL
+  granted        Boolean
+  basis          String   // WEB_FORM | VERIFIED_NUMBER | OFFICE_ENTERED | OPT_OUT
+  wordingVersion String   @default("v1")
+  sourceLabel    String   // where the consent was captured
+  recordedAt     DateTime @default(now())
+
+  @@index([contactId])
+}
+
+// ─────────────────────────── Automation (outbox + queue simulation) ───────────────────────────
+
+/// Simulated provider delivery. In demo mode messages land here; with a live GHL install the
+/// same dispatch path calls the provider adapter instead.
+model OutboxMessage {
+  id            String    @id @default(cuid())
+  contractorId  String
+  contractor    Contractor @relation(fields: [contractorId], references: [id])
+  inquiryId     String?
+  inquiry       Inquiry?  @relation(fields: [inquiryId], references: [id])
+  contactId     String?
+  contact       Contact?  @relation(fields: [contactId], references: [id])
+  channel       String    // SMS | EMAIL
+  templateKey   String    // BOOKING_LINK | REMINDER | FOLLOW_UP | DIGEST | CONFIRMATION | RESCHEDULE_CONFIRM | NO_SHOW_FOLLOW_UP
+  subject       String?
+  body          String
+  scheduledFor  DateTime
+  sentAt        DateTime?
+  status        String    @default("SCHEDULED") // SCHEDULED | SENT | CANCELED | FAILED | DEFERRED
+  dedupeKey     String?   @unique
+  stoppedReason String?
+  attempts      Int       @default(0)
+  providerMessageId String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([contractorId, status, scheduledFor])
+  @@index([inquiryId])
+}
+
+model Payment {
+  id             String    @id @default(cuid())
+  contractorId   String
+  contractor     Contractor @relation(fields: [contractorId], references: [id])
+  inquiryId      String?
+  inquiry        Inquiry?  @relation(fields: [inquiryId], references: [id])
+  estimateId     String?
+  estimate       Estimate? @relation(fields: [estimateId], references: [id])
+  provider       String    // JOBBER | MANUAL | GHL
+  providerTxnId  String
+  amount         Decimal
+  currency       String    @default("USD")
+  kind           String    // PAYMENT | REFUND
+  status         String    @default("SETTLED") // SETTLED | PENDING | UNMATCHED
+  matchedByUserId String?
+  matchedAt      DateTime?
+  occurredAt     DateTime
+  note           String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([contractorId, provider, providerTxnId])
+  @@index([contractorId, occurredAt])
+}
+
+// ─────────────────────────── Connector state ───────────────────────────
+
+/// Per-contractor provider installation (OAuth tokens encrypted at rest with TOKEN_ENCRYPTION_KEY).
+model ProviderInstall {
+  id               String    @id @default(cuid())
+  contractorId     String
+  contractor       Contractor @relation(fields: [contractorId], references: [id])
+  provider         String    // GHL | JOBBER
+  locationId       String?
+  status           String    @default("DISCONNECTED") // DISCONNECTED | CONNECTED | REVOKED | ERROR
+  accessTokenEnc   String?
+  refreshTokenEnc  String?
+  expiresAt        DateTime?
+  scopes           String?
+  installedByUserId String?
+  lastCheckedAt    DateTime?
+  checkResult      String? // JSON array of {name, state: passed|failed|awaiting, detail}
+  lastError        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([contractorId, provider])
+}
+
+/// Durable inbound webhook record: verify signature → persist → process → ack. Enables
+/// dedupe, out-of-order handling, bounded retry and safe replay.
+model ProviderEvent {
+  id             String    @id @default(cuid())
+  contractorId   String?
+  contractor     Contractor? @relation(fields: [contractorId], references: [id])
+  provider       String
+  eventType      String
+  externalId     String?
+  payload        String
+  signatureValid Boolean   @default(false)
+  status         String    @default("PENDING") // PENDING | PROCESSED | FAILED | SKIPPED_DUPLICATE | SKIPPED_OUT_OF_ORDER
+  processError   String?
+  attempts       Int       @default(0)
+  receivedAt     DateTime  @default(now())
+  processedAt    DateTime?
+
+  @@index([provider, status])
+  @@index([externalId])
+}
+
+model SyncCursor {
+  id           String   @id @default(cuid())
+  contractorId String
+  contractor   Contractor @relation(fields: [contractorId], references: [id])
+  provider     String
+  resource     String
+  cursor       String
+  updatedAt    DateTime @updatedAt
+
+  @@unique([contractorId, provider, resource])
+}
+
+/// Generic provider-ID mapping for synced records.
+model ProviderLink {
+  id           String   @id @default(cuid())
+  contractorId String
+  contractor   Contractor @relation(fields: [contractorId], references: [id])
+  provider     String
+  entity       String   // contact | appointment | estimate | opportunity | payment
+  localId      String
+  externalId   String
+  lastSyncedAt DateTime @default(now())
+
+  @@unique([provider, entity, localId])
+  @@index([contractorId, provider])
+}
+
+// ─────────────────────────── Experiments ───────────────────────────
+
+model Experiment {
+  id            String   @id @default(cuid())
+  contractorId  String
+  contractor    Contractor @relation(fields: [contractorId], references: [id])
+  name          String
+  status        String   @default("RUNNING") // DRAFT | RUNNING | COMPLETED | ROUTED
+  messageA      String
+  messageB      String
+  windowDays    Int      @default(14)
+  minSample     Int      @default(30)
+  routeToArm    String?  // staff action: route future contacts to A or B
+  startedAt     DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  assignments ExperimentAssignment[]
+
+  @@index([contractorId, status])
+}
+
+/// One designated inquiry per assigned contact; unique constraint makes repeat
+/// assignment a no-op (idempotent enrollment evidence).
+model ExperimentAssignment {
+  id           String   @id @default(cuid())
+  experimentId String
+  experiment   Experiment @relation(fields: [experimentId], references: [id])
+  contactId    String
+  contact      Contact  @relation(fields: [contactId], references: [id])
+  inquiryId    String?
+  arm          String   // A | B
+  enrolledAt   DateTime @default(now())
+
+  @@unique([experimentId, contactId])
+}
+
+// ─────────────────────────── Audit & demo state ───────────────────────────
+
+model AuditEvent {
+  id           String   @id @default(cuid())
+  contractorId String?
+  contractor   Contractor? @relation(fields: [contractorId], references: [id])
+  userId       String?
+  action       String
+  entity       String
+  entityId     String?
+  meta         String?
+  createdAt    DateTime @default(now())
+
+  @@index([contractorId, createdAt])
+}
+
+/// Singleton row: demo clock offset + bootstrap marker.
+model DemoState {
+  id            String   @id @default("singleton")
+  clockOffsetMs Int      @default(0)
+  seededAt      DateTime?
+  version       Int      @default(0)
+  /// When false, bootstrap does NOT auto-seed an empty database — set by the
+  /// "Remove demo data" control so a wiped install stays intentionally empty.
+  autoSeed      Boolean  @default(true)
+}
+
+/// Fixed-window rate-limit counters, persisted so the limit holds across serverless
+/// instances (the in-memory map only ever saw one instance). One row per (key, minute).
+model RateLimitBucket {
+  id          String   @id @default(cuid())
+  key         String
+  windowStart DateTime
+  count       Int      @default(0)
+
+  @@unique([key, windowStart])
+  @@index([windowStart])
+}
+
+// ─────────────────────── Ingestion credentials (org API keys) ───────────────────────
+
+/// Organization-scoped credential for the ingestion API (POST /api/v1/leads).
+/// The raw key ("rl_live_…") is shown exactly once at creation; only the SHA-256
+/// hash is stored. Scoped to one contractor (tenant) and revocable.
+model ApiKey {
+  id              String     @id @default(cuid())
+  contractorId    String
+  contractor      Contractor @relation(fields: [contractorId], references: [id])
+  name            String
+  prefix          String     // display prefix, e.g. "rl_live_1a2b…"
+  keyHash         String     @unique // sha256(raw key) — raw key never stored
+  scopes          String     @default("leads:write")
+  rateLimitPerMin Int        @default(60)
+  lastUsedAt      DateTime?
+  revokedAt       DateTime?
+  createdById     String?
+  createdAt       DateTime   @default(now())
+
+  @@index([contractorId])
+}
+
+// ─────────────────────── Durable background jobs (TS worker) ───────────────────────
+
+/// One row per unit of background work; processed by the TypeScript worker
+/// service (mini-services/worker). Retries with exponential backoff and
+/// dead-letters after maxAttempts. dedupeKey makes enqueueing idempotent.
+model BackgroundJob {
+  id           String      @id @default(cuid())
+  contractorId String?
+  contractor   Contractor? @relation(fields: [contractorId], references: [id])
+  type         String      // LEAD_CLASSIFY | …
+  payload      String    @default("{}") // JSON
+  status       String    @default("PENDING") // PENDING | RUNNING | DONE | FAILED | CANCELED
+  attempts     Int       @default(0)
+  maxAttempts  Int       @default(5)
+  runAt        DateTime  @default(now())
+  lastError    String?
+  dedupeKey    String?   @unique
+  result       String?   // JSON summary of the successful run
+  finishedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([status, runAt])
+  @@index([type, status])
+  @@index([contractorId])
+}
+
+/// Every AI call is journaled with its validated output — audit trail + usage
+/// tracking. Raw customer text is never stored here (only a digest + the
+/// validated, structured result).
+model AIInteraction {
+  id           String    @id @default(cuid())
+  contractorId String?
+  inquiryId    String?
+  provider     String    // zai | openai | deterministic
+  model        String
+  purpose      String    // LEAD_CLASSIFICATION | REPLY_DRAFT | …
+  inputDigest  String?   // sha256 of the prompt context
+  output       String?   // validated JSON output
+  schemaVersion String   @default("v1")
+  success      Boolean   @default(true)
+  latencyMs    Int?
+  error        String?
+  createdAt    DateTime  @default(now())
+
+  @@index([contractorId, createdAt])
+  @@index([inquiryId])
+}

@@ -34,8 +34,8 @@ export function AssignDialog({ task, onDone }: { task: TaskRow; onDone: () => vo
         onDone();
       }}
     >
-      <SelectTrigger size="sm" className="h-7 w-[110px] text-xs" aria-label="Assign task">
-        <UserPlus className="h-3.5 w-3.5 mr-1 opacity-60" />
+      <SelectTrigger size="sm" className="h-7 w-[118px] text-xs sm:w-[150px]" aria-label="Assign task">
+        <UserPlus className="h-3.5 w-3.5 mr-1 shrink-0 opacity-60" />
         <SelectValue placeholder="Assign" />
       </SelectTrigger>
       <SelectContent>
@@ -64,7 +64,7 @@ function TaskRowItem({ task, now, onChanged }: { task: TaskRow; now: string; onC
   };
   return (
     <Row>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-[200px] flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-medium truncate max-w-[260px]">{contact ? `${contact.firstName} ${contact.lastName}`.trim() : "—"}</span>
           <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">{TASK_KIND_LABELS[task.kind] ?? task.kind}</span>
@@ -220,7 +220,7 @@ export function TodayView() {
               const ageDays = Math.floor((now.getTime() - new Date(e.sentAt ?? e.createdAt).getTime()) / 86400000);
               return (
                 <Row key={e.id}>
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-[200px] flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <button className="font-medium hover:underline text-left" onClick={() => navigate(`/inquiries/${e.inquiryId}`)}>
                         {e.inquiry?.contact ? `${e.inquiry.contact.firstName} ${e.inquiry.contact.lastName}` : e.number}

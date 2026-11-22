@@ -24,7 +24,7 @@ export async function runSeed({ force = false }: { force?: boolean } = {}): Prom
     new Date(now.getTime() + days * 86400000 + hours * 3600000 + minutes * 60000);
   const TZ = "America/Chicago";
   const HOURS = JSON.stringify(DEFAULT_WORKING_HOURS);
-  const BASE = "http://localhost:3000";
+  const BASE = process.env.APP_BASE_URL ?? "http://localhost:3000";
   const fmtWhen = (d: Date) =>
     new Intl.DateTimeFormat("en-US", { timeZone: TZ, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(d);
 
@@ -633,6 +633,9 @@ function sameDayAt(base: Date, h: number, m: number): Date {
 }
 
 export async function wipe(): Promise<void> {
+  // Deletion order respects FK constraints: children before parents. BackgroundJob
+  // and AuditEvent hold relations to Contractor/User and MUST go before them (the
+  // previous order left them behind and made a wipe fail partway through).
   await db.experimentAssignment.deleteMany();
   await db.experiment.deleteMany();
   await db.providerLink.deleteMany();
@@ -641,6 +644,9 @@ export async function wipe(): Promise<void> {
   await db.providerInstall.deleteMany();
   await db.payment.deleteMany();
   await db.outboxMessage.deleteMany();
+  await db.backgroundJob.deleteMany();
+  await db.aIInteraction.deleteMany();
+  await db.apiKey.deleteMany();
   await db.consentEvent.deleteMany();
   await db.activity.deleteMany();
   await db.touchpoint.deleteMany();
@@ -650,10 +656,10 @@ export async function wipe(): Promise<void> {
   await db.inquiry.deleteMany();
   await db.contact.deleteMany();
   await db.membership.deleteMany();
+  await db.auditEvent.deleteMany();
   await db.user.deleteMany();
   await db.contractor.deleteMany();
   await db.agency.deleteMany();
-  await db.auditEvent.deleteMany();
   await db.demoState.deleteMany();
 }
 

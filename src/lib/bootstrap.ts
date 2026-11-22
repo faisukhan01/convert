@@ -9,9 +9,9 @@ import { ensureEngine } from "@/lib/engine";
 const g = globalThis as unknown as { __rl_bootstrap?: Promise<void> };
 
 async function doBootstrap(): Promise<void> {
-  await db.demoState.upsert({ where: { id: "singleton" }, update: {}, create: { id: "singleton" } });
+  const state = await db.demoState.upsert({ where: { id: "singleton" }, update: {}, create: { id: "singleton" } });
   const users = await db.user.count();
-  if (users === 0) {
+  if (users === 0 && state.autoSeed) {
     const { runSeed } = await import("@/lib/seed");
     await runSeed({ force: true });
     console.log("[bootstrap] empty database detected — demo data seeded");

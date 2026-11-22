@@ -1209,7 +1209,7 @@ function Features() {
                         {QUEUE_FEED[feed].text}
                       </span>
                     </span>
-                    <span className="shrink-0 text-[11.5px] font-medium text-muted-foreground">
+                    <span className="hidden shrink-0 text-[11.5px] font-medium text-muted-foreground sm:block">
                       {QUEUE_FEED[feed].meta}
                     </span>
                   </motion.div>
@@ -1222,7 +1222,7 @@ function Features() {
                     </span>
                     <span className="truncate text-[13.5px] font-semibold text-foreground/75">Marcus Webb</span>
                   </span>
-                  <span className="shrink-0 text-[11.5px] font-medium text-muted-foreground/80">call back before noon</span>
+                  <span className="hidden shrink-0 text-[11.5px] font-medium text-muted-foreground/80 sm:block">call back before noon</span>
                 </div>
                 <div className="flex items-center justify-between gap-3 rounded-lg border border-border/40 bg-card/60 px-3.5 py-3 opacity-40">
                   <span className="flex min-w-0 items-center gap-3">
@@ -1231,7 +1231,7 @@ function Features() {
                     </span>
                     <span className="truncate text-[13.5px] font-semibold text-foreground/75">Parker Lind</span>
                   </span>
-                  <span className="shrink-0 text-[11.5px] font-medium text-muted-foreground/80">quote · roof replacement</span>
+                  <span className="hidden shrink-0 text-[11.5px] font-medium text-muted-foreground/80 sm:block">quote · roof replacement</span>
                 </div>
               </div>
               <p className="px-1 pt-2 text-[11px] font-medium text-muted-foreground">
