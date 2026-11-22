@@ -66,7 +66,9 @@ async function main() {
   // Use the configured DATABASE_URL as-is (e.g. Neon). Only boot the embedded
   // PostgreSQL cluster when no usable external database is configured.
   const effectiveDb = envFile.DATABASE_URL || process.env.DATABASE_URL;
-  if (!isRemoteDb(effectiveDb)) {
+  if (effectiveDb && effectiveDb.startsWith("file:")) {
+    console.log("[dev] SQLite DATABASE_URL detected — embedded PostgreSQL skipped (local demo mode)");
+  } else if (!isRemoteDb(effectiveDb)) {
     await ensurePostgres();
   } else {
     console.log("[dev] remote DATABASE_URL detected — using it directly (embedded PostgreSQL skipped)");

@@ -87,6 +87,7 @@
     },
   },
   "trustedDependencies": [
+    "embedded-postgres",
     "@embedded-postgres/linux-x64",
   ],
   "packages": {
