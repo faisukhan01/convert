@@ -11,9 +11,8 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { toast } from "sonner";
 import {
   LayoutDashboard, ClipboardList, CalendarDays, FileText, BarChart3, Inbox, Settings,
-  Building2, Home, Menu, ChevronDown, Moon, Sun, LogOut, ExternalLink, Clock, Globe,
+  Building2, Home, Menu, ChevronDown, LogOut, ExternalLink, Clock, Globe,
 } from "lucide-react";
-import { useTheme } from "next-themes";
 
 const NAV = [
   { key: "today", label: "Today", icon: LayoutDashboard },
@@ -92,17 +91,6 @@ export function Logo({
         </span>
       )}
     </span>
-  );
-}
-
-export function ThemeToggle() {
-  const { resolvedTheme, setTheme } = useTheme();
-  const toggle = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
-  return (
-    <Button variant="ghost" size="icon" aria-label="Toggle dark mode" onClick={toggle}>
-      <Sun className="hidden dark:block h-4 w-4" />
-      <Moon className="block dark:hidden h-4 w-4" />
-    </Button>
   );
 }
 
@@ -241,7 +229,6 @@ export function AppShell({ route, children }: ShellProps) {
                 <Button variant="outline" size="sm" className="hidden sm:inline-flex gap-2" onClick={() => navigate("/public/intake")}>
                   <ExternalLink className="h-3.5 w-3.5" /> Homeowner view
                 </Button>
-                <ThemeToggle />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="gap-2" aria-label="Account menu">
