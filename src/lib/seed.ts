@@ -5,6 +5,7 @@ import {
   bookingLinkBody, reminderBody, missedYouBody, followUpBody,
 } from "@/lib/templates";
 import { DEFAULT_WORKING_HOURS } from "@/lib/constants";
+import type { Contractor } from "@prisma/client";
 
 /**
  * Deterministic demo fixtures. Dates are computed relative to seed time so "Today" is always
@@ -13,23 +14,31 @@ import { DEFAULT_WORKING_HOURS } from "@/lib/constants";
  *   → 58.3% booking rate, 83.3% show rate; 4 sent estimates / 2 accepted = 50%;
  *   USD receipts 1,200 + 300 − 100 refund = 1,400 collected (+450 unmatched shown separately).
  *   Experiment: 6 contacts per arm, 3 (A) vs 4 (B) booked → 50.0% vs 66.7% (+16.7 pp, inconclusive).
+ *
+ * Structure vs business data:
+ *   structure = Agency, Users, Contractors, Memberships — sign-in and tenancy live here.
+ *   business  = Contacts, Inquiries, Appointments, Estimates, Tasks, Payments, automations,
+ *               connector state, experiments — the demo pipeline itself.
+ * `wipeBusinessData` (the Settings "Remove demo data" action) removes business data ONLY, so
+ * nobody is ever signed out; `runSeed` re-installs business fixtures onto the surviving
+ * structure without touching any account. `wipe` remains the full factory reset.
  */
-export async function runSeed({ force = false }: { force?: boolean } = {}): Promise<void> {
-  const users = await db.user.count();
-  if (users > 0 && !force) return;
-  if (force) await wipe();
+type DemoStructure = {
+  summit: Contractor;
+  northpeak: Contractor;
+  users: Record<string, string>; // demo email → user id
+};
 
+/** Create the agency/users/contractors/memberships skeleton if (and only if) missing. */
+async function ensureDemoStructure(): Promise<DemoStructure> {
   const now = new Date();
   const D = (days: number, hours = 0, minutes = 0) =>
     new Date(now.getTime() + days * 86400000 + hours * 3600000 + minutes * 60000);
   const TZ = "America/Chicago";
   const HOURS = JSON.stringify(DEFAULT_WORKING_HOURS);
-  const BASE = process.env.APP_BASE_URL ?? "http://localhost:3000";
-  const fmtWhen = (d: Date) =>
-    new Intl.DateTimeFormat("en-US", { timeZone: TZ, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(d);
 
-  // ── Agency + users ──
-  const agency = await db.agency.create({ data: { name: "Peak Advisory Group" } });
+  let agency = await db.agency.findFirst({ where: { name: "Peak Advisory Group" } });
+  if (!agency) agency = await db.agency.create({ data: { name: "Peak Advisory Group" } });
 
   const usersData = [
     { email: "agency@ridgeline.demo", name: "Dana Whitfield", role: "AGENCY_ADMIN", agencyId: agency.id },
@@ -38,15 +47,17 @@ export async function runSeed({ force = false }: { force?: boolean } = {}): Prom
     { email: "estimator@ridgeline.demo", name: "Alex Rivera", role: "ESTIMATOR", agencyId: null },
     { email: "owner2@ridgeline.demo", name: "Sam Ortiz", role: "OWNER", agencyId: null },
   ];
-  const createdUsers: Record<string, string> = {};
+  const users: Record<string, string> = {};
   for (const u of usersData) {
-    const row = await db.user.create({ data: u });
-    createdUsers[u.email] = row.id;
+    // Upsert and never clobber: an existing account may be signed in right now.
+    const row = await db.user.upsert({ where: { email: u.email }, update: {}, create: u });
+    users[u.email] = row.id;
   }
 
-  // ── Contractors ──
-  const summit = await db.contractor.create({
-    data: {
+  const summit = await db.contractor.upsert({
+    where: { slug: "summit" },
+    update: {},
+    create: {
       agencyId: agency.id, name: "Summit Roofing Co.", slug: "summit",
       timezone: TZ, addressLine1: "412 Cedar Park Blvd", city: "Austin", state: "TX",
       serviceZips: "78704,78745,78741,78749,78703",
@@ -55,8 +66,10 @@ export async function runSeed({ force = false }: { force?: boolean } = {}): Prom
       workingHours: HOURS,
     },
   });
-  const northpeak = await db.contractor.create({
-    data: {
+  const northpeak = await db.contractor.upsert({
+    where: { slug: "northpeak" },
+    update: {},
+    create: {
       agencyId: agency.id, name: "North Peak Exteriors", slug: "northpeak",
       timezone: "America/Denver", addressLine1: "88 Alpine Way", city: "Boulder", state: "CO",
       serviceZips: "80301,80302,80304",
@@ -65,15 +78,41 @@ export async function runSeed({ force = false }: { force?: boolean } = {}): Prom
     },
   });
 
-  await db.membership.createMany({
-    data: [
-      { userId: createdUsers["owner@ridgeline.demo"], contractorId: summit.id, role: "OWNER" },
-      { userId: createdUsers["office@ridgeline.demo"], contractorId: summit.id, role: "OFFICE" },
-      { userId: createdUsers["estimator@ridgeline.demo"], contractorId: summit.id, role: "ESTIMATOR" },
-      { userId: createdUsers["owner2@ridgeline.demo"], contractorId: northpeak.id, role: "OWNER" },
-      { userId: createdUsers["agency@ridgeline.demo"], contractorId: northpeak.id, role: "OWNER" },
-    ],
-  });
+  const memberSpecs = [
+    { email: "owner@ridgeline.demo", contractorId: summit.id, role: "OWNER" },
+    { email: "office@ridgeline.demo", contractorId: summit.id, role: "OFFICE" },
+    { email: "estimator@ridgeline.demo", contractorId: summit.id, role: "ESTIMATOR" },
+    { email: "owner2@ridgeline.demo", contractorId: northpeak.id, role: "OWNER" },
+    { email: "agency@ridgeline.demo", contractorId: northpeak.id, role: "OWNER" },
+  ];
+  for (const m of memberSpecs) {
+    await db.membership.upsert({
+      where: { userId_contractorId: { userId: users[m.email], contractorId: m.contractorId } },
+      update: {},
+      create: { userId: users[m.email], contractorId: m.contractorId, role: m.role },
+    });
+  }
+
+  return { summit, northpeak, users };
+}
+
+export async function runSeed({ force = false }: { force?: boolean } = {}): Promise<void> {
+  if (force) await wipe();
+  // Idempotent: business fixtures already present → do nothing (existing records are
+  // never replaced or duplicated silently).
+  if (!force && ((await db.inquiry.count()) > 0 || (await db.contact.count()) > 0)) return;
+  const structure = await ensureDemoStructure();
+  await seedBusinessData(structure);
+}
+
+async function seedBusinessData({ summit, northpeak, users: createdUsers }: DemoStructure): Promise<void> {
+  const now = new Date();
+  const D = (days: number, hours = 0, minutes = 0) =>
+    new Date(now.getTime() + days * 86400000 + hours * 3600000 + minutes * 60000);
+  const TZ = "America/Chicago";
+  const BASE = process.env.APP_BASE_URL ?? "http://localhost:3000";
+  const fmtWhen = (d: Date) =>
+    new Intl.DateTimeFormat("en-US", { timeZone: TZ, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(d);
 
   // ── Summit GHL install (simulated, operator-visible mode) ──
   await db.providerInstall.create({
@@ -636,6 +675,23 @@ export async function wipe(): Promise<void> {
   // Deletion order respects FK constraints: children before parents. BackgroundJob
   // and AuditEvent hold relations to Contractor/User and MUST go before them (the
   // previous order left them behind and made a wipe fail partway through).
+  await wipeBusinessData();
+  await db.membership.deleteMany();
+  await db.auditEvent.deleteMany();
+  await db.user.deleteMany();
+  await db.contractor.deleteMany();
+  await db.agency.deleteMany();
+  await db.demoState.deleteMany();
+}
+
+/**
+ * Remove demo BUSINESS data only — contacts, pipeline, appointments, estimates, tasks,
+ * payments, automations, connector state and experiments. Accounts (User), the agency,
+ * contractor profiles, memberships, the audit trail and DemoState survive, so the
+ * currently signed-in session stays valid: "Remove demo data" must never sign anyone
+ * out. FK-safe order: children before parents.
+ */
+export async function wipeBusinessData(): Promise<void> {
   await db.experimentAssignment.deleteMany();
   await db.experiment.deleteMany();
   await db.providerLink.deleteMany();
@@ -655,12 +711,6 @@ export async function wipe(): Promise<void> {
   await db.appointment.deleteMany();
   await db.inquiry.deleteMany();
   await db.contact.deleteMany();
-  await db.membership.deleteMany();
-  await db.auditEvent.deleteMany();
-  await db.user.deleteMany();
-  await db.contractor.deleteMany();
-  await db.agency.deleteMany();
-  await db.demoState.deleteMany();
 }
 
 export async function resetDemo(): Promise<void> {

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useApi, api, setStoredToken } from "@/hooks/use-api";
-import { useAppStore, roleAt, navigate } from "@/store/app";
+import { useApi, api } from "@/hooks/use-api";
+import { useAppStore, roleAt } from "@/store/app";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +40,7 @@ type ConnectionsData = {
 };
 
 type DemoCensus = {
-  empty: boolean; autoSeed: boolean; seededAt: string | null;
+  empty: boolean; businessEmpty: boolean; autoSeed: boolean; seededAt: string | null;
   counts: { users: number; agencies: number; contractors: number; contacts: number; inquiries: number; appointments: number; estimates: number; payments: number; tasks: number };
 };
 
@@ -97,14 +97,13 @@ export function SettingsView() {
     setDemoBusy("remove");
     try {
       const res = await api.del<{ ok: boolean; message: string }>("/api/demo-data");
-      toast(res.message ?? "All demo data removed");
-      // Every record — including this session's user — is gone: drop the local
-      // credential and land on the (empty) sign-in screen.
-      setStoredToken(null);
-      setTimeout(() => {
-        navigate("#/signin");
-        window.location.reload();
-      }, 700);
+      toast(res.message ?? "Demo data removed — you stay signed in");
+      demoQ.refresh();
+      setDemoBusy(null);
+      // Only the demo business rows are gone — accounts, team, businesses and this
+      // session all survive. Reload in place so every view re-fetches and shows its
+      // empty state; the token is kept and the portal stays open.
+      setTimeout(() => window.location.reload(), 700);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to remove demo data");
       setDemoBusy(null);
@@ -135,8 +134,8 @@ export function SettingsView() {
             <Button
               size="sm"
               className="gap-1.5"
-              disabled={demoBusy !== null || (demoQ.data ? !demoQ.data.empty : false)}
-              title={demoQ.data && !demoQ.data.empty ? "Data already present — remove it first" : "Install the demo fixtures"}
+              disabled={demoBusy !== null || (demoQ.data ? !demoQ.data.businessEmpty : false)}
+              title={demoQ.data && !demoQ.data.businessEmpty ? "Data already present — remove it first" : "Install the demo fixtures"}
               onClick={() => void loadDemoData()}
             >
               {demoBusy === "load" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <DatabaseZap className="h-3.5 w-3.5" />}
@@ -145,16 +144,17 @@ export function SettingsView() {
             {(role === "OWNER" || role === "AGENCY_ADMIN") && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button size="sm" variant="destructive" className="gap-1.5" disabled={demoBusy !== null || (demoQ.data?.empty ?? true)}>
+                  <Button size="sm" variant="destructive" className="gap-1.5" disabled={demoBusy !== null || (demoQ.data?.businessEmpty ?? true)}>
                     {demoBusy === "remove" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                     Remove demo data
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Remove all demo data?</AlertDialogTitle>
+                    <AlertDialogTitle>Remove demo data?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This permanently deletes every record in this workspace — {demoQ.data ? `${demoQ.data.counts.inquiries} inquiries, ${demoQ.data.counts.contacts} contacts, ${demoQ.data.counts.appointments} appointments, ${demoQ.data.counts.estimates} estimates, ${demoQ.data.counts.payments} payments` : "all records"} — including your own sign-in. The app stays empty until you load demo data again. This cannot be undone.
+                      This permanently deletes the demo business records — {demoQ.data ? `${demoQ.data.counts.inquiries} inquiries, ${demoQ.data.counts.contacts} contacts, ${demoQ.data.counts.appointments} appointments, ${demoQ.data.counts.estimates} estimates, ${demoQ.data.counts.payments} payments` : "all demo records"}.
+                      Your account, team, businesses and settings are kept — you stay signed in and every view just shows its empty state. This cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -163,7 +163,7 @@ export function SettingsView() {
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       onClick={() => void removeDemoData()}
                     >
-                      Remove everything
+                      Remove demo data
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -189,9 +189,9 @@ export function SettingsView() {
               ))}
             </div>
             <p className="text-[11px] leading-relaxed text-muted-foreground">
-              {demoQ.data.empty
-                ? "The workspace is empty. Load demo data to install the deterministic fixtures (2 businesses, sample pipeline, payments and experiments)."
-                : "Loading is disabled while data exists — records are never replaced silently. Remove first if you want a fresh install."}
+              {demoQ.data.businessEmpty
+                ? "No demo business data. Load demo data to install the deterministic fixtures (sample pipeline, payments and experiments) onto your existing team and businesses."
+                : "Loading is disabled while data exists — records are never replaced silently. Remove first if you want a fresh install; removing keeps your account, team and business profiles."}
               {demoQ.data.autoSeed ? " Auto-seed is on: an empty database is re-seeded automatically on restart." : " Auto-seed is off: the workspace stays empty until you load demo data."}
             </p>
           </div>
