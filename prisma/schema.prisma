@@ -2,20 +2,20 @@
 // Multi-tenant data model: Agency > Contractor (location) > staff / contacts / inquiries /
 // appointments / estimates / tasks / automation / connector state / payments / experiments / audit.
 //
-// NOTE ON PORTABILITY: this schema uses `sqlite` for the local demo (the preview sandbox has no
-// Postgres server). The exact same model is provided Postgres-ready in
-// `prisma/schema.postgres.prisma` — switch with `bun run db:use-postgres` and point DATABASE_URL
-// at your Neon connection string. Types are chosen to be identical on both engines:
-// no native enums (String + app-level validation), JSON payloads stored as String,
-// Decimal for money (supported by both engines), UTC instants everywhere.
+// NOTE ON PORTABILITY: the datasource is PostgreSQL (Neon) — the same database powers local
+// development and production. `prisma/schema.postgres.prisma` is the review copy of the exact
+// same model. Types are chosen to be portable: no native enums (String + app-level validation),
+// JSON payloads stored as String, Decimal for money, UTC instants everywhere. `directUrl`
+// bypasses the Neon pooler for schema operations (db push / migrate).
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ─────────────────────────────── Tenancy ───────────────────────────────

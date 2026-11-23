@@ -2,8 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "env": {
-    "DATABASE_URL": "postgresql://neondb_owner:npg_cFpsg7vyIk2R@ep-proud-grass-be8040fm-pooler.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
-    "DIRECT_URL": "postgresql://neondb_owner:npg_cFpsg7vyIk2R@ep-proud-grass-be8040fm.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
+    "DATABASE_URL": "postgresql://neondb_owner:npg_cFpsg7vyIk2R@ep-proud-grass-be8040fm-pooler.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require",
+    "DIRECT_URL": "postgresql://neondb_owner:npg_cFpsg7vyIk2R@ep-proud-grass-be8040fm.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require",
     "SESSION_SECRET": "b73d441f482e27bad75adeb33f9f4c4c1ad5b9a7e6c905c4da687addb3fb3991",
     "TOKEN_ENCRYPTION_KEY": "06dda1f2b28f5655763abd64a0faf4acf055facb82f8511944144f6cd23e69a8",
     "APP_BASE_URL": "https://convert-orpin-pi.vercel.app",
